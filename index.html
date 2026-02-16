@@ -4,55 +4,46 @@
     <meta charset="UTF-8">
     <title>Your Name | Portfolio</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-
-    <!-- Google Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
-
-    <!-- External CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<!-- ========== INTERACTIVE BACKGROUNDS ========== -->
-<canvas id="stringCanvas"></canvas>
+<canvas id="ribbonCanvas"></canvas>
 <div class="floating-strings" id="floatingStrings"></div>
 <div class="cursor-glow" id="cursorGlow"></div>
-
-<!-- ========== SCROLL PROGRESS ========== -->
 <div class="scroll-progress" id="scrollProgress"></div>
 
-<!-- ========== NAVIGATION ========== -->
+<!-- Navigation -->
 <header class="navbar">
     <div class="logo">YourName</div>
     <nav class="desktop-nav">
         <a href="#home">Home</a>
         <a href="#projects">Projects</a>
         <a href="#about">About</a>
+        <a href="#references">People</a>
         <a href="#contact">Contact</a>
     </nav>
     <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Menu">
-        <span></span>
-        <span></span>
-        <span></span>
+        <span></span><span></span><span></span>
     </button>
 </header>
 
-<!-- Mobile Navigation -->
 <div class="mobile-nav" id="mobileNav">
     <a href="#home">Home</a>
     <a href="#projects">Projects</a>
     <a href="#about">About</a>
+    <a href="#references">People</a>
     <a href="#contact">Contact</a>
 </div>
 
-<!-- ========== HERO SECTION ========== -->
+<!-- Hero -->
 <section id="home" class="hero" data-section="0">
+    <div class="section-fog"></div>
     <div class="hero-content">
         <h1>Hi, I'm <span>Your Name</span></h1>
-        <p>
-            Developer & Designer crafting interactive, immersive digital experiences.
-        </p>
+        <p>Developer &amp; Designer crafting interactive, immersive digital experiences.</p>
         <a href="#projects" class="btn">Explore Work</a>
     </div>
     <div class="scroll-indicator">
@@ -61,69 +52,147 @@
     </div>
 </section>
 
-<!-- ========== PROJECTS SECTION ========== -->
+<!-- Projects -->
 <section id="projects" class="section" data-section="1">
-    <h2 class="section-title">Selected Projects</h2>
-    <div class="project-grid">
-        <div class="project-card">
-            <div class="project-number">01</div>
-            <h3>Project One</h3>
-            <p>Short description explaining what this project is about.</p>
-            <div class="project-tags">
-                <span>React</span>
-                <span>Node.js</span>
+    <div class="section-fog"></div>
+    <div class="section-inner">
+        <h2 class="section-title">Selected Projects</h2>
+        <div class="project-grid">
+            <div class="project-card">
+                <div class="project-number">01</div>
+                <h3>Project One</h3>
+                <p>Short description explaining what this project is about.</p>
+                <div class="project-tags"><span>React</span><span>Node.js</span></div>
             </div>
-        </div>
-        <div class="project-card">
-            <div class="project-number">02</div>
-            <h3>Project Two</h3>
-            <p>Short description explaining what this project is about.</p>
-            <div class="project-tags">
-                <span>Vue</span>
-                <span>Firebase</span>
+            <div class="project-card">
+                <div class="project-number">02</div>
+                <h3>Project Two</h3>
+                <p>Short description explaining what this project is about.</p>
+                <div class="project-tags"><span>Vue</span><span>Firebase</span></div>
             </div>
-        </div>
-        <div class="project-card">
-            <div class="project-number">03</div>
-            <h3>Project Three</h3>
-            <p>Short description explaining what this project is about.</p>
-            <div class="project-tags">
-                <span>Python</span>
-                <span>AI/ML</span>
+            <div class="project-card">
+                <div class="project-number">03</div>
+                <h3>Project Three</h3>
+                <p>Short description explaining what this project is about.</p>
+                <div class="project-tags"><span>Python</span><span>AI/ML</span></div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- ========== ABOUT SECTION ========== -->
+<!-- About -->
 <section id="about" class="section" data-section="2">
-    <h2 class="section-title">About Me</h2>
-    <p class="about-text">
-        I focus on clean structure, strong visuals, and thoughtful interaction.
-        I enjoy building systems that feel precise, aesthetic, and intentional.
-    </p>
-    <div class="skills-grid">
-        <div class="skill-item">Frontend</div>
-        <div class="skill-item">Backend</div>
-        <div class="skill-item">Design</div>
-        <div class="skill-item">DevOps</div>
+    <div class="section-fog"></div>
+    <div class="section-inner">
+        <h2 class="section-title">About Me</h2>
+        <p class="about-text">
+            I focus on clean structure, strong visuals, and thoughtful interaction.
+            I enjoy building systems that feel precise, aesthetic, and intentional.
+        </p>
+        <div class="skills-grid">
+            <div class="skill-item">Frontend</div>
+            <div class="skill-item">Backend</div>
+            <div class="skill-item">Design</div>
+            <div class="skill-item">DevOps</div>
+        </div>
     </div>
 </section>
 
-<!-- ========== CONTACT SECTION ========== -->
-<section id="contact" class="section contact" data-section="3">
-    <h2 class="section-title">Get in Touch</h2>
-    <form class="contact-form">
-        <input type="text" placeholder="Your Name" required>
-        <input type="email" placeholder="Your Email" required>
-        <textarea rows="5" placeholder="Your Message" required></textarea>
-        <button type="submit" class="btn">Send</button>
-    </form>
+<!-- References -->
+<section id="references" class="section" data-section="3">
+    <div class="section-fog"></div>
+    <div class="section-inner">
+        <h2 class="section-title">Awesome Coworkers</h2>
+        <p class="references-intro">
+            Talented people I've had the privilege of collaborating with.
+        </p>
+        <div class="references-grid">
+
+            <!-- Anil Tahmaz -->
+            <a href="https://aniltahmaz.com" target="_blank" rel="noopener noreferrer" class="reference-card">
+                <div class="reference-image">
+                    <img src="https://media.licdn.com/dms/image/v2/C4E03AQHBf3jTQ0QDoA/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1611150955292?e=2147483647&v=beta&t=cZ3k2oo_c3UBkRAj-p-xYWz7knrQCYmzztDWr-ACPEQ"
+                         alt="Anil Tahmaz"
+                         onerror="this.src='https://ui-avatars.com/api/?name=AT&size=200&background=111&color=00ffd5&bold=true'">
+                    <div class="reference-glow"></div>
+                </div>
+                <div class="reference-info">
+                    <h3>Anil Tahmaz</h3>
+                    <p class="reference-role">Creative Developer & Designer</p>
+                    <p class="reference-desc">
+                        Exceptional talent blending technical excellence with artistic vision.
+                        Creates immersive digital experiences that push boundaries.
+                    </p>
+                    <span class="reference-link">
+                        aniltahmaz.com
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg>
+                    </span>
+                </div>
+            </a>
+
+            <!-- Artem Shatailo -->
+            <a href="https://www.linkedin.com/in/artem-shatailo/" target="_blank" rel="noopener noreferrer" class="reference-card">
+                <div class="reference-image">
+                    <img src="https://media.licdn.com/dms/image/v2/D4E03AQGKmA8lxJjmhw/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1695393294633?e=2147483647&v=beta&t=8H_ow7FWLJO3B6bT_dJ6DWpKEsxhEuFgHkKR8XnSJ9E"
+                         alt="Artem Shatailo"
+                         onerror="this.src='https://ui-avatars.com/api/?name=AS&size=200&background=111&color=b388ff&bold=true'">
+                    <div class="reference-glow"></div>
+                </div>
+                <div class="reference-info">
+                    <h3>Artem Shatailo</h3>
+                    <p class="reference-role">Software Engineer</p>
+                    <p class="reference-desc">
+                        Skilled engineer with a passion for building robust, scalable systems.
+                        Brings clarity and precision to complex technical challenges.
+                    </p>
+                    <span class="reference-link">
+                        linkedin.com/in/artem-shatailo
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg>
+                    </span>
+                </div>
+            </a>
+
+            <!-- Additional reference -->
+            <a href="#" target="_blank" rel="noopener noreferrer" class="reference-card">
+                <div class="reference-image">
+                    <img src="https://ui-avatars.com/api/?name=JD&size=200&background=111&color=ff6b9d&bold=true"
+                         alt="Jane Doe">
+                    <div class="reference-glow"></div>
+                </div>
+                <div class="reference-info">
+                    <h3>Jane Doe</h3>
+                    <p class="reference-role">UX Lead & Strategist</p>
+                    <p class="reference-desc">
+                        Transforms complex problems into elegant, intuitive solutions
+                        with meticulous attention to detail.
+                    </p>
+                    <span class="reference-link">
+                        janedoe.design
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg>
+                    </span>
+                </div>
+            </a>
+
+        </div>
+    </div>
 </section>
 
-<!-- ========== FOOTER ========== -->
+<!-- Contact -->
+<section id="contact" class="section" data-section="4">
+    <div class="section-fog"></div>
+    <div class="section-inner">
+        <h2 class="section-title">Get in Touch</h2>
+        <form class="contact-form">
+            <input type="text" placeholder="Your Name" required>
+            <input type="email" placeholder="Your Email" required>
+            <textarea rows="5" placeholder="Your Message" required></textarea>
+            <button type="submit" class="btn">Send Message</button>
+        </form>
+    </div>
+</section>
+
 <footer>
-    <p>© 2026 Your Name</p>
+    <p>&copy; 2026 Your Name</p>
     <div class="footer-links">
         <a href="#">GitHub</a>
         <a href="#">LinkedIn</a>
@@ -131,8 +200,10 @@
     </div>
 </footer>
 
-<!-- ========== JAVASCRIPT ========== -->
-<script src="script.js"></script>
-
+<!-- Scripts loaded in order -->
+<script src="js/utils.js"></script>
+<script src="js/ribbons.js"></script>
+<script src="js/floating.js"></script>
+<script src="js/app.js"></script>
 </body>
 </html>
