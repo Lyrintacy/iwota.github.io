@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Your Name | Portfolio</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0f0f0f;
+            color: #f5f5f5;
+            line-height: 1.6;
+        }
+
+        header {
+            padding: 2rem 10%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            width: 100%;
+            background: rgba(15,15,15,0.9);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+        }
+
+        nav a {
+            margin-left: 2rem;
+            text-decoration: none;
+            color: #f5f5f5;
+            font-weight: 400;
+            transition: 0.3s;
+        }
+
+        nav a:hover {
+            color: #00ffd5;
+        }
+
+        section {
+            padding: 120px 10% 80px;
+            min-height: 100vh;
+        }
+
+        .hero {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .hero h2 {
+            font-size: 3rem;
+            font-weight: 800;
+        }
+
+        .hero span {
+            color: #00ffd5;
+        }
+
+        .hero p {
+            margin-top: 1rem;
+            max-width: 500px;
+            opacity: 0.8;
+        }
+
+        .btn {
+            display: inline-block;
+            margin-top: 2rem;
+            padding: 0.8rem 1.5rem;
+            background: #00ffd5;
+            color: #000;
+            font-weight: 600;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: 0.3s;
+        }
+
+        .btn:hover {
+            background: #00c2a3;
+        }
+
+        .projects {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .project-card {
+            background: #1a1a1a;
+            padding: 1.5rem;
+            border-radius: 10px;
+            transition: 0.3s;
+        }
+
+        .project-card:hover {
+            transform: translateY(-5px);
+            background: #222;
+        }
+
+        .project-card h3 {
+            margin-bottom: 0.5rem;
+        }
+
+        .contact form {
+            display: flex;
+            flex-direction: column;
+            max-width: 400px;
+        }
+
+        .contact input,
+        .contact textarea {
+            margin-bottom: 1rem;
+            padding: 0.8rem;
+            border: none;
+            border-radius: 6px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            background: #111;
+            opacity: 0.7;
+        }
+
+        @media(max-width: 768px) {
+            header {
+                padding: 1.5rem 5%;
+            }
+
+            section {
+                padding: 120px 5% 60px;
+            }
+
+            .hero h2 {
+                font-size: 2.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>YourName</h1>
+    <nav>
+        <a href="#home">Home</a>
+        <a href="#projects">Projects</a>
+        <a href="#contact">Contact</a>
+    </nav>
+</header>
+
+<section id="home" class="hero">
+    <h2>Hello, I'm <span>Your Name</span></h2>
+    <p>
+        I’m a developer/designer creating interactive, modern digital experiences.
+        I focus on clean design, performance, and strong visual identity.
+    </p>
+    <a href="#projects" class="btn">View My Work</a>
+</section>
+
+<section id="projects">
+    <h2>Projects</h2>
+    <br><br>
+    <div class="projects">
+        <div class="project-card">
+            <h3>Project One</h3>
+            <p>Short description of your project. What it does and what makes it interesting.</p>
+        </div>
+
+        <div class="project-card">
+            <h3>Project Two</h3>
+            <p>Short description of your project. Technologies used, purpose, etc.</p>
+        </div>
+
+        <div class="project-card">
+            <h3>Project Three</h3>
+            <p>Short description of your project. Explain impact or unique features.</p>
+        </div>
+    </div>
+</section>
+
+<section id="contact" class="contact">
+    <h2>Contact Me</h2>
+    <br>
+    <form>
+        <input type="text" placeholder="Your Name" required>
+        <input type="email" placeholder="Your Email" required>
+        <textarea rows="5" placeholder="Your Message" required></textarea>
+        <button class="btn" type="submit">Send Message</button>
+    </form>
+</section>
+
+<footer>
+    © 2026 Your Name. All rights reserved.
+</footer>
+
+</body>
+</html>
