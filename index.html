@@ -7,6 +7,7 @@
 
     <!-- Google Font -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
 
     <!-- External CSS -->
     <link rel="stylesheet" href="style.css">
@@ -15,7 +16,7 @@
 
 <!-- ========== INTERACTIVE BACKGROUNDS ========== -->
 <canvas id="stringCanvas"></canvas>
-<div class="string-background" id="stringBg"></div>
+<div class="floating-strings" id="floatingStrings"></div>
 <div class="cursor-glow" id="cursorGlow"></div>
 
 <!-- ========== SCROLL PROGRESS ========== -->
@@ -24,13 +25,13 @@
 <!-- ========== NAVIGATION ========== -->
 <header class="navbar">
     <div class="logo">YourName</div>
-    <nav>
+    <nav class="desktop-nav">
         <a href="#home">Home</a>
         <a href="#projects">Projects</a>
         <a href="#about">About</a>
         <a href="#contact">Contact</a>
     </nav>
-    <button class="mobile-menu-btn" id="mobileMenuBtn">
+    <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Menu">
         <span></span>
         <span></span>
         <span></span>
@@ -64,8 +65,7 @@
 <section id="projects" class="section" data-section="1">
     <h2 class="section-title">Selected Projects</h2>
     <div class="project-grid">
-
-        <div class="project-card" data-tilt>
+        <div class="project-card">
             <div class="project-number">01</div>
             <h3>Project One</h3>
             <p>Short description explaining what this project is about.</p>
@@ -74,8 +74,7 @@
                 <span>Node.js</span>
             </div>
         </div>
-
-        <div class="project-card" data-tilt>
+        <div class="project-card">
             <div class="project-number">02</div>
             <h3>Project Two</h3>
             <p>Short description explaining what this project is about.</p>
@@ -84,8 +83,7 @@
                 <span>Firebase</span>
             </div>
         </div>
-
-        <div class="project-card" data-tilt>
+        <div class="project-card">
             <div class="project-number">03</div>
             <h3>Project Three</h3>
             <p>Short description explaining what this project is about.</p>
@@ -94,7 +92,6 @@
                 <span>AI/ML</span>
             </div>
         </div>
-
     </div>
 </section>
 

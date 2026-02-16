@@ -1,90 +1,322 @@
 // ========== CONFIGURATION ==========
 const CONFIG = {
-    // Floating text strings
-    textStrings: {
-        count: 35,
+    // String chunks (the main visual strings)
+    chunks: {
+        count: 4, // Number of string chunks
+        thickCount: 2, // Thick strings per chunk
+        thinCount: 8, // Thin weaving strings per chunk
+        thickWidth: 3,
+        thinWidthMin: 0.3,
+        thinWidthMax: 1,
         interactionRadius: 150,
-        repelStrength: 80,
-        floatSpeed: 0.4,
+        interactionStrength: 60,
+        morphDuration: 1.5, // seconds to morph
+        morphThreshold: 0.15 // scroll amount to trigger morph
+    },
+    // Floating code strings
+    floatingStrings: {
+        count: 60, // More strings since more open space
+        interactionRadius: 120,
+        repelStrength: 70,
+        speed: 0.3,
         strings: [
-            'const create = () => {}',
-            'function design()',
-            '<div class="dream">',
-            'npm install creativity',
-            'git commit -m "magic"',
-            'console.log("Hello")',
-            '{ innovation: true }',
-            'import { success }',
-            'async/await dreams',
-            'return possibilities;',
-            '// TODO: be awesome',
-            'let future = now();',
-            'while(alive) { code() }',
-            'export default ideas',
-            'new Promise(resolve)',
-            'Array.from(passion)',
-            '.map(skill => grow)',
-            'try { succeed() }',
-            'catch(err) { learn }',
-            '/* creativity */',
-            '@keyframes infinite',
-            'transform: dreams;',
-            'opacity: visible;',
-            'z-index: top;',
-            'display: flex;',
-            'position: future;'
+            'const dream = await reality();',
+            'function create() { return magic; }',
+            'export default imagination;',
+            'import { future } from "now";',
+            'while(true) { innovate(); }',
+            'let success = try { hard } catch { up };',
+            '// TODO: change the world',
+            'if(passion) { achieve(); }',
+            'return new Promise(growth);',
+            'async function life() {}',
+            'const skills = [...learning];',
+            'Object.assign(self, knowledge);',
+            'Array.from(ideas).map(build);',
+            '<Component {...dreams} />',
+            'git push origin future',
+            'npm run create-awesome',
+            'SELECT * FROM opportunities',
+            'INSERT INTO portfolio VALUES',
+            '@keyframes success { 100% {} }',
+            'transform: translateY(up);',
+            'opacity: always-visible;',
+            'z-index: above-rest;',
+            'position: absolute-best;',
+            'display: flex-skills;',
+            '{ creativity: infinite }',
+            '[ design, develop, deploy ]',
+            'console.log("Hello World");',
+            'addEventListener("success")',
+            'requestAnimationFrame(grow)',
+            'new IntersectionObserver(learn)'
         ]
     },
-    // Visual string lines
-    stringLines: {
-        count: 12,
-        waveAmplitude: 30,
-        waveFrequency: 0.02,
-        interactionRadius: 120,
-        interactionStrength: 50
-    },
-    // Color themes for each section
-    themes: ['theme-cyan', 'theme-purple', 'theme-pink', 'theme-orange']
+    themes: ['theme-0', 'theme-1', 'theme-2', 'theme-3']
 };
 
-// ========== UTILITY FUNCTIONS ==========
-const lerp = (start, end, factor) => start + (end - start) * factor;
-const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
-const distance = (x1, y1, x2, y2) => Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+// ========== UTILITIES ==========
+const lerp = (a, b, t) => a + (b - a) * t;
+const clamp = (v, min, max) => Math.min(Math.max(v, min), max);
+const random = (min, max) => Math.random() * (max - min) + min;
+const distance = (x1, y1, x2, y2) => Math.hypot(x2 - x1, y2 - y1);
+const isTouchDevice = () => 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
-// ========== DEVICE DETECTION ==========
-const isTouchDevice = () => {
-    return ('ontouchstart' in window) || 
-           (navigator.maxTouchPoints > 0) || 
-           (navigator.msMaxTouchPoints > 0);
-};
+// ========== STRING CHUNK CLASS ==========
+class StringChunk {
+    constructor(index, canvas) {
+        this.index = index;
+        this.canvas = canvas;
+        this.ctx = canvas.getContext('2d');
+        
+        // Current and target states for morphing
+        this.current = this.generateConfig();
+        this.target = null;
+        this.morphProgress = 1;
+        this.morphing = false;
+        
+        this.time = random(0, Math.PI * 2);
+    }
+    
+    generateConfig() {
+        const w = this.canvas.width;
+        const h = this.canvas.height;
+        
+        // Random angle (not just horizontal)
+        const angle = random(-Math.PI * 0.4, Math.PI * 0.4);
+        
+        // Random center position
+        const centerX = random(w * 0.1, w * 0.9);
+        const centerY = random(h * 0.15, h * 0.85);
+        
+        // String length (long enough to cross screen)
+        const length = Math.max(w, h) * 1.8;
+        
+        // Generate thick strings (2 main anchors)
+        const thickStrings = [];
+        const spacing = random(25, 45);
+        
+        for (let i = 0; i < CONFIG.chunks.thickCount; i++) {
+            thickStrings.push({
+                offset: (i - 0.5) * spacing,
+                width: CONFIG.chunks.thickWidth + random(-0.5, 0.5),
+                waveAmp: random(8, 20),
+                waveFreq: random(0.003, 0.008),
+                phase: random(0, Math.PI * 2),
+                speed: random(0.3, 0.6)
+            });
+        }
+        
+        // Generate thin weaving strings
+        const thinStrings = [];
+        const thinCount = CONFIG.chunks.thinCount + Math.floor(random(-2, 3));
+        
+        for (let i = 0; i < thinCount; i++) {
+            thinStrings.push({
+                offset: random(-spacing * 1.5, spacing * 1.5),
+                width: random(CONFIG.chunks.thinWidthMin, CONFIG.chunks.thinWidthMax),
+                waveAmp: random(15, 40),
+                waveFreq: random(0.008, 0.02),
+                phase: random(0, Math.PI * 2),
+                speed: random(0.5, 1.2),
+                weaveAround: Math.floor(random(0, CONFIG.chunks.thickCount)) // Which thick string to weave around
+            });
+        }
+        
+        return {
+            centerX,
+            centerY,
+            angle,
+            length,
+            thickStrings,
+            thinStrings,
+            hue: random(170, 200) // Base cyan hue
+        };
+    }
+    
+    startMorph() {
+        if (this.morphing) return;
+        
+        this.target = this.generateConfig();
+        this.morphProgress = 0;
+        this.morphing = true;
+    }
+    
+    updateMorph(dt) {
+        if (!this.morphing || !this.target) return;
+        
+        this.morphProgress += dt / CONFIG.chunks.morphDuration;
+        
+        if (this.morphProgress >= 1) {
+            this.morphProgress = 1;
+            this.current = this.target;
+            this.target = null;
+            this.morphing = false;
+            return;
+        }
+        
+        // Smooth easing
+        const t = this.easeInOutCubic(this.morphProgress);
+        
+        // Interpolate main properties
+        this.current.centerX = lerp(this.current.centerX, this.target.centerX, t * 0.1);
+        this.current.centerY = lerp(this.current.centerY, this.target.centerY, t * 0.1);
+        this.current.angle = lerp(this.current.angle, this.target.angle, t * 0.1);
+        this.current.hue = lerp(this.current.hue, this.target.hue, t * 0.1);
+        
+        // Interpolate thick strings
+        this.current.thickStrings.forEach((str, i) => {
+            if (this.target.thickStrings[i]) {
+                str.offset = lerp(str.offset, this.target.thickStrings[i].offset, t * 0.1);
+                str.waveAmp = lerp(str.waveAmp, this.target.thickStrings[i].waveAmp, t * 0.1);
+            }
+        });
+        
+        // Interpolate thin strings
+        this.current.thinStrings.forEach((str, i) => {
+            if (this.target.thinStrings[i]) {
+                str.offset = lerp(str.offset, this.target.thinStrings[i].offset, t * 0.1);
+                str.waveAmp = lerp(str.waveAmp, this.target.thinStrings[i].waveAmp, t * 0.1);
+            }
+        });
+    }
+    
+    easeInOutCubic(t) {
+        return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    }
+    
+    update(dt, pointerX, pointerY, scrollProgress) {
+        this.time += dt;
+        this.updateMorph(dt);
+        
+        // Update hue based on scroll
+        const hueShift = scrollProgress * 80;
+        this.currentHue = this.current.hue + hueShift;
+    }
+    
+    draw(pointerX, pointerY) {
+        const cfg = this.current;
+        const ctx = this.ctx;
+        
+        ctx.save();
+        ctx.translate(cfg.centerX, cfg.centerY);
+        ctx.rotate(cfg.angle);
+        
+        // Draw thin strings first (behind thick ones)
+        cfg.thinStrings.forEach((str, i) => {
+            this.drawString(str, pointerX, pointerY, cfg, false, i);
+        });
+        
+        // Draw thick strings
+        cfg.thickStrings.forEach((str, i) => {
+            this.drawString(str, pointerX, pointerY, cfg, true, i);
+        });
+        
+        ctx.restore();
+    }
+    
+    drawString(str, pointerX, pointerY, cfg, isThick, index) {
+        const ctx = this.ctx;
+        const segments = 80;
+        const halfLength = cfg.length / 2;
+        
+        // Transform pointer to local coordinates
+        const cos = Math.cos(-cfg.angle);
+        const sin = Math.sin(-cfg.angle);
+        const localPointerX = (pointerX - cfg.centerX) * cos - (pointerY - cfg.centerY) * sin;
+        const localPointerY = (pointerX - cfg.centerX) * sin + (pointerY - cfg.centerY) * cos;
+        
+        ctx.beginPath();
+        
+        const points = [];
+        for (let i = 0; i <= segments; i++) {
+            const t = i / segments;
+            const x = -halfLength + t * cfg.length;
+            
+            // Base wave
+            let y = str.offset;
+            y += Math.sin(x * str.waveFreq + this.time * str.speed + str.phase) * str.waveAmp;
+            
+            // Secondary wave for complexity
+            if (!isThick) {
+                y += Math.sin(x * str.waveFreq * 2.5 + this.time * str.speed * 0.7) * (str.waveAmp * 0.4);
+            }
+            
+            // Pointer interaction
+            const dx = x - localPointerX;
+            const dy = y - localPointerY;
+            const dist = Math.hypot(dx, dy);
+            
+            if (dist < CONFIG.chunks.interactionRadius && pointerX > 0) {
+                const force = Math.pow(1 - dist / CONFIG.chunks.interactionRadius, 2);
+                const pushY = (dy / dist) * force * CONFIG.chunks.interactionStrength;
+                y += pushY;
+            }
+            
+            points.push({ x, y });
+        }
+        
+        // Draw smooth curve through points
+        ctx.moveTo(points[0].x, points[0].y);
+        
+        for (let i = 1; i < points.length - 1; i++) {
+            const xc = (points[i].x + points[i + 1].x) / 2;
+            const yc = (points[i].y + points[i + 1].y) / 2;
+            ctx.quadraticCurveTo(points[i].x, points[i].y, xc, yc);
+        }
+        
+        ctx.lineTo(points[points.length - 1].x, points[points.length - 1].y);
+        
+        // Styling
+        const alpha = isThick ? 0.35 : 0.15 + (str.width / CONFIG.chunks.thinWidthMax) * 0.1;
+        const hue = this.currentHue + (isThick ? 0 : index * 8);
+        
+        // Gradient along string
+        const gradient = ctx.createLinearGradient(-halfLength, 0, halfLength, 0);
+        gradient.addColorStop(0, `hsla(${hue}, 100%, 65%, 0)`);
+        gradient.addColorStop(0.15, `hsla(${hue}, 100%, 65%, ${alpha * 0.7})`);
+        gradient.addColorStop(0.5, `hsla(${hue}, 100%, 70%, ${alpha})`);
+        gradient.addColorStop(0.85, `hsla(${hue}, 100%, 65%, ${alpha * 0.7})`);
+        gradient.addColorStop(1, `hsla(${hue}, 100%, 65%, 0)`);
+        
+        ctx.strokeStyle = gradient;
+        ctx.lineWidth = str.width;
+        ctx.lineCap = 'round';
+        ctx.stroke();
+        
+        // Glow effect for thick strings
+        if (isThick) {
+            ctx.strokeStyle = `hsla(${hue}, 100%, 70%, ${alpha * 0.2})`;
+            ctx.lineWidth = str.width + 8;
+            ctx.stroke();
+        }
+    }
+}
 
-// ========== FLOATING TEXT STRING CLASS ==========
-class FloatingTextString {
+// ========== FLOATING CODE STRING CLASS ==========
+class FloatingCodeString {
     constructor(container, text, index, total) {
         this.container = container;
         this.text = text;
         this.index = index;
         
-        // Position
-        this.x = Math.random() * window.innerWidth;
-        this.y = (index / total) * window.innerHeight * 1.5;
+        this.x = random(0, window.innerWidth);
+        this.y = random(0, window.innerHeight);
         
-        // Velocity
-        this.vx = (Math.random() - 0.5) * CONFIG.textStrings.floatSpeed;
-        this.vy = (Math.random() - 0.5) * CONFIG.textStrings.floatSpeed;
+        this.vx = (random(-1, 1)) * CONFIG.floatingStrings.speed;
+        this.vy = (random(-1, 1)) * CONFIG.floatingStrings.speed;
         
-        // Properties
-        this.baseOpacity = 0.08 + Math.random() * 0.12;
-        this.depth = Math.random(); // For parallax
+        this.baseOpacity = random(0.12, 0.25);
+        this.depth = random(0, 1);
         
-        // Create element
         this.element = document.createElement('div');
-        this.element.className = 'floating-string';
+        this.element.className = 'floating-code';
         this.element.textContent = text;
-        this.element.style.left = `${this.x}px`;
-        this.element.style.top = `${this.y}px`;
-        this.element.style.opacity = this.baseOpacity;
+        this.element.style.cssText = `
+            left: ${this.x}px;
+            top: ${this.y}px;
+            opacity: ${this.baseOpacity};
+        `;
         
         container.appendChild(this.element);
     }
@@ -92,34 +324,36 @@ class FloatingTextString {
     update(pointerX, pointerY, scrollY) {
         const dx = this.x - pointerX;
         const dy = this.y - pointerY;
-        const dist = Math.sqrt(dx * dx + dy * dy);
+        const dist = Math.hypot(dx, dy);
         
-        if (dist < CONFIG.textStrings.interactionRadius && pointerX > 0) {
+        if (dist < CONFIG.floatingStrings.interactionRadius && pointerX > 0) {
             this.element.classList.add('active');
             
-            const force = Math.pow((CONFIG.textStrings.interactionRadius - dist) / CONFIG.textStrings.interactionRadius, 1.5);
+            const force = Math.pow(1 - dist / CONFIG.floatingStrings.interactionRadius, 1.5);
             const angle = Math.atan2(dy, dx);
             
-            const repelX = Math.cos(angle) * force * CONFIG.textStrings.repelStrength;
-            const repelY = Math.sin(angle) * force * CONFIG.textStrings.repelStrength;
-            const rotation = force * 10 * (this.index % 2 ? 1 : -1);
+            const repelX = Math.cos(angle) * force * CONFIG.floatingStrings.repelStrength;
+            const repelY = Math.sin(angle) * force * CONFIG.floatingStrings.repelStrength;
+            const scale = 1 + force * 0.25;
+            const rotate = force * 8 * (this.index % 2 ? 1 : -1);
             
-            this.element.style.transform = `translate(${repelX}px, ${repelY}px) scale(${1 + force * 0.2}) rotate(${rotation}deg)`;
+            this.element.style.transform = `translate(${repelX}px, ${repelY}px) scale(${scale}) rotate(${rotate}deg)`;
         } else {
             this.element.classList.remove('active');
             
-            // Float movement
+            // Float around
             this.x += this.vx;
             this.y += this.vy;
             
-            // Wrap around
-            if (this.x < -100) this.x = window.innerWidth + 50;
-            if (this.x > window.innerWidth + 100) this.x = -50;
-            if (this.y < -50) this.y = window.innerHeight + 50;
-            if (this.y > window.innerHeight + 50) this.y = -50;
+            // Wrap around screen
+            const buffer = 150;
+            if (this.x < -buffer) this.x = window.innerWidth + buffer / 2;
+            if (this.x > window.innerWidth + buffer) this.x = -buffer / 2;
+            if (this.y < -buffer) this.y = window.innerHeight + buffer / 2;
+            if (this.y > window.innerHeight + buffer) this.y = -buffer / 2;
             
             // Parallax
-            const parallax = scrollY * (0.03 + this.depth * 0.07);
+            const parallax = scrollY * (0.02 + this.depth * 0.06);
             
             this.element.style.left = `${this.x}px`;
             this.element.style.top = `${this.y}px`;
@@ -127,62 +361,47 @@ class FloatingTextString {
         }
     }
     
-    handleTouch() {
+    touch() {
         this.element.classList.add('touched');
-        setTimeout(() => this.element.classList.remove('touched'), 500);
+        setTimeout(() => this.element.classList.remove('touched'), 600);
     }
 }
 
-// ========== CANVAS STRING LINES CLASS ==========
-class StringLinesCanvas {
+// ========== MAIN CANVAS RENDERER ==========
+class StringCanvas {
     constructor(canvas) {
         this.canvas = canvas;
         this.ctx = canvas.getContext('2d');
-        this.strings = [];
+        this.chunks = [];
+        
         this.pointerX = -1000;
         this.pointerY = -1000;
         this.scrollProgress = 0;
-        this.time = 0;
+        this.lastScrollProgress = 0;
+        this.lastTime = performance.now();
         
         this.resize();
-        this.createStrings();
+        this.createChunks();
         
         window.addEventListener('resize', () => this.resize());
     }
     
     resize() {
-        this.canvas.width = window.innerWidth;
-        this.canvas.height = window.innerHeight;
-        this.createStrings();
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        this.canvas.width = window.innerWidth * dpr;
+        this.canvas.height = window.innerHeight * dpr;
+        this.canvas.style.width = window.innerWidth + 'px';
+        this.canvas.style.height = window.innerHeight + 'px';
+        this.ctx.scale(dpr, dpr);
+        
+        // Recreate chunks on resize
+        this.createChunks();
     }
     
-    createStrings() {
-        this.strings = [];
-        const spacing = this.canvas.height / (CONFIG.stringLines.count + 1);
-        
-        for (let i = 0; i < CONFIG.stringLines.count; i++) {
-            const y = spacing * (i + 1);
-            const points = [];
-            const segments = Math.floor(this.canvas.width / 20);
-            
-            for (let j = 0; j <= segments; j++) {
-                points.push({
-                    x: (this.canvas.width / segments) * j,
-                    baseY: y,
-                    y: y,
-                    vy: 0
-                });
-            }
-            
-            this.strings.push({
-                points,
-                baseY: y,
-                phase: Math.random() * Math.PI * 2,
-                amplitude: 15 + Math.random() * 20,
-                frequency: 0.008 + Math.random() * 0.01,
-                speed: 0.5 + Math.random() * 0.5,
-                hue: 175 + Math.random() * 20 // Cyan-ish
-            });
+    createChunks() {
+        this.chunks = [];
+        for (let i = 0; i < CONFIG.chunks.count; i++) {
+            this.chunks.push(new StringChunk(i, this.canvas));
         }
     }
     
@@ -192,128 +411,46 @@ class StringLinesCanvas {
     }
     
     updateScroll(progress) {
+        // Check if scrolled enough to morph
+        const scrollDelta = Math.abs(progress - this.lastScrollProgress);
+        
+        if (scrollDelta > CONFIG.chunks.morphThreshold) {
+            // Morph a random chunk
+            const chunkIndex = Math.floor(random(0, this.chunks.length));
+            this.chunks[chunkIndex].startMorph();
+            this.lastScrollProgress = progress;
+        }
+        
         this.scrollProgress = progress;
     }
     
-    update() {
-        this.time += 0.016; // ~60fps
+    animate() {
+        const now = performance.now();
+        const dt = (now - this.lastTime) / 1000;
+        this.lastTime = now;
         
-        // Color shift based on scroll
-        const hueShift = this.scrollProgress * 120; // Cycle through colors
-        
-        this.strings.forEach((string, stringIndex) => {
-            // Update configuration based on scroll
-            const scrollFactor = 1 + this.scrollProgress * 0.5;
-            const currentAmplitude = string.amplitude * scrollFactor;
-            const currentFrequency = string.frequency * (1 + this.scrollProgress * 0.3);
-            
-            string.points.forEach((point, pointIndex) => {
-                // Wave motion
-                const wave = Math.sin(
-                    point.x * currentFrequency + 
-                    this.time * string.speed + 
-                    string.phase
-                ) * currentAmplitude;
-                
-                // Second wave for complexity
-                const wave2 = Math.sin(
-                    point.x * currentFrequency * 2 + 
-                    this.time * string.speed * 0.7 + 
-                    string.phase + Math.PI
-                ) * (currentAmplitude * 0.3);
-                
-                // Target Y with waves
-                let targetY = string.baseY + wave + wave2;
-                
-                // Pointer interaction
-                const dx = point.x - this.pointerX;
-                const dy = point.y - this.pointerY;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-                
-                if (dist < CONFIG.stringLines.interactionRadius) {
-                    const force = (CONFIG.stringLines.interactionRadius - dist) / CONFIG.stringLines.interactionRadius;
-                    const push = force * CONFIG.stringLines.interactionStrength;
-                    
-                    // Push away from cursor
-                    if (dy > 0) {
-                        targetY += push;
-                    } else {
-                        targetY -= push;
-                    }
-                }
-                
-                // Smooth movement
-                point.vy += (targetY - point.y) * 0.1;
-                point.vy *= 0.85; // Damping
-                point.y += point.vy;
-            });
-            
-            // Update hue based on scroll
-            string.hue = 175 + hueShift + stringIndex * 5;
-        });
-    }
-    
-    draw() {
+        // Clear canvas
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
-        this.strings.forEach((string, index) => {
-            // Calculate opacity based on position
-            const opacity = 0.15 + Math.sin(this.time + index) * 0.05;
-            
-            // Draw string
-            this.ctx.beginPath();
-            this.ctx.moveTo(string.points[0].x, string.points[0].y);
-            
-            // Use quadratic curves for smoothness
-            for (let i = 1; i < string.points.length - 1; i++) {
-                const xc = (string.points[i].x + string.points[i + 1].x) / 2;
-                const yc = (string.points[i].y + string.points[i + 1].y) / 2;
-                this.ctx.quadraticCurveTo(string.points[i].x, string.points[i].y, xc, yc);
-            }
-            
-            // Last point
-            const last = string.points.length - 1;
-            this.ctx.lineTo(string.points[last].x, string.points[last].y);
-            
-            // Style
-            const gradient = this.ctx.createLinearGradient(0, 0, this.canvas.width, 0);
-            gradient.addColorStop(0, `hsla(${string.hue}, 100%, 70%, 0)`);
-            gradient.addColorStop(0.2, `hsla(${string.hue}, 100%, 70%, ${opacity})`);
-            gradient.addColorStop(0.5, `hsla(${string.hue + 20}, 100%, 70%, ${opacity * 1.5})`);
-            gradient.addColorStop(0.8, `hsla(${string.hue}, 100%, 70%, ${opacity})`);
-            gradient.addColorStop(1, `hsla(${string.hue}, 100%, 70%, 0)`);
-            
-            this.ctx.strokeStyle = gradient;
-            this.ctx.lineWidth = 1.5 + Math.sin(this.time * 2 + index) * 0.5;
-            this.ctx.lineCap = 'round';
-            this.ctx.stroke();
-            
-            // Draw glow
-            this.ctx.strokeStyle = `hsla(${string.hue}, 100%, 70%, ${opacity * 0.3})`;
-            this.ctx.lineWidth = 6;
-            this.ctx.stroke();
+        // Update and draw chunks
+        this.chunks.forEach(chunk => {
+            chunk.update(dt, this.pointerX, this.pointerY, this.scrollProgress);
+            chunk.draw(this.pointerX, this.pointerY);
         });
-    }
-    
-    animate() {
-        this.update();
-        this.draw();
     }
 }
 
 // ========== MAIN APPLICATION ==========
-class InteractivePortfolio {
+class Portfolio {
     constructor() {
-        // Elements
-        this.stringBg = document.getElementById('stringBg');
-        this.cursorGlow = document.getElementById('cursorGlow');
         this.canvas = document.getElementById('stringCanvas');
+        this.floatingContainer = document.getElementById('floatingStrings');
+        this.cursorGlow = document.getElementById('cursorGlow');
         this.scrollProgress = document.getElementById('scrollProgress');
         this.mobileMenuBtn = document.getElementById('mobileMenuBtn');
         this.mobileNav = document.getElementById('mobileNav');
         
-        // State
-        this.textStrings = [];
+        this.floatingStrings = [];
         this.pointerX = -1000;
         this.pointerY = -1000;
         this.scrollY = 0;
@@ -322,93 +459,95 @@ class InteractivePortfolio {
         this.isRunning = true;
         this.isMobile = isTouchDevice();
         
-        // Initialize
         this.init();
     }
     
     init() {
-        // Create floating text strings
-        this.createTextStrings();
-        
-        // Create canvas string lines
+        // Create string canvas
         if (this.canvas) {
-            this.stringLines = new StringLinesCanvas(this.canvas);
+            this.stringCanvas = new StringCanvas(this.canvas);
         }
         
-        // Setup event listeners
-        this.setupEventListeners();
+        // Create floating strings
+        this.createFloatingStrings();
+        
+        // Setup events
+        this.setupEvents();
         
         // Start animation
         this.animate();
         
-        console.log(`✨ Portfolio initialized (${this.isMobile ? 'Touch' : 'Desktop'} mode)`);
+        console.log(`✨ Portfolio ready (${this.isMobile ? 'Touch' : 'Desktop'})`);
     }
     
-    createTextStrings() {
-        if (!this.stringBg) return;
+    createFloatingStrings() {
+        if (!this.floatingContainer) return;
         
         const count = this.isMobile ? 
-            Math.floor(CONFIG.textStrings.count * 0.6) : 
-            CONFIG.textStrings.count;
+            Math.floor(CONFIG.floatingStrings.count * 0.5) : 
+            CONFIG.floatingStrings.count;
         
         for (let i = 0; i < count; i++) {
-            const text = CONFIG.textStrings.strings[
-                Math.floor(Math.random() * CONFIG.textStrings.strings.length)
+            const text = CONFIG.floatingStrings.strings[
+                Math.floor(random(0, CONFIG.floatingStrings.strings.length))
             ];
-            this.textStrings.push(
-                new FloatingTextString(this.stringBg, text, i, count)
+            this.floatingStrings.push(
+                new FloatingCodeString(this.floatingContainer, text, i, count)
             );
         }
     }
     
-    setupEventListeners() {
-        // ===== POINTER EVENTS =====
+    setupEvents() {
+        // Pointer events
         if (this.isMobile) {
-            // Touch events
-            document.addEventListener('touchstart', (e) => this.handleTouch(e), { passive: true });
-            document.addEventListener('touchmove', (e) => this.handleTouch(e), { passive: true });
+            document.addEventListener('touchstart', e => this.handleTouch(e), { passive: true });
+            document.addEventListener('touchmove', e => this.handleTouch(e), { passive: true });
             document.addEventListener('touchend', () => this.handleTouchEnd());
         } else {
-            // Mouse events
-            document.addEventListener('mousemove', (e) => this.handleMouse(e));
+            document.addEventListener('mousemove', e => this.handleMouse(e));
             document.addEventListener('mouseleave', () => this.handleMouseLeave());
         }
         
-        // ===== SCROLL EVENTS =====
+        // Scroll
         window.addEventListener('scroll', () => this.handleScroll(), { passive: true });
         
-        // ===== RESIZE =====
-        window.addEventListener('resize', () => this.handleResize());
-        
-        // ===== VISIBILITY =====
+        // Visibility
         document.addEventListener('visibilitychange', () => {
             this.isRunning = !document.hidden;
-            if (this.isRunning) this.animate();
+            if (this.isRunning) {
+                this.stringCanvas.lastTime = performance.now();
+                this.animate();
+            }
         });
         
-        // ===== MOBILE MENU =====
+        // Mobile menu
         if (this.mobileMenuBtn) {
-            this.mobileMenuBtn.addEventListener('click', () => this.toggleMobileMenu());
+            this.mobileMenuBtn.addEventListener('click', () => {
+                this.mobileMenuBtn.classList.toggle('active');
+                this.mobileNav.classList.toggle('active');
+            });
         }
         
-        // Close mobile menu on link click
         document.querySelectorAll('.mobile-nav a').forEach(link => {
-            link.addEventListener('click', () => this.closeMobileMenu());
+            link.addEventListener('click', () => {
+                this.mobileMenuBtn.classList.remove('active');
+                this.mobileNav.classList.remove('active');
+            });
         });
         
-        // ===== SMOOTH SCROLL =====
+        // Smooth scroll
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', (e) => {
+            anchor.addEventListener('click', e => {
                 e.preventDefault();
                 const target = document.querySelector(anchor.getAttribute('href'));
                 if (target) {
-                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    target.scrollIntoView({ behavior: 'smooth' });
                 }
             });
         });
         
-        // ===== FORM HANDLING =====
-        this.setupFormHandling();
+        // Form
+        this.setupForm();
     }
     
     handleMouse(e) {
@@ -421,8 +560,8 @@ class InteractivePortfolio {
             this.cursorGlow.classList.add('visible');
         }
         
-        if (this.stringLines) {
-            this.stringLines.updatePointer(e.clientX, e.clientY);
+        if (this.stringCanvas) {
+            this.stringCanvas.updatePointer(e.clientX, e.clientY);
         }
     }
     
@@ -434,8 +573,8 @@ class InteractivePortfolio {
             this.cursorGlow.classList.remove('visible');
         }
         
-        if (this.stringLines) {
-            this.stringLines.updatePointer(-1000, -1000);
+        if (this.stringCanvas) {
+            this.stringCanvas.updatePointer(-1000, -1000);
         }
     }
     
@@ -452,24 +591,20 @@ class InteractivePortfolio {
             this.cursorGlow.classList.add('visible');
         }
         
-        if (this.stringLines) {
-            this.stringLines.updatePointer(touch.clientX, touch.clientY);
+        if (this.stringCanvas) {
+            this.stringCanvas.updatePointer(touch.clientX, touch.clientY);
         }
         
-        // Trigger touch animation on nearby strings
-        this.textStrings.forEach(string => {
-            const dx = string.x - touch.clientX;
-            const dy = string.y - touch.clientY;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            
-            if (dist < CONFIG.textStrings.interactionRadius * 1.5) {
-                string.handleTouch();
+        // Trigger touch on nearby floating strings
+        this.floatingStrings.forEach(str => {
+            const dist = distance(str.x, str.y, touch.clientX, touch.clientY);
+            if (dist < CONFIG.floatingStrings.interactionRadius * 1.5) {
+                str.touch();
             }
         });
     }
     
     handleTouchEnd() {
-        // Delay hiding to allow animation
         setTimeout(() => {
             this.pointerX = -1000;
             this.pointerY = -1000;
@@ -478,30 +613,29 @@ class InteractivePortfolio {
                 this.cursorGlow.classList.remove('visible');
             }
             
-            if (this.stringLines) {
-                this.stringLines.updatePointer(-1000, -1000);
+            if (this.stringCanvas) {
+                this.stringCanvas.updatePointer(-1000, -1000);
             }
-        }, 100);
+        }, 150);
     }
     
     handleScroll() {
         this.scrollY = window.scrollY;
         
-        // Calculate scroll percentage
         const docHeight = document.documentElement.scrollHeight - window.innerHeight;
         this.scrollPercent = clamp(this.scrollY / docHeight, 0, 1);
         
-        // Update scroll progress bar
+        // Update progress bar
         if (this.scrollProgress) {
             this.scrollProgress.style.width = `${this.scrollPercent * 100}%`;
         }
         
-        // Update string lines
-        if (this.stringLines) {
-            this.stringLines.updateScroll(this.scrollPercent);
+        // Update string canvas
+        if (this.stringCanvas) {
+            this.stringCanvas.updateScroll(this.scrollPercent);
         }
         
-        // Update theme based on scroll position
+        // Update theme
         this.updateTheme();
     }
     
@@ -517,40 +651,17 @@ class InteractivePortfolio {
         });
         
         if (currentSection !== this.currentTheme) {
-            // Remove all themes
-            CONFIG.themes.forEach(theme => document.body.classList.remove(theme));
-            
-            // Add new theme
+            CONFIG.themes.forEach(t => document.body.classList.remove(t));
             document.body.classList.add(CONFIG.themes[currentSection % CONFIG.themes.length]);
             this.currentTheme = currentSection;
         }
     }
     
-    handleResize() {
-        // Redistribute text strings
-        this.textStrings.forEach((string, index) => {
-            string.x = Math.random() * window.innerWidth;
-            string.y = (index / this.textStrings.length) * window.innerHeight;
-            string.element.style.left = `${string.x}px`;
-            string.element.style.top = `${string.y}px`;
-        });
-    }
-    
-    toggleMobileMenu() {
-        this.mobileMenuBtn.classList.toggle('active');
-        this.mobileNav.classList.toggle('active');
-    }
-    
-    closeMobileMenu() {
-        this.mobileMenuBtn.classList.remove('active');
-        this.mobileNav.classList.remove('active');
-    }
-    
-    setupFormHandling() {
+    setupForm() {
         const form = document.querySelector('.contact-form');
         if (!form) return;
         
-        form.addEventListener('submit', (e) => {
+        form.addEventListener('submit', e => {
             e.preventDefault();
             
             const btn = form.querySelector('.btn');
@@ -559,10 +670,8 @@ class InteractivePortfolio {
             btn.textContent = 'Sending...';
             btn.disabled = true;
             
-            // Simulate sending
             setTimeout(() => {
-                btn.textContent = 'Sent! ✓';
-                btn.style.background = 'var(--primary)';
+                btn.textContent = '✓ Sent';
                 form.reset();
                 
                 setTimeout(() => {
@@ -576,15 +685,15 @@ class InteractivePortfolio {
     animate() {
         if (!this.isRunning) return;
         
-        // Update text strings
-        this.textStrings.forEach(string => {
-            string.update(this.pointerX, this.pointerY, this.scrollY);
-        });
-        
-        // Update canvas string lines
-        if (this.stringLines) {
-            this.stringLines.animate();
+        // Update canvas strings
+        if (this.stringCanvas) {
+            this.stringCanvas.animate();
         }
+        
+        // Update floating strings
+        this.floatingStrings.forEach(str => {
+            str.update(this.pointerX, this.pointerY, this.scrollY);
+        });
         
         requestAnimationFrame(() => this.animate());
     }
@@ -592,5 +701,5 @@ class InteractivePortfolio {
 
 // ========== INITIALIZE ==========
 document.addEventListener('DOMContentLoaded', () => {
-    new InteractivePortfolio();
+    new Portfolio();
 });
