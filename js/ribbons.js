@@ -1,56 +1,54 @@
-window.__stringNodes = [];
-
+/* ═══════ LIVING STRING — gentler cursor response ═══════ */
 class LivingString {
     constructor(stream, index, totalStrings) {
         this.stream = stream;
         this.index = index;
         this.totalStrings = totalStrings;
         this.colorIdx = (index / totalStrings) * PRIDE.length + rand(-0.3, 0.3);
-        const spread = 60;
+        var spread = 45; // tighter spread
         this.homeOffset = (index - (totalStrings - 1) / 2) * (spread * 2 / totalStrings);
-        this.homeOffset += rand(-8, 8);
+        this.homeOffset += rand(-6, 6);
 
         this.crossings = [];
-        const crossCount = randI(1, 3);
-        for (let c = 0; c < crossCount; c++) {
+        var crossCount = randI(1, 2);
+        for (var c = 0; c < crossCount; c++) {
             this.crossings.push({
                 pos: rand(0.15, 0.85),
                 width: rand(0.08, 0.2),
-                amp: rand(40, 80) * (Math.random() > 0.5 ? 1 : -1)
+                amp: rand(25, 55) * (Math.random() > 0.5 ? 1 : -1) // reduced
             });
         }
 
         this.waves = [];
-        const waveCount = randI(3, 5);
-        for (let w = 0; w < waveCount; w++) {
+        var waveCount = randI(3, 4);
+        for (var w = 0; w < waveCount; w++) {
             this.waves.push({
-                amp: w === 0 ? rand(20, 45) : rand(3, 15 - w * 2),
-                freq: rand(0.006 + w * 0.008, 0.015 + w * 0.015),
+                amp: w === 0 ? rand(12, 30) : rand(2, Math.max(1, 10 - w * 2)), // smaller amps
+                freq: rand(0.004 + w * 0.005, 0.01 + w * 0.01), // lower freq
                 phase: rand(0, Math.PI * 2),
-                speed: rand(0.1 + w * 0.08, 0.25 + w * 0.12)
+                speed: rand(0.06 + w * 0.04, 0.15 + w * 0.08) // slower
             });
         }
 
         this.travelDir = Math.random() > 0.5 ? 1 : -1;
-        this.travelSpeed = rand(0.25, 0.7);
-        // make base widths generally thicker so ribbons are more visible
-        this.baseWidth = rand(2, 7);
+        this.travelSpeed = rand(0.15, 0.4); // slower travel
+        this.baseWidth = rand(1, 4); // thinner
         this.widthWavePhase = rand(0.5, Math.PI * 2);
-        this.widthWaveFreq = rand(0.015, 0.04);
-        this.opacityMin = rand(0.25, );
-        this.opacityMax = rand(0.89, 1.5);
+        this.widthWaveFreq = rand(0.01, 0.03);
+        this.opacityMin = rand(0.2, 0.4);
+        this.opacityMax = rand(0.7, 1.1); // less max
         this.opacityPhase = rand(1, Math.PI * 2);
-        this.opacitySpeed = rand(0.3, 0.7);
-        this.opacitySpeed2 = rand(0.8, 1.5);
+        this.opacitySpeed = rand(0.2, 0.5);
+        this.opacitySpeed2 = rand(0.5, 1.0);
         this.breathePhase = rand(0, Math.PI * 2);
-        this.breatheSpeed = rand(0.45, 1);
-        this.shimmerSpeed = rand(0.6, 1.8) * this.travelDir;
-        this.shimmerFreq = rand(0.05, 0.1);
-        this.excitement = 0.5;
-        this.smoothExcitement = 0.1;
-        this.colorDriftAmp = rand(0.15, 0.5);
-        this.colorDriftSpeed = rand(0.05, 0.12);
-        this.independence = rand(0.75, 0.9);
+        this.breatheSpeed = rand(0.3, 0.7);
+        this.shimmerSpeed = rand(0.4, 1.2) * this.travelDir;
+        this.shimmerFreq = rand(0.03, 0.07);
+        this.excitement = 0;
+        this.smoothExcitement = 0;
+        this.colorDriftAmp = rand(0.1, 0.35);
+        this.colorDriftSpeed = rand(0.03, 0.08);
+        this.independence = rand(0.5, 0.7); // less independent push
         this.currentBreath = 0.5;
         this.currentPulse = 0.15;
         this.currentColorDrift = 0;
@@ -58,185 +56,140 @@ class LivingString {
     }
 
     update(dt, time, maxSqueeze) {
-        const b1 = Math.sin(time * this.breatheSpeed + this.breathePhase);
-        const b2 = Math.sin(time * this.breatheSpeed * 1.7 + this.breathePhase * 0.6) * 0.3;
+        var b1 = Math.sin(time * this.breatheSpeed + this.breathePhase);
+        var b2 = Math.sin(time * this.breatheSpeed * 1.7 + this.breathePhase * 0.6) * 0.3;
         this.currentBreath = (b1 + b2) * 0.5 + 0.5;
-        const pulse1 = Math.sin(time * this.opacitySpeed + this.opacityPhase);
-        const pulse2 = Math.sin(time * this.opacitySpeed2 + this.opacityPhase * 1.3) * 0.3;
-        const pulse3 = Math.sin(time * this.opacitySpeed * 0.4 + this.opacityPhase * 2.1) * 0.25;
-        this.currentPulse = (pulse1 + pulse2 + pulse3) / 1.55 * 0.5 + 0.5;
-        const exciteRate = maxSqueeze > this.excitement ? 0.15 : 0.04;
+        var p1 = Math.sin(time * this.opacitySpeed + this.opacityPhase);
+        var p2 = Math.sin(time * this.opacitySpeed2 + this.opacityPhase * 1.3) * 0.3;
+        var p3 = Math.sin(time * this.opacitySpeed * 0.4 + this.opacityPhase * 2.1) * 0.25;
+        this.currentPulse = (p1 + p2 + p3) / 1.55 * 0.5 + 0.5;
+        // gentler excitement ramp
+        var exciteRate = maxSqueeze > this.excitement ? 0.06 : 0.02;
         this.excitement = lerp(this.excitement, maxSqueeze, exciteRate);
-        this.smoothExcitement = lerp(this.smoothExcitement, this.excitement, 0.05);
+        this.smoothExcitement = lerp(this.smoothExcitement, this.excitement, 0.03);
         this.currentColorDrift = Math.sin(time * this.colorDriftSpeed + this.breathePhase) * this.colorDriftAmp;
     }
 
     getOffset(i, time, squeeze, totalPts) {
-        const t = i / totalPts;
-        let offset = this.homeOffset;
-        // apply local 'friction' when cursor overlaps: reduce wave amplitude/speed and travel
-        const localS = clamp(squeeze, 0, 1);
-        const dragMul = 1 - localS * 0.92; // near-cursor movement is heavily damped
-        const travel = time * this.travelSpeed * this.travelDir * dragMul;
-        for (const wave of this.waves) {
-            const amp = wave.amp * (1 - localS * 0.9);
-            const speed = wave.speed * (1 - localS * 0.6);
-            offset += Math.sin(i * wave.freq + time * speed + wave.phase + travel * 0.08) * amp;
+        var offset = this.homeOffset;
+        var localS = clamp(squeeze, 0, 1);
+        var dragMul = 1 - localS * 0.7; // less friction
+        var travel = time * this.travelSpeed * this.travelDir * dragMul;
+        for (var w = 0; w < this.waves.length; w++) {
+            var wave = this.waves[w];
+            var amp = wave.amp * (1 - localS * 0.5); // less dampening
+            offset += Math.sin(i * wave.freq + time * wave.speed * (1 - localS * 0.3) + wave.phase + travel * 0.05) * amp;
         }
-        for (const cross of this.crossings) {
-            const d = Math.abs(t - cross.pos);
+        for (var c = 0; c < this.crossings.length; c++) {
+            var cross = this.crossings[c];
+            var d = Math.abs(i / totalPts - cross.pos);
             if (d < cross.width) {
-                const crossT = 1 - d / cross.width;
-                offset += Math.sin(time * 0.2 + this.breathePhase) * cross.amp * smoothstep(crossT);
+                offset += Math.sin(time * 0.15 + this.breathePhase) * cross.amp * smoothstep(1 - d / cross.width);
             }
         }
-        offset *= (0.85 + this.currentBreath * 0.25);
+        offset *= (0.9 + this.currentBreath * 0.15);
         if (this.smoothExcitement > 0.05) {
-            // reduce excitement wobble when cursor is overlapping (feels like friction)
-            offset += Math.sin(i * 0.06 + time * 2.5 + this.breathePhase) * 18 * this.smoothExcitement * (1 - localS * 0.75);
+            offset += Math.sin(i * 0.04 + time * 1.5 + this.breathePhase) * 8 * this.smoothExcitement * (1 - localS * 0.5);
         }
+        // gentler cursor push
         if (squeeze > 0) {
-            const dir = offset > 0 ? 1 : -1;
-            offset += (Math.abs(offset) * 0.5 + 20) * squeeze * dir * this.independence;
+            var dir = offset > 0 ? 1 : -1;
+            offset += (Math.abs(offset) * 0.25 + 8) * squeeze * dir * this.independence;
         }
         return offset;
     }
 
     getWidth(i, time, squeeze, totalPts) {
-        const t = i / totalPts;
-        const widthWave = Math.sin(i * this.widthWaveFreq + time * 0.25 + this.widthWavePhase);
-        let width = this.baseWidth * (0.7 + widthWave * 0.3);
-        width *= (0.8 + this.currentPulse * 0.4);
-        width *= (0.35 + Math.sin(t * Math.PI) * 0.65);
-        width *= (1 + this.smoothExcitement * 0.6);
-        // make width more responsive to cursor squeeze
-        width *= (1 + squeeze * 0.6);
+        var t = i / totalPts;
+        var ww = Math.sin(i * this.widthWaveFreq + time * 0.2 + this.widthWavePhase);
+        var width = this.baseWidth * (0.75 + ww * 0.25);
+        width *= (0.85 + this.currentPulse * 0.3);
+        width *= (0.4 + Math.sin(t * Math.PI) * 0.6);
+        width *= (1 + this.smoothExcitement * 0.3);
+        width *= (1 + squeeze * 0.2); // less width change on hover
         return Math.max(width, 0.3);
     }
 
     getOpacity(i, time, squeeze, totalPts) {
-        const t = i / totalPts;
-        let baseOpacity = lerp(this.opacityMin, this.opacityMax,     this.currentPulse);
-        baseOpacity *= (0.15 + Math.sin(t * Math.PI) * 0.85);
-        const shimmer = Math.sin(i * this.shimmerFreq + time * this.shimmerSpeed + this.opacityPhase);
-        baseOpacity *= (0.65 + shimmer * 0.35 + Math.abs(shimmer) * 0.12);
-        baseOpacity *= (0.75 + this.currentBreath * 0.35);
-        baseOpacity = lerp(baseOpacity, this.opacityMax, this.smoothExcitement * 0.6);
-        // increase opacity boost when near the cursor
-        // stronger opacity boost near cursor and allow fuller opacity
-        baseOpacity += squeeze * 0.6;
-        return clamp(baseOpacity, 0.05, 1.0);
+        var t = i / totalPts;
+        var op = lerp(this.opacityMin, this.opacityMax, this.currentPulse);
+        op *= (0.15 + Math.sin(t * Math.PI) * 0.85);
+        var shimmer = Math.sin(i * this.shimmerFreq + time * this.shimmerSpeed + this.opacityPhase);
+        op *= (0.7 + shimmer * 0.3);
+        op *= (0.8 + this.currentBreath * 0.25);
+        op = lerp(op, this.opacityMax * 0.7, this.smoothExcitement * 0.3);
+        op += squeeze * 0.2; // much less opacity boost
+        return clamp(op, 0.03, 0.85);
     }
 
     draw(ctx, pts, perps, time, squeeze, colorShift) {
         if (pts.length < 4) return;
-        const n = pts.length;
-        const points = [], widths = [], opacities = [];
+        var n = pts.length;
+        var points = [], widths = [], opacities = [];
         this.sampledPoints = [];
 
-        for (let i = 0; i < n; i++) {
-            const sq = squeeze[i];
-            const offset = this.getOffset(i, time, sq, n);
-            const px = pts[i].x + perps[i].x * offset;
-            const py = pts[i].y + perps[i].y * offset;
+        for (var i = 0; i < n; i++) {
+            var sq = squeeze[i];
+            var offset = this.getOffset(i, time, sq, n);
+            var px = pts[i].x + perps[i].x * offset;
+            var py = pts[i].y + perps[i].y * offset;
             points.push({ x: px, y: py });
             widths.push(this.getWidth(i, time, sq, n));
             opacities.push(this.getOpacity(i, time, sq, n));
-            if (i % 5 === 0) {
-                this.sampledPoints.push({ x: px, y: py, intensity: this.smoothExcitement + this.currentPulse * 0.3 });
+            if (i % 6 === 0) {
+                this.sampledPoints.push({ x: px, y: py, intensity: this.smoothExcitement + this.currentPulse * 0.2 });
             }
         }
 
-        const c = prideColor(this.colorIdx + this.currentColorDrift, colorShift);
+        var c = prideColor(this.colorIdx + this.currentColorDrift, colorShift);
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
 
-        for (let i = 0; i < points.length - 1; i++) {
-            const p1 = points[i], p2 = points[i + 1];
-            const w = (widths[i] + widths[i + 1]) * 0.5;
-            const o = (opacities[i] + opacities[i + 1]) * 0.5;
+        // main stroke
+        for (var i = 0; i < points.length - 1; i++) {
+            var p1 = points[i], p2 = points[i + 1];
+            var w = (widths[i] + widths[i + 1]) * 0.5;
+            var o = (opacities[i] + opacities[i + 1]) * 0.5;
             if (o < 0.01 || w < 0.2) continue;
-            ctx.beginPath();
-            ctx.moveTo(p1.x, p1.y);
-            ctx.lineTo(p2.x, p2.y);
-            ctx.strokeStyle = `rgba(${c.r},${c.g},${c.b},${o})`;
-            ctx.lineWidth = w;
-            ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y);
+            ctx.strokeStyle = 'rgba(' + c.r + ',' + c.g + ',' + c.b + ',' + o + ')';
+            ctx.lineWidth = w; ctx.stroke();
         }
 
-        // boost bloom intensity so ribbons produce a stronger glow
-        const bloomIntensity = (this.currentPulse * 0.6 + this.smoothExcitement * 0.6) * 1.1;
-        if (bloomIntensity > 0.05) {
+        // subtle bloom only
+        var bi = (this.currentPulse * 0.4 + this.smoothExcitement * 0.3) * 0.8;
+        if (bi > 0.08) {
             ctx.globalCompositeOperation = 'lighter';
-            const step = Math.max(2, Math.floor(5 - bloomIntensity * 3));
-            for (let i = 0; i < points.length - 1; i += step) {
-                const p1 = points[i], p2 = points[Math.min(i + step, points.length - 1)];
-                const w = (widths[i] || this.baseWidth) + 6 + bloomIntensity * 8;
-                const o = (opacities[i] || 0.3) * bloomIntensity * 0.55;
+            var step = Math.max(3, Math.floor(6 - bi * 3));
+            for (var i = 0; i < points.length - 1; i += step) {
+                var p1 = points[i], p2 = points[Math.min(i + step, points.length - 1)];
+                var w = (widths[i] || this.baseWidth) + 4 + bi * 5;
+                var o = (opacities[i] || 0.2) * bi * 0.35;
                 if (o < 0.003) continue;
-                ctx.beginPath();
-                ctx.moveTo(p1.x, p1.y);
-                ctx.lineTo(p2.x, p2.y);
-                ctx.strokeStyle = `rgba(${c.r},${c.g},${c.b},${o})`;
-                ctx.lineWidth = w;
-                ctx.stroke();
-            }
-            if (bloomIntensity > 0.2) {
-                for (let i = 0; i < points.length - 1; i += step * 2) {
-                    const p1 = points[i], p2 = points[Math.min(i + step * 2, points.length - 1)];
-                    const w = (widths[i] || this.baseWidth) + 14 + bloomIntensity * 14;
-                    const o = (opacities[i] || 0.2) * bloomIntensity * 0.22;
-                    if (o < 0.002) continue;
-                    ctx.beginPath();
-                    ctx.moveTo(p1.x, p1.y);
-                    ctx.lineTo(p2.x, p2.y);
-                    ctx.strokeStyle = `rgba(${c.r},${c.g},${c.b},${o})`;
-                    ctx.lineWidth = w;
-                    ctx.stroke();
-                }
+                ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y);
+                ctx.strokeStyle = 'rgba(' + c.r + ',' + c.g + ',' + c.b + ',' + o + ')';
+                ctx.lineWidth = w; ctx.stroke();
             }
             ctx.globalCompositeOperation = 'source-over';
         }
 
-        // add a bright core stroke on top to make ribbons pop (small, lighter stroke)
-        for (let i = 0; i < points.length - 1; i++) {
-            const p1 = points[i], p2 = points[i + 1];
-            const w = (widths[i] + widths[i + 1]) * 0.5;
-            const o = (opacities[i] + opacities[i + 1]) * 0.5;
-            if (o < 0.02 || w < 0.4) continue;
-            ctx.save();
-            ctx.globalCompositeOperation = 'lighter';
-            ctx.beginPath();
-            ctx.moveTo(p1.x, p1.y);
-            ctx.lineTo(p2.x, p2.y);
-            ctx.strokeStyle = `rgba(${c.r},${c.g},${c.b},${Math.min(0.9, o * 0.8)})`;
-            ctx.lineWidth = Math.max(1, w * 0.55);
-            ctx.stroke();
-            ctx.restore();
+        // lighter core — subtle
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        for (var i = 0; i < points.length - 1; i += 2) {
+            var p1 = points[i], p2 = points[Math.min(i + 2, points.length - 1)];
+            var w = (widths[i] + widths[Math.min(i + 2, points.length - 1)]) * 0.5;
+            var o = (opacities[i] + opacities[Math.min(i + 2, points.length - 1)]) * 0.5;
+            if (o < 0.03 || w < 0.4) continue;
+            ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y);
+            ctx.strokeStyle = 'rgba(' + c.r + ',' + c.g + ',' + c.b + ',' + Math.min(0.5, o * 0.4) + ')';
+            ctx.lineWidth = Math.max(0.5, w * 0.35); ctx.stroke();
         }
-
-        // Add subtle additive glow at sampled points to make cursor interaction pop
-        if (this.sampledPoints && this.sampledPoints.length) {
-            ctx.save();
-            ctx.globalCompositeOperation = 'lighter';
-            for (const sp of this.sampledPoints) {
-                const gi = Math.min(1, sp.intensity * 0.9);
-                const glowR = 28 + gi * 48; // radius
-                const g = ctx.createRadialGradient(sp.x, sp.y, 0, sp.x, sp.y, glowR);
-                const cc = prideColor(this.colorIdx + this.currentColorDrift, colorShift);
-                g.addColorStop(0, `rgba(${cc.r},${cc.g},${cc.b},${0.32 * gi})`);
-                g.addColorStop(0.4, `rgba(${cc.r},${cc.g},${cc.b},${0.12 * gi})`);
-                g.addColorStop(1, `rgba(${cc.r},${cc.g},${cc.b},0)`);
-                ctx.fillStyle = g;
-                ctx.beginPath();
-                ctx.arc(sp.x, sp.y, glowR, 0, Math.PI * 2);
-                ctx.fill();
-            }
-            ctx.restore();
-        }
+        ctx.restore();
     }
 }
 
+/* ═══════ STRING STREAM — reduced interaction ═══════ */
 class StringStream {
     constructor(canvas, index) {
         this.canvas = canvas;
@@ -249,100 +202,102 @@ class StringStream {
     }
 
     generatePath() {
-        const w = this.canvas.width, h = this.canvas.height;
-        const diag = Math.hypot(w, h), ext = diag * 0.7;
-        this.angle = rand(-0.5, 0.5);
-        const cx = w * rand(0.2, 0.8), cy = h * rand(0.15, 0.85);
+        var w = this.canvas.width, h = this.canvas.height;
+        var diag = Math.hypot(w, h), ext = diag * 0.7;
+        this.angle = rand(-0.4, 0.4);
+        var cx = w * rand(0.2, 0.8), cy = h * rand(0.2, 0.8);
         this.sx = cx - Math.cos(this.angle) * (diag / 2 + ext);
         this.sy = cy - Math.sin(this.angle) * (diag / 2 + ext);
         this.ex = cx + Math.cos(this.angle) * (diag / 2 + ext);
         this.ey = cy + Math.sin(this.angle) * (diag / 2 + ext);
         this.c1x = w * rand(0.1, 0.4);
-        this.c1y = cy + rand(-h * 0.35, h * 0.35);
+        this.c1y = cy + rand(-h * 0.3, h * 0.3);
         this.c2x = w * rand(0.6, 0.9);
-        this.c2y = cy + rand(-h * 0.35, h * 0.35);
+        this.c2y = cy + rand(-h * 0.3, h * 0.3);
     }
 
     generateStrings() {
-        const count = randI(10, 16);
+        var count = randI(8, 12); // fewer strings per stream
         this.strings = [];
-        for (let i = 0; i < count; i++) this.strings.push(new LivingString(this, i, count));
+        for (var i = 0; i < count; i++) this.strings.push(new LivingString(this, i, count));
     }
 
     getControlPoints(time) {
-        const s = this.seed, a = 30;
-        const w = (t, f, p) => Math.sin(t * f + p);
+        var s = this.seed, a = 20; // less control point wobble
+        var w = function(t, f, p) { return Math.sin(t * f + p); };
         return {
-            c1x: this.c1x + (w(time, 0.1, s) + w(time, 0.04, s * 2.3) * 0.5 + w(time, 0.017, s * 0.7) * 0.8) * a,
-            c1y: this.c1y + (w(time, 0.08, s * 1.5) + w(time, 0.033, s * 1.1) * 0.6 + w(time, 0.014, s * 2.9) * 0.9) * a,
-            c2x: this.c2x + (w(time, 0.09, s + 2) + w(time, 0.037, s * 1.8) * 0.55 + w(time, 0.015, s * 3.1) * 0.7) * a,
-            c2y: this.c2y + (w(time, 0.075, s * 2.2) + w(time, 0.027, s * 0.9) * 0.7 + w(time, 0.012, s * 1.4) * 0.85) * a
+            c1x: this.c1x + (w(time, 0.07, s) + w(time, 0.03, s * 2.3) * 0.4) * a,
+            c1y: this.c1y + (w(time, 0.06, s * 1.5) + w(time, 0.025, s * 1.1) * 0.5) * a,
+            c2x: this.c2x + (w(time, 0.065, s + 2) + w(time, 0.028, s * 1.8) * 0.4) * a,
+            c2y: this.c2y + (w(time, 0.055, s * 2.2) + w(time, 0.02, s * 0.9) * 0.5) * a
         };
     }
 
     bezier(t, p0, p1, p2, p3) {
-        const mt = 1 - t;
-        return mt*mt*mt*p0 + 3*mt*mt*t*p1 + 3*mt*t*t*p2 + t*t*t*p3;
+        var mt = 1 - t;
+        return mt * mt * mt * p0 + 3 * mt * mt * t * p1 + 3 * mt * t * t * p2 + t * t * t * p3;
     }
 
     sampleSpine(n, px, py) {
-        const cp = this.getControlPoints(this.time);
-        // increased interaction radius (ir) and interaction strength (is)
-        const ir = 280, is = 160, pts = [];
-        for (let i = 0; i <= n; i++) {
-            const t = i / n;
-            let x = this.bezier(t, this.sx, cp.c1x, cp.c2x, this.ex);
-            let y = this.bezier(t, this.sy, cp.c1y, cp.c2y, this.ey);
+        var cp = this.getControlPoints(this.time);
+        // REDUCED: smaller radius, weaker push
+        var ir = 160, is = 60, pts = [];
+        for (var i = 0; i <= n; i++) {
+            var t = i / n;
+            var x = this.bezier(t, this.sx, cp.c1x, cp.c2x, this.ex);
+            var y = this.bezier(t, this.sy, cp.c1y, cp.c2y, this.ey);
             if (px > 0) {
-                const dx = x - px, dy = y - py, d = Math.hypot(dx, dy);
+                var dx = x - px, dy = y - py, d = Math.hypot(dx, dy);
                 if (d < ir && d > 1) {
-                    // stronger falloff so points react more sharply near cursor
-                    const f = Math.pow(1 - d / ir, 3.2), angle = Math.atan2(dy, dx);
+                    var f = Math.pow(1 - d / ir, 2.5), angle = Math.atan2(dy, dx); // softer falloff
                     x += Math.cos(angle) * f * is;
                     y += Math.sin(angle) * f * is;
                 }
             }
-            pts.push({ x, y });
+            pts.push({ x: x, y: y });
         }
-        const perps = [];
-        for (let i = 0; i <= n; i++) {
-            const prev = pts[Math.max(0, i - 1)], next = pts[Math.min(n, i + 1)];
-            const dx = next.x - prev.x, dy = next.y - prev.y, len = Math.hypot(dx, dy) || 1;
+        var perps = [];
+        for (var i = 0; i <= n; i++) {
+            var prev = pts[Math.max(0, i - 1)], next = pts[Math.min(n, i + 1)];
+            var dx = next.x - prev.x, dy = next.y - prev.y, len = Math.hypot(dx, dy) || 1;
             perps.push({ x: -dy / len, y: dx / len });
         }
-        return { pts, perps };
+        return { pts: pts, perps: perps };
     }
 
     computeSqueeze(pts, px, py) {
-        // match the larger interaction radius used in sampleSpine
-        const ir = 280;
-        return pts.map(p => {
+        var ir = 160;
+        return pts.map(function(p) {
             if (px < 0) return 0;
-            const d = Math.hypot(p.x - px, p.y - py);
+            var d = Math.hypot(p.x - px, p.y - py);
             if (d >= ir) return 0;
-            // use a slightly sharper curve so nearby points get more squeeze
-            const t = 1 - d / ir;
-            return smoothstep(Math.pow(t, 1.6));
+            var t = 1 - d / ir;
+            return smoothstep(t) * 0.6; // cap squeeze at 0.6 instead of 1.0
         });
     }
 
     update(dt, scrollProg) {
         this.time += dt;
-        this.colorShift = scrollProg * PRIDE.length * 0.85;
+        this.colorShift = scrollProg * PRIDE.length * 0.7;
     }
 
     draw(ctx, px, py) {
-        const segments = 100;
-        const { pts, perps } = this.sampleSpine(segments, px, py);
-        const squeeze = this.computeSqueeze(pts, px, py);
-        const maxSq = Math.max(...squeeze);
-        for (const s of this.strings) s.update(0.016, this.time, maxSq);
-        for (const s of this.strings) s.draw(ctx, pts, perps, this.time, squeeze, this.colorShift);
+        var segments = 80;
+        var result = this.sampleSpine(segments, px, py);
+        var squeeze = this.computeSqueeze(result.pts, px, py);
+        var maxSq = 0;
+        for (var i = 0; i < squeeze.length; i++) { if (squeeze[i] > maxSq) maxSq = squeeze[i]; }
+        for (var i = 0; i < this.strings.length; i++) this.strings[i].update(0.016, this.time, maxSq);
+        for (var i = 0; i < this.strings.length; i++) this.strings[i].draw(ctx, result.pts, result.perps, this.time, squeeze, this.colorShift);
         this._allSampledPoints = [];
-        for (const s of this.strings) this._allSampledPoints.push(...s.sampledPoints);
+        for (var i = 0; i < this.strings.length; i++) {
+            var sp = this.strings[i].sampledPoints;
+            for (var j = 0; j < sp.length; j++) this._allSampledPoints.push(sp[j]);
+        }
     }
 }
 
+/* ═══════ RIBBON CANVAS — 1 slot, crossfade on scroll ═══════ */
 class RibbonCanvas {
     constructor(canvas) {
         this.canvas = canvas;
@@ -350,92 +305,195 @@ class RibbonCanvas {
         this.rawPx = -1000; this.rawPy = -1000;
         this.px = -1000; this.py = -1000;
         this.vx = 0; this.vy = 0;
-        this.slots = [];
+        this.slot = null;
         this.scroll = 0; this.lastScroll = 0;
         this.lastTime = performance.now();
-        this.nextSlot = 0;
         this.resize();
-        this.createSlots();
-        window.addEventListener('resize', () => this.resize());
+        this.createSlot();
+        window.addEventListener('resize', this.resize.bind(this));
     }
 
     resize() {
-        const dpr = Math.min(devicePixelRatio || 1, 2);
+        var dpr = Math.min(devicePixelRatio || 1, 2);
         this.canvas.width = innerWidth * dpr;
         this.canvas.height = innerHeight * dpr;
         this.canvas.style.width = innerWidth + 'px';
         this.canvas.style.height = innerHeight + 'px';
         this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        this.createSlots();
+        this.createSlot();
     }
 
-    createSlots() {
-        this.slots = [];
-        for (let i = 0; i < 2; i++) {
-            this.slots.push({ current: new StringStream(this.canvas, i), incoming: null, progress: 1 });
-        }
+    createSlot() {
+        this.slot = { current: new StringStream(this.canvas, 0), incoming: null, progress: 1 };
     }
 
-    crossfade(idx) {
-        const slot = this.slots[idx];
-        if (slot.incoming) return;
-        slot.incoming = new StringStream(this.canvas, idx);
-        slot.progress = 0;
+    crossfade() {
+        if (this.slot.incoming) return;
+        this.slot.incoming = new StringStream(this.canvas, 0);
+        this.slot.progress = 0;
     }
 
     updatePointer(x, y) { this.rawPx = x; this.rawPy = y; }
 
     updateScroll(s) {
-        const delta = Math.abs(s - this.lastScroll);
-        if (delta > 0.12) {
-            this.crossfade(this.nextSlot);
-            this.nextSlot = (this.nextSlot + 1) % this.slots.length;
+        var delta = Math.abs(s - this.lastScroll);
+        if (delta > 0.15) {
+            this.crossfade();
             this.lastScroll = s;
         }
         this.scroll = s;
     }
 
     animate() {
-        const now = performance.now();
-        const dt = Math.min((now - this.lastTime) / 1000, 0.1);
+        var now = performance.now();
+        var dt = Math.min((now - this.lastTime) / 1000, 0.1);
         this.lastTime = now;
-        const sm = 0.1;
+        var sm = 0.08; // slightly slower cursor tracking
         if (this.rawPx > 0) {
             if (this.px < 0) { this.px = this.rawPx; this.py = this.rawPy; }
             else {
-                this.vx = lerp(this.vx, (this.rawPx - this.px) * 2, 0.3);
-                this.vy = lerp(this.vy, (this.rawPy - this.py) * 2, 0.3);
                 this.px = lerp(this.px, this.rawPx, sm);
                 this.py = lerp(this.py, this.rawPy, sm);
             }
         } else {
-            this.px = lerp(this.px, -1000, sm * 0.3);
-            this.py = lerp(this.py, -1000, sm * 0.3);
-            this.vx *= 0.9; this.vy *= 0.9;
+            this.px = lerp(this.px, -1000, sm * 0.2);
+            this.py = lerp(this.py, -1000, sm * 0.2);
         }
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        const allNodes = [];
-        this.slots.forEach(slot => {
-            if (slot.incoming) {
-                slot.progress += dt / 2.5;
-                if (slot.progress >= 1) { slot.current = slot.incoming; slot.incoming = null; slot.progress = 1; }
-            }
-            const ease = smoothstep(clamp(slot.progress, 0, 1));
-            slot.current.update(dt, this.scroll);
+        var allNodes = [];
+        var slot = this.slot;
+
+        if (slot.incoming) {
+            slot.progress += dt / 3; // slower crossfade
+            if (slot.progress >= 1) { slot.current = slot.incoming; slot.incoming = null; slot.progress = 1; }
+        }
+        var ease = smoothstep(clamp(slot.progress, 0, 1));
+        slot.current.update(dt, this.scroll);
+        this.ctx.save();
+        this.ctx.globalAlpha = slot.incoming ? (1 - ease) : 1;
+        slot.current.draw(this.ctx, this.px, this.py);
+        this.ctx.restore();
+        if (slot.current._allSampledPoints) {
+            for (var j = 0; j < slot.current._allSampledPoints.length; j++) allNodes.push(slot.current._allSampledPoints[j]);
+        }
+        if (slot.incoming) {
+            slot.incoming.update(dt, this.scroll);
             this.ctx.save();
-            this.ctx.globalAlpha = slot.incoming ? (1 - ease) : 1;
-            slot.current.draw(this.ctx, this.px, this.py);
+            this.ctx.globalAlpha = ease;
+            slot.incoming.draw(this.ctx, this.px, this.py);
             this.ctx.restore();
-            if (slot.current._allSampledPoints) allNodes.push(...slot.current._allSampledPoints);
-            if (slot.incoming) {
-                slot.incoming.update(dt, this.scroll);
-                this.ctx.save();
-                this.ctx.globalAlpha = ease;
-                slot.incoming.draw(this.ctx, this.px, this.py);
-                this.ctx.restore();
-                if (slot.incoming._allSampledPoints) allNodes.push(...slot.incoming._allSampledPoints);
+            if (slot.incoming._allSampledPoints) {
+                for (var j = 0; j < slot.incoming._allSampledPoints.length; j++) allNodes.push(slot.incoming._allSampledPoints[j]);
             }
-        });
+        }
         window.__stringNodes = allNodes;
+    }
+}
+
+/* ═══════ WOVEN STRINGS — more of these, fullscreen ═══════ */
+class WovenStrings {
+    constructor(container, layerCount) {
+        this.container = container;
+        this.canvases = [];
+        this.contexts = [];
+        this.strings = [];
+        this.N = 5; // more woven layers (was 3)
+        this.time = rand(0, 1000);
+
+        for (var i = 0; i < this.N; i++) {
+            var canvas = document.createElement('canvas');
+            canvas.className = 'string-canvas';
+            canvas.style.zIndex = Math.round(lerp(3, layerCount + 1, i / (this.N - 1)));
+            container.appendChild(canvas);
+            this.canvases.push(canvas);
+            this.contexts.push(canvas.getContext('2d'));
+
+            var count = randI(5, 8); // more strings per layer
+            var group = [];
+            for (var j = 0; j < count; j++) group.push(this._createString(i, j));
+            this.strings.push(group);
+        }
+
+        this.resize();
+        window.addEventListener('resize', this.resize.bind(this));
+    }
+
+    _createString(layerIdx, idx) {
+        return {
+            colorIdx: (layerIdx * 2.1 + idx * 1.4) % PRIDE.length,
+            homeY: rand(0.1, 0.9),
+            waves: [
+                { amp: rand(25, 65), freq: rand(0.002, 0.006), speed: rand(0.06, 0.18), phase: rand(0, Math.PI * 2) },
+                { amp: rand(6, 20), freq: rand(0.008, 0.02), speed: rand(0.2, 0.4), phase: rand(0, Math.PI * 2) },
+                { amp: rand(1.5, 6), freq: rand(0.03, 0.06), speed: rand(0.35, 0.6), phase: rand(0, Math.PI * 2) }
+            ],
+            width: rand(0.8, 2),
+            opMin: rand(0.03, 0.08),
+            opMax: rand(0.15, 0.35),
+            breathPhase: rand(0, Math.PI * 2),
+            breathSpeed: rand(0.15, 0.4),
+            travelDir: Math.random() > 0.5 ? 1 : -1,
+            travelSpeed: rand(0.08, 0.3)
+        };
+    }
+
+    resize() {
+        var dpr = Math.min(devicePixelRatio || 1, 2);
+        for (var i = 0; i < this.canvases.length; i++) {
+            this.canvases[i].width = innerWidth * dpr;
+            this.canvases[i].height = innerHeight * dpr;
+            this.canvases[i].style.width = innerWidth + 'px';
+            this.canvases[i].style.height = innerHeight + 'px';
+        }
+        this.dpr = dpr;
+    }
+
+    update(dt, scrollProgress) {
+        this.time += dt;
+        var colorShift = scrollProgress * PRIDE.length * 0.5;
+        var baseVis = lerp(0.4, 1, smoothstep(clamp(scrollProgress * 1.5, 0, 1)));
+        var blendMode = scrollProgress > 0.4 ? 'screen' : 'multiply';
+
+        for (var i = 0; i < this.N; i++) {
+            var ctx = this.contexts[i];
+            ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+            ctx.clearRect(0, 0, innerWidth, innerHeight);
+            this.canvases[i].style.opacity = clamp(baseVis * lerp(0.4, 1, i / (this.N - 1)), 0, 1);
+            this.canvases[i].style.mixBlendMode = blendMode;
+            for (var j = 0; j < this.strings[i].length; j++) this._drawString(ctx, this.strings[i][j], colorShift);
+        }
+    }
+
+    _drawString(ctx, s, colorShift) {
+        var w = innerWidth, h = innerHeight;
+        var segs = 80, t = this.time;
+        var breath = Math.sin(t * s.breathSpeed + s.breathPhase) * 0.5 + 0.5;
+        var opacity = lerp(s.opMin, s.opMax, breath);
+        var c = prideColor(s.colorIdx, colorShift);
+        var travel = t * s.travelSpeed * s.travelDir;
+        ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+        var prevX, prevY;
+        for (var i = 0; i <= segs; i++) {
+            var pct = i / segs;
+            var x = pct * w;
+            var y = s.homeY * h;
+            for (var wv = 0; wv < s.waves.length; wv++) {
+                var wave = s.waves[wv];
+                y += Math.sin(pct * w * wave.freq + t * wave.speed + wave.phase + travel * 0.04) * wave.amp;
+            }
+            if (i > 0) {
+                var shimmer = Math.sin(i * 0.1 + t * 0.8 + s.breathPhase) * 0.25 + 0.75;
+                var segOp = opacity * shimmer;
+                ctx.beginPath(); ctx.moveTo(prevX, prevY); ctx.lineTo(x, y);
+                ctx.strokeStyle = 'rgba(' + c.r + ',' + c.g + ',' + c.b + ',' + clamp(segOp, 0, 0.5) + ')';
+                ctx.lineWidth = s.width * (0.75 + breath * 0.4); ctx.stroke();
+                if (segOp > 0.08) {
+                    ctx.beginPath(); ctx.moveTo(prevX, prevY); ctx.lineTo(x, y);
+                    ctx.strokeStyle = 'rgba(' + c.r + ',' + c.g + ',' + c.b + ',' + (segOp * 0.15) + ')';
+                    ctx.lineWidth = s.width + 3; ctx.stroke();
+                }
+            }
+            prevX = x; prevY = y;
+        }
     }
 }

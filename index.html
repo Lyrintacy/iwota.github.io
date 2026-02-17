@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Your Name | Game & Systems Designer</title>
+    <title>Oskar Wota | Game Designer</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="description" content="Oskar Wota — Game Designer & Systems Architect. Welcome to My Basement.">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -11,7 +12,6 @@
 </head>
 <body>
 
-<!-- Fixed sky with clouds -->
 <div class="sky" id="sky">
     <div class="clouds-container" id="cloudsContainer">
         <div class="cloud c1"><div class="cb"></div><div class="cb"></div><div class="cb"></div></div>
@@ -25,28 +25,65 @@
     </div>
 </div>
 
-<!-- Landscape layers container — populated by JS -->
 <div class="landscape-wrap" id="landscapeWrap"></div>
-
-<!-- Pride string canvases — one per gap between landscape layers -->
 <div class="string-layers" id="stringLayers"></div>
 
-<!-- Floating code text -->
+<!-- Underground darkness overlay — controlled by JS -->
+<div class="underground-overlay" id="undergroundOverlay"></div>
+
+<div class="mascot-layer" id="mascotLayer">
+    <svg class="mascot mascot-smiley" viewBox="0 0 80 80" fill="none">
+        <circle cx="40" cy="40" r="28" stroke="currentColor" stroke-width="2.5" opacity="0.6"/>
+        <circle cx="30" cy="34" r="4" fill="currentColor" opacity="0.5"/>
+        <circle cx="50" cy="34" r="4" fill="currentColor" opacity="0.5"/>
+        <path d="M28 48Q40 58 52 48" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.4"/>
+    </svg>
+    <svg class="mascot mascot-cat" viewBox="0 0 80 80" fill="none">
+        <ellipse cx="40" cy="44" rx="20" ry="22" stroke="currentColor" stroke-width="2.5" opacity="0.6"/>
+        <path d="M22 28L26 10L34 24" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.5"/>
+        <path d="M58 28L54 10L46 24" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.5"/>
+        <circle cx="32" cy="38" r="4" fill="currentColor" opacity="0.5"/>
+        <circle cx="48" cy="38" r="4" fill="currentColor" opacity="0.5"/>
+        <path d="M36 50Q40 54 44 50" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.35"/>
+        <line x1="18" y1="42" x2="28" y2="40" stroke="currentColor" stroke-width="1" opacity="0.2"/>
+        <line x1="18" y1="46" x2="28" y2="45" stroke="currentColor" stroke-width="1" opacity="0.2"/>
+        <line x1="52" y1="40" x2="62" y2="42" stroke="currentColor" stroke-width="1" opacity="0.2"/>
+        <line x1="52" y1="45" x2="62" y2="46" stroke="currentColor" stroke-width="1" opacity="0.2"/>
+    </svg>
+    <svg class="mascot mascot-ghost" viewBox="0 0 80 80" fill="none">
+        <path d="M20 42Q20 14 40 14Q60 14 60 42L60 60Q56 52 52 60Q48 52 44 60Q40 52 36 60Q32 52 28 60Q24 52 20 60Z" stroke="currentColor" stroke-width="2.5" fill="none" opacity="0.6"/>
+        <circle cx="32" cy="34" r="4.5" fill="currentColor" opacity="0.5"/>
+        <circle cx="48" cy="34" r="4.5" fill="currentColor" opacity="0.5"/>
+        <ellipse cx="40" cy="46" rx="4" ry="5" stroke="currentColor" stroke-width="1.5" fill="none" opacity="0.3"/>
+    </svg>
+</div>
+
+<canvas class="dust-canvas" id="dustCanvas"></canvas>
+
 <div class="floating-strings" id="floatingStrings"></div>
 <div class="cursor-glow" id="cursorGlow"></div>
 
-<!-- Scrollable content on top -->
 <div class="scroll-content" id="scrollContent">
 
     <section class="zone zone-hero" id="home">
-        <div class="zone-inner">
-            <p class="whisper">// start wearing purple</p>
-            <h1><span class="gtext">Welcome to<br>My Basement</span></h1>
-            <h2 class="hero-sub">Game Designer <span class="amp">&amp;</span> Systems Architect</h2>
-            <p class="hero-desc">Crafting grotesque beauty from elegant systems. Where dark-cute aesthetics meet obsessive mechanical design.</p>
-            <div class="hero-cta">
-                <a href="#projects" class="btn">Descend</a>
-                <a href="#about" class="btn btn-outline">Who lurks here?</a>
+        <div class="zone-inner hero-layout">
+            <div class="hero-left">
+                <div class="hero-photo-wrap">
+                    <img src="assets/photo.png" alt="Oskar Wota" class="hero-photo"
+                         onerror="this.style.background='linear-gradient(135deg,#1a0a2e,#2d1b69)';this.alt='';this.style.minHeight='180px'">
+                </div>
+                <img src="assets/logo.png" alt="Logo" class="hero-logo"
+                     onerror="this.style.display='none'">
+            </div>
+            <div class="hero-right">
+                <p class="whisper">// start wearing purple</p>
+                <h1><span class="gtext">Oskar Wota</span></h1>
+                <h2 class="hero-sub">Game Designer <span class="amp">&amp;</span> Systems Architect</h2>
+                <p class="hero-desc">Crafting grotesque beauty from elegant systems. Where dark-cute aesthetics meet obsessive mechanical design. Every system I build asks one question: <em>"What happens if we let it grow?"</em></p>
+                <div class="hero-cta">
+                    <a href="#games" class="btn">My Basement Games</a>
+                    <a href="#about" class="btn btn-outline">Who lurks here?</a>
+                </div>
             </div>
         </div>
         <div class="scroll-hint">
@@ -55,44 +92,16 @@
         </div>
     </section>
 
-    <section class="zone" id="projects">
+    <section class="zone zone-games" id="games">
         <div class="zone-inner">
-            <h2 class="section-title">The Creations</h2>
+            <h2 class="section-title">My Basement Games</h2>
             <p class="section-sub handwritten">"Every game is a small universe of interlocking miseries and joys"</p>
-            <div class="pgrid">
-                <article class="pcard">
-                    <div class="pcard-num">I</div>
-                    <div class="pcard-icon">
-                        <svg viewBox="0 0 80 80" fill="none"><circle cx="40" cy="38" r="22" stroke="currentColor" stroke-width="2" opacity="0.5"/><circle cx="32" cy="32" r="5" fill="currentColor" opacity="0.4"/><circle cx="48" cy="32" r="5" fill="currentColor" opacity="0.4"/><circle cx="32" cy="32" r="2.5" fill="#1a0e35"/><circle cx="48" cy="32" r="2.5" fill="#1a0e35"/><path d="M34 46Q40 52 46 46" stroke="currentColor" stroke-width="1.5" fill="none" opacity="0.3"/><line x1="32" y1="60" x2="32" y2="70" stroke="currentColor" stroke-width="1.5" opacity="0.2"/><line x1="48" y1="60" x2="48" y2="70" stroke="currentColor" stroke-width="1.5" opacity="0.2"/></svg>
-                    </div>
-                    <h3>Unnamed Creature RPG</h3>
-                    <p>A roguelike breeding sim. Every run generates unique creatures through deep genetics. Each abomination inherits traits from its parents.</p>
-                    <div class="pcard-meta"><span class="pm-role">Lead Designer</span><span class="pm-tech">Unity / C#</span></div>
-                    <div class="pcard-tags"><span>Procedural</span><span>Genetics</span><span>Roguelike</span></div>
-                </article>
-                <article class="pcard">
-                    <div class="pcard-num">II</div>
-                    <div class="pcard-icon">
-                        <svg viewBox="0 0 80 80" fill="none"><ellipse cx="40" cy="42" rx="18" ry="20" stroke="currentColor" stroke-width="2" opacity="0.5"/><path d="M24 28L28 12L34 24" stroke="currentColor" stroke-width="2" fill="none" opacity="0.4"/><path d="M56 28L52 12L46 24" stroke="currentColor" stroke-width="2" fill="none" opacity="0.4"/><circle cx="34" cy="36" r="4" fill="currentColor" opacity="0.4"/><circle cx="46" cy="36" r="4" fill="currentColor" opacity="0.4"/><path d="M37 48Q40 51 43 48" stroke="currentColor" stroke-width="1.2" fill="none" opacity="0.3"/></svg>
-                    </div>
-                    <h3>Feline Machinations</h3>
-                    <p>Cat breeding simulation that starts cute and spirals into cosmic horror. Complex genetics meet emergent narrative.</p>
-                    <div class="pcard-meta"><span class="pm-role">Game Designer</span><span class="pm-tech">Godot / GDScript</span></div>
-                    <div class="pcard-tags"><span>Simulation</span><span>Horror</span><span>Genetics</span></div>
-                </article>
-                <article class="pcard">
-                    <div class="pcard-num">III</div>
-                    <div class="pcard-icon">
-                        <svg viewBox="0 0 80 80" fill="none"><path d="M20 40Q20 14 40 14Q60 14 60 40L60 58Q56 52 52 58Q48 52 44 58Q40 52 36 58Q32 52 28 58Q24 52 20 58Z" stroke="currentColor" stroke-width="2" fill="none" opacity="0.5"/><circle cx="32" cy="32" r="5" fill="currentColor" opacity="0.4"/><circle cx="48" cy="32" r="5" fill="currentColor" opacity="0.4"/><ellipse cx="40" cy="44" rx="4" ry="5" stroke="currentColor" stroke-width="1.5" fill="none" opacity="0.3"/></svg>
-                    </div>
-                    <h3>Spectral Decay</h3>
-                    <p>You ARE the ghost. Systems-driven haunting where fear is a resource and memories are weapons.</p>
-                    <div class="pcard-meta"><span class="pm-role">Systems Designer</span><span class="pm-tech">Custom / Lua</span></div>
-                    <div class="pcard-tags"><span>Systems</span><span>Narrative</span><span>Horror</span></div>
-                </article>
-            </div>
+            <div class="pgrid" id="projectGrid"></div>
         </div>
     </section>
+
+    <!-- Transition — parallax layers handle the visual journey, this just adds scroll space -->
+    <section class="zone zone-transition" id="transition1"></section>
 
     <section class="zone" id="about">
         <div class="zone-inner">
@@ -101,7 +110,7 @@
             <div class="about-cols">
                 <div class="about-text">
                     <p>I'm obsessed with the space where procedural generation meets hand-crafted emotion. The best games feel alive — ecosystems that breathe, mutate, and surprise their creators.</p>
-                    <p>My work draws from Edmund McMillen's grotesque beauty, Dwarf Fortress's systemic depth, and Gogol Bordello's raw energy.</p>
+                    <p>My work draws from <em>Edmund McMillen's</em> grotesque beauty, <em>Dwarf Fortress's</em> systemic depth, and <em>Gogol Bordello's</em> raw energy.</p>
                     <p>Every system asks: <em>"What happens if we let it grow?"</em></p>
                     <div class="mantras">
                         <h4 class="handwritten">Design Mantras</h4>
@@ -125,67 +134,75 @@
         </div>
     </section>
 
+    <section class="zone" id="contact">
+        <div class="zone-inner">
+            <h2 class="section-title">Summon Me</h2>
+            <p class="section-sub handwritten">"You know how to reach the basement now"</p>
+            <form class="cform" id="contactForm" action="https://formsubmit.co/oskar@iwota.com" method="POST">
+                <input type="hidden" name="_subject" value="New basement visitor">
+                <input type="hidden" name="_captcha" value="false">
+                <input type="text" name="name" placeholder="Your true name" required>
+                <input type="email" name="email" placeholder="Your raven's address" required>
+                <textarea name="message" rows="6" placeholder="Speak your dark purpose..." required></textarea>
+                <button type="submit" class="btn">Send into the Void</button>
+            </form>
+        </div>
+    </section>
+
     <section class="zone" id="references">
         <div class="zone-inner">
             <h2 class="section-title">Fellow Freaks</h2>
             <p class="section-sub handwritten">"The best collaborators make you question your sanity"</p>
-            <div class="ref-list">
-                <a href="https://aniltahmaz.com" target="_blank" rel="noopener noreferrer" class="rcard">
-                    <img src="https://media.licdn.com/dms/image/v2/C4E03AQHBf3jTQ0QDoA/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1611150955292?e=2147483647&v=beta&t=cZ3k2oo_c3UBkRAj-p-xYWz7knrQCYmzztDWr-ACPEQ" alt="Anil Tahmaz" onerror="this.src='https://ui-avatars.com/api/?name=AT&size=200&background=1a0a2e&color=c084fc&bold=true'">
-                    <div><h3>Anil Tahmaz</h3><p class="rcard-role">Creative Alchemist</p><p>Turns constraints into art. Makes impossible things feel like undiscovered techniques.</p><span class="rcard-link">aniltahmaz.com →</span></div>
-                </a>
-                <a href="https://www.linkedin.com/in/artem-shatail-559343340/" target="_blank" rel="noopener noreferrer" class="rcard">
-                    <img src="https://media.licdn.com/dms/image/v2/D4E03AQGKmA8lxJjmhw/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1695393294633?e=2147483647&v=beta&t=8H_ow7FWLJO3B6bT_dJ6DWpKEsxhEuFgHkKR8XnSJ9E" alt="Artem Shatail" onerror="this.src='https://ui-avatars.com/api/?name=AS&size=200&background=1a0a2e&color=a78bfa&bold=true'">
-                    <div><h3>Artem Shatail</h3><p class="rcard-role">Code Necromancer</p><p>Resurrects dead codebases. Uncomfortably good at optimization.</p><span class="rcard-link">linkedin.com/in/artem-shatail →</span></div>
-                </a>
-                <a href="#" class="rcard">
-                    <img src="https://ui-avatars.com/api/?name=JD&size=200&background=1a0a2e&color=f472b6&bold=true" alt="Jane Doe">
-                    <div><h3>Jane Doe</h3><p class="rcard-role">Pixel Witch</p><p>More personality in 16×16 than most have in full 3D.</p><span class="rcard-link">janedoe.art →</span></div>
-                </a>
-            </div>
+            <div class="ref-list" id="refList"></div>
         </div>
     </section>
 
-    <section class="zone zone-deep" id="contact">
+    <section class="zone zone-basement" id="basement">
         <div class="zone-inner">
-            <h2 class="section-title">The Basement</h2>
+            <h2 class="section-title basement-title">Welcome to My Basement</h2>
             <p class="section-sub handwritten">"You made it all the way down. Respect."</p>
-            <form class="cform" id="contactForm">
-                <input type="text" placeholder="Your true name" required>
-                <input type="email" placeholder="Your raven's address" required>
-                <textarea rows="6" placeholder="Speak your dark purpose..." required></textarea>
-                <button type="submit" class="btn">Send into the Void</button>
-            </form>
-            <div class="deep-links">
-                <a href="#">itch.io →</a>
-                <a href="#">GitHub →</a>
-                <a href="#">Twitter →</a>
-            </div>
-            <p class="deep-copy">© 2025 YourName · Built in the dark</p>
+            <div class="basement-projects" id="basementProjects"></div>
         </div>
     </section>
 
+    <footer class="site-footer">
+        <div class="deep-links">
+            <a href="#">itch.io →</a>
+            <a href="#">GitHub →</a>
+            <a href="#">Twitter →</a>
+        </div>
+        <p class="deep-copy">© 2025 Oskar Wota · Built in the dark</p>
+    </footer>
 </div>
 
 <header class="navbar" id="navbar">
-    <div class="logo"><span class="licon">☠</span><span>YourName</span></div>
+    <div class="logo" onclick="document.getElementById('home').scrollIntoView({behavior:'smooth'})">
+        <span class="licon">☠</span><span>Oskar Wota</span>
+    </div>
     <nav class="dnav">
         <a href="#home">Surface</a>
-        <a href="#projects">Creations</a>
-        <a href="#about">Designer</a>
+        <a href="#games">Games</a>
+        <a href="#about">About</a>
+        <a href="#contact">Summon</a>
         <a href="#references">Freaks</a>
-        <a href="#contact">Basement</a>
+        <a href="#basement">Basement</a>
     </nav>
     <button class="mbtn" id="mobileMenuBtn" aria-label="Menu"><span></span><span></span><span></span></button>
 </header>
 <div class="mnav" id="mobileNav">
-    <a href="#home">Surface</a><a href="#projects">Creations</a><a href="#about">Designer</a><a href="#references">Freaks</a><a href="#contact">Basement</a>
+    <a href="#home">Surface</a>
+    <a href="#games">Games</a>
+    <a href="#about">About</a>
+    <a href="#contact">Summon</a>
+    <a href="#references">Freaks</a>
+    <a href="#basement">Basement</a>
 </div>
 <div class="scroll-progress" id="scrollProgress"></div>
 
 <script src="js/utils.js"></script>
 <script src="js/ribbons.js"></script>
 <script src="js/floating.js"></script>
+<script src="js/basement.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>
