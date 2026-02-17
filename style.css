@@ -182,4 +182,4 @@ body{font-family:'Inter',-apple-system,sans-serif;background:#08030f;color:var(-
     .hero-cta{flex-direction:column}.floating-code{font-size:9px}
 }
 @media(max-width:480px){.zone-hero h1{font-size:1.6rem}.logo{font-size:.9rem}.rcard img{width:55px;height:55px}}
-@media(hover:none)and(pointer:coarse){.cursor-glow{display:none}.pcard:hover,.rcard:hover{transform:none}}
+@media(hover:none)and(pointer:coarse){.cursor-glow{display:none}.pcard:hover,.rcard:hover{transform:none}}  

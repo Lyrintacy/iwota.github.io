@@ -32,26 +32,27 @@ class LivingString {
         }
 
         this.travelDir = Math.random() > 0.5 ? 1 : -1;
-        this.travelSpeed = rand(0.15, 0.5);
-        this.baseWidth = rand(1.5, 3.8);
-        this.widthWavePhase = rand(0, Math.PI * 2);
+        this.travelSpeed = rand(0.25, 0.7);
+        // make base widths generally thicker so ribbons are more visible
+        this.baseWidth = rand(2, 7);
+        this.widthWavePhase = rand(0.5, Math.PI * 2);
         this.widthWaveFreq = rand(0.015, 0.04);
-        this.opacityMin = rand(0.12, 0.25);
-        this.opacityMax = rand(0.7, 0.95);
-        this.opacityPhase = rand(0, Math.PI * 2);
+        this.opacityMin = rand(0.25, );
+        this.opacityMax = rand(0.89, 1.5);
+        this.opacityPhase = rand(1, Math.PI * 2);
         this.opacitySpeed = rand(0.3, 0.7);
         this.opacitySpeed2 = rand(0.8, 1.5);
         this.breathePhase = rand(0, Math.PI * 2);
-        this.breatheSpeed = rand(0.2, 0.45);
+        this.breatheSpeed = rand(0.45, 1);
         this.shimmerSpeed = rand(0.6, 1.8) * this.travelDir;
         this.shimmerFreq = rand(0.05, 0.1);
-        this.excitement = 0;
-        this.smoothExcitement = 0;
+        this.excitement = 0.5;
+        this.smoothExcitement = 0.1;
         this.colorDriftAmp = rand(0.15, 0.5);
         this.colorDriftSpeed = rand(0.05, 0.12);
-        this.independence = rand(0.4, 0.9);
-        this.currentBreath = 0;
-        this.currentPulse = 0;
+        this.independence = rand(0.75, 0.9);
+        this.currentBreath = 0.5;
+        this.currentPulse = 0.15;
         this.currentColorDrift = 0;
         this.sampledPoints = [];
     }
@@ -73,9 +74,14 @@ class LivingString {
     getOffset(i, time, squeeze, totalPts) {
         const t = i / totalPts;
         let offset = this.homeOffset;
-        const travel = time * this.travelSpeed * this.travelDir;
+        // apply local 'friction' when cursor overlaps: reduce wave amplitude/speed and travel
+        const localS = clamp(squeeze, 0, 1);
+        const dragMul = 1 - localS * 0.92; // near-cursor movement is heavily damped
+        const travel = time * this.travelSpeed * this.travelDir * dragMul;
         for (const wave of this.waves) {
-            offset += Math.sin(i * wave.freq + time * wave.speed + wave.phase + travel * 0.08) * wave.amp;
+            const amp = wave.amp * (1 - localS * 0.9);
+            const speed = wave.speed * (1 - localS * 0.6);
+            offset += Math.sin(i * wave.freq + time * speed + wave.phase + travel * 0.08) * amp;
         }
         for (const cross of this.crossings) {
             const d = Math.abs(t - cross.pos);
@@ -86,7 +92,8 @@ class LivingString {
         }
         offset *= (0.85 + this.currentBreath * 0.25);
         if (this.smoothExcitement > 0.05) {
-            offset += Math.sin(i * 0.06 + time * 2.5 + this.breathePhase) * 18 * this.smoothExcitement;
+            // reduce excitement wobble when cursor is overlapping (feels like friction)
+            offset += Math.sin(i * 0.06 + time * 2.5 + this.breathePhase) * 18 * this.smoothExcitement * (1 - localS * 0.75);
         }
         if (squeeze > 0) {
             const dir = offset > 0 ? 1 : -1;
@@ -102,20 +109,23 @@ class LivingString {
         width *= (0.8 + this.currentPulse * 0.4);
         width *= (0.35 + Math.sin(t * Math.PI) * 0.65);
         width *= (1 + this.smoothExcitement * 0.6);
-        width *= (1 + squeeze * 0.3);
+        // make width more responsive to cursor squeeze
+        width *= (1 + squeeze * 0.6);
         return Math.max(width, 0.3);
     }
 
     getOpacity(i, time, squeeze, totalPts) {
         const t = i / totalPts;
-        let baseOpacity = lerp(this.opacityMin, this.opacityMax, this.currentPulse);
+        let baseOpacity = lerp(this.opacityMin, this.opacityMax,     this.currentPulse);
         baseOpacity *= (0.15 + Math.sin(t * Math.PI) * 0.85);
         const shimmer = Math.sin(i * this.shimmerFreq + time * this.shimmerSpeed + this.opacityPhase);
         baseOpacity *= (0.65 + shimmer * 0.35 + Math.abs(shimmer) * 0.12);
         baseOpacity *= (0.75 + this.currentBreath * 0.35);
         baseOpacity = lerp(baseOpacity, this.opacityMax, this.smoothExcitement * 0.6);
-        baseOpacity += squeeze * 0.25;
-        return clamp(baseOpacity, 0.03, 0.95);
+        // increase opacity boost when near the cursor
+        // stronger opacity boost near cursor and allow fuller opacity
+        baseOpacity += squeeze * 0.6;
+        return clamp(baseOpacity, 0.05, 1.0);
     }
 
     draw(ctx, pts, perps, time, squeeze, colorShift) {
@@ -154,14 +164,15 @@ class LivingString {
             ctx.stroke();
         }
 
-        const bloomIntensity = this.currentPulse * 0.4 + this.smoothExcitement * 0.4;
+        // boost bloom intensity so ribbons produce a stronger glow
+        const bloomIntensity = (this.currentPulse * 0.6 + this.smoothExcitement * 0.6) * 1.1;
         if (bloomIntensity > 0.05) {
             ctx.globalCompositeOperation = 'lighter';
             const step = Math.max(2, Math.floor(5 - bloomIntensity * 3));
             for (let i = 0; i < points.length - 1; i += step) {
                 const p1 = points[i], p2 = points[Math.min(i + step, points.length - 1)];
-                const w = (widths[i] || this.baseWidth) + 4 + bloomIntensity * 6;
-                const o = (opacities[i] || 0.3) * bloomIntensity * 0.35;
+                const w = (widths[i] || this.baseWidth) + 6 + bloomIntensity * 8;
+                const o = (opacities[i] || 0.3) * bloomIntensity * 0.55;
                 if (o < 0.003) continue;
                 ctx.beginPath();
                 ctx.moveTo(p1.x, p1.y);
@@ -173,8 +184,8 @@ class LivingString {
             if (bloomIntensity > 0.2) {
                 for (let i = 0; i < points.length - 1; i += step * 2) {
                     const p1 = points[i], p2 = points[Math.min(i + step * 2, points.length - 1)];
-                    const w = (widths[i] || this.baseWidth) + 12 + bloomIntensity * 10;
-                    const o = (opacities[i] || 0.2) * bloomIntensity * 0.12;
+                    const w = (widths[i] || this.baseWidth) + 14 + bloomIntensity * 14;
+                    const o = (opacities[i] || 0.2) * bloomIntensity * 0.22;
                     if (o < 0.002) continue;
                     ctx.beginPath();
                     ctx.moveTo(p1.x, p1.y);
@@ -185,6 +196,43 @@ class LivingString {
                 }
             }
             ctx.globalCompositeOperation = 'source-over';
+        }
+
+        // add a bright core stroke on top to make ribbons pop (small, lighter stroke)
+        for (let i = 0; i < points.length - 1; i++) {
+            const p1 = points[i], p2 = points[i + 1];
+            const w = (widths[i] + widths[i + 1]) * 0.5;
+            const o = (opacities[i] + opacities[i + 1]) * 0.5;
+            if (o < 0.02 || w < 0.4) continue;
+            ctx.save();
+            ctx.globalCompositeOperation = 'lighter';
+            ctx.beginPath();
+            ctx.moveTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.strokeStyle = `rgba(${c.r},${c.g},${c.b},${Math.min(0.9, o * 0.8)})`;
+            ctx.lineWidth = Math.max(1, w * 0.55);
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        // Add subtle additive glow at sampled points to make cursor interaction pop
+        if (this.sampledPoints && this.sampledPoints.length) {
+            ctx.save();
+            ctx.globalCompositeOperation = 'lighter';
+            for (const sp of this.sampledPoints) {
+                const gi = Math.min(1, sp.intensity * 0.9);
+                const glowR = 28 + gi * 48; // radius
+                const g = ctx.createRadialGradient(sp.x, sp.y, 0, sp.x, sp.y, glowR);
+                const cc = prideColor(this.colorIdx + this.currentColorDrift, colorShift);
+                g.addColorStop(0, `rgba(${cc.r},${cc.g},${cc.b},${0.32 * gi})`);
+                g.addColorStop(0.4, `rgba(${cc.r},${cc.g},${cc.b},${0.12 * gi})`);
+                g.addColorStop(1, `rgba(${cc.r},${cc.g},${cc.b},0)`);
+                ctx.fillStyle = g;
+                ctx.beginPath();
+                ctx.arc(sp.x, sp.y, glowR, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.restore();
         }
     }
 }
@@ -239,7 +287,8 @@ class StringStream {
 
     sampleSpine(n, px, py) {
         const cp = this.getControlPoints(this.time);
-        const ir = 200, is = 95, pts = [];
+        // increased interaction radius (ir) and interaction strength (is)
+        const ir = 280, is = 160, pts = [];
         for (let i = 0; i <= n; i++) {
             const t = i / n;
             let x = this.bezier(t, this.sx, cp.c1x, cp.c2x, this.ex);
@@ -247,7 +296,8 @@ class StringStream {
             if (px > 0) {
                 const dx = x - px, dy = y - py, d = Math.hypot(dx, dy);
                 if (d < ir && d > 1) {
-                    const f = Math.pow(1 - d / ir, 2.5), angle = Math.atan2(dy, dx);
+                    // stronger falloff so points react more sharply near cursor
+                    const f = Math.pow(1 - d / ir, 3.2), angle = Math.atan2(dy, dx);
                     x += Math.cos(angle) * f * is;
                     y += Math.sin(angle) * f * is;
                 }
@@ -264,11 +314,15 @@ class StringStream {
     }
 
     computeSqueeze(pts, px, py) {
-        const ir = 200;
+        // match the larger interaction radius used in sampleSpine
+        const ir = 280;
         return pts.map(p => {
             if (px < 0) return 0;
             const d = Math.hypot(p.x - px, p.y - py);
-            return d >= ir ? 0 : smoothstep(1 - d / ir);
+            if (d >= ir) return 0;
+            // use a slightly sharper curve so nearby points get more squeeze
+            const t = 1 - d / ir;
+            return smoothstep(Math.pow(t, 1.6));
         });
     }
 
