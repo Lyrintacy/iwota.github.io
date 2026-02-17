@@ -7,14 +7,14 @@ const smoothstep = t => t * t * (3 - 2 * t);
 const isTouch = () => 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
 const PRIDE = [
-    { r: 255, g: 45,  b: 85  },
-    { r: 255, g: 140, b: 0   },
-    { r: 255, g: 214, b: 10  },
-    { r: 48,  g: 209, b: 88  },
-    { r: 0,   g: 199, b: 190 },
-    { r: 10,  g: 132, b: 255 },
-    { r: 94,  g: 92,  b: 230 },
-    { r: 191, g: 90,  b: 242 },
+    { r: 192, g: 132, b: 252 },  // purple
+    { r: 168, g: 85,  b: 247 },  // deeper purple
+    { r: 244, g: 114, b: 182 },  // pink
+    { r: 212, g: 168, b: 67  },  // gold
+    { r: 139, g: 92,  b: 246 },  // violet
+    { r: 236, g: 72,  b: 153 },  // hot pink
+    { r: 180, g: 140, b: 60  },  // dark gold
+    { r: 147, g: 51,  b: 234 },  // bright purple
 ];
 
 function prideColor(idx, offset = 0) {

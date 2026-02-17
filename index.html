@@ -2,10 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Your Name | Portfolio</title>
+    <title>Your Name | Game & Systems Designer</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -15,16 +17,72 @@
 <div class="cursor-glow" id="cursorGlow"></div>
 <div class="scroll-progress" id="scrollProgress"></div>
 
+<!-- Doodle overlay — hand-drawn SVG creatures -->
+<div class="doodle-layer" id="doodleLayer">
+    <!-- tiny isaac-style creatures scattered as decoration -->
+    <svg class="doodle doodle-1" viewBox="0 0 60 60" fill="none">
+        <circle cx="30" cy="28" r="18" stroke="currentColor" stroke-width="1.5" opacity="0.12"/>
+        <circle cx="24" cy="24" r="3" fill="currentColor" opacity="0.15"/>
+        <circle cx="36" cy="24" r="3" fill="currentColor" opacity="0.15"/>
+        <path d="M24 34 Q30 40 36 34" stroke="currentColor" stroke-width="1.5" fill="none" opacity="0.1"/>
+        <line x1="30" y1="46" x2="30" y2="55" stroke="currentColor" stroke-width="1" opacity="0.08"/>
+        <line x1="22" y1="38" x2="16" y2="44" stroke="currentColor" stroke-width="1" opacity="0.08"/>
+        <line x1="38" y1="38" x2="44" y2="44" stroke="currentColor" stroke-width="1" opacity="0.08"/>
+    </svg>
+    <svg class="doodle doodle-2" viewBox="0 0 50 50" fill="none">
+        <ellipse cx="25" cy="22" rx="14" ry="16" stroke="currentColor" stroke-width="1.5" opacity="0.1"/>
+        <circle cx="20" cy="18" r="4" fill="currentColor" opacity="0.12"/>
+        <circle cx="30" cy="18" r="4" fill="currentColor" opacity="0.12"/>
+        <circle cx="20" cy="18" r="2" fill="var(--bg)" opacity="0.8"/>
+        <circle cx="30" cy="18" r="2" fill="var(--bg)" opacity="0.8"/>
+        <path d="M22 28 Q25 32 28 28" stroke="currentColor" stroke-width="1.2" fill="none" opacity="0.1"/>
+    </svg>
+    <svg class="doodle doodle-3" viewBox="0 0 40 50" fill="none">
+        <!-- cat-like creature -->
+        <ellipse cx="20" cy="28" rx="12" ry="14" stroke="currentColor" stroke-width="1.5" opacity="0.1"/>
+        <path d="M10 18 L14 8 L18 16" stroke="currentColor" stroke-width="1.2" fill="none" opacity="0.1"/>
+        <path d="M30 18 L26 8 L22 16" stroke="currentColor" stroke-width="1.2" fill="none" opacity="0.1"/>
+        <circle cx="16" cy="24" r="2.5" fill="currentColor" opacity="0.12"/>
+        <circle cx="24" cy="24" r="2.5" fill="currentColor" opacity="0.12"/>
+        <path d="M18 30 Q20 33 22 30" stroke="currentColor" stroke-width="1" fill="none" opacity="0.1"/>
+        <path d="M14 42 Q20 48 26 42" stroke="currentColor" stroke-width="1" fill="none" opacity="0.08"/>
+    </svg>
+    <svg class="doodle doodle-4" viewBox="0 0 60 40" fill="none">
+        <!-- fly-like creature -->
+        <ellipse cx="30" cy="25" rx="10" ry="8" stroke="currentColor" stroke-width="1.5" opacity="0.1"/>
+        <circle cx="26" cy="23" r="2" fill="currentColor" opacity="0.12"/>
+        <circle cx="34" cy="23" r="2" fill="currentColor" opacity="0.12"/>
+        <ellipse cx="18" cy="15" rx="8" ry="5" stroke="currentColor" stroke-width="1" opacity="0.08" transform="rotate(-20 18 15)"/>
+        <ellipse cx="42" cy="15" rx="8" ry="5" stroke="currentColor" stroke-width="1" opacity="0.08" transform="rotate(20 42 15)"/>
+    </svg>
+    <svg class="doodle doodle-5" viewBox="0 0 50 60" fill="none">
+        <!-- ghost-like blob -->
+        <path d="M10 30 Q10 10 25 10 Q40 10 40 30 L40 45 Q37 40 34 45 Q31 40 28 45 Q25 40 22 45 Q19 40 16 45 Q13 40 10 45 Z" stroke="currentColor" stroke-width="1.5" fill="none" opacity="0.1"/>
+        <circle cx="20" cy="25" r="3" fill="currentColor" opacity="0.12"/>
+        <circle cx="30" cy="25" r="3" fill="currentColor" opacity="0.12"/>
+        <ellipse cx="25" cy="33" rx="3" ry="4" stroke="currentColor" stroke-width="1" fill="none" opacity="0.1"/>
+    </svg>
+    <svg class="doodle doodle-6" viewBox="0 0 45 45" fill="none">
+        <!-- heart with legs -->
+        <path d="M22.5 38 Q5 25 5 15 Q5 5 15 5 Q22.5 5 22.5 15 Q22.5 5 30 5 Q40 5 40 15 Q40 25 22.5 38Z" stroke="currentColor" stroke-width="1.5" fill="none" opacity="0.1"/>
+        <line x1="15" y1="38" x2="12" y2="45" stroke="currentColor" stroke-width="1" opacity="0.08"/>
+        <line x1="30" y1="38" x2="33" y2="45" stroke="currentColor" stroke-width="1" opacity="0.08"/>
+    </svg>
+</div>
+
 <!-- ══════════ MAIN PAGE ══════════ -->
 <div class="main-page" id="mainPage">
 
     <header class="navbar" id="navbar">
-        <div class="logo" id="logoBtn">YourName</div>
+        <div class="logo" id="logoBtn">
+            <span class="logo-icon">☠</span>
+            <span>YourName</span>
+        </div>
         <nav class="desktop-nav">
-            <a data-subpage="projects">Projects</a>
-            <a data-subpage="about">About</a>
-            <a data-subpage="references">People</a>
-            <a data-subpage="contact">Contact</a>
+            <a data-subpage="projects">Creations</a>
+            <a data-subpage="about">The Designer</a>
+            <a data-subpage="references">Fellow Freaks</a>
+            <a data-subpage="contact">Summon Me</a>
         </nav>
         <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Menu">
             <span></span><span></span><span></span>
@@ -32,10 +90,10 @@
     </header>
 
     <div class="mobile-nav" id="mobileNav">
-        <a data-subpage="projects">Projects</a>
-        <a data-subpage="about">About</a>
-        <a data-subpage="references">People</a>
-        <a data-subpage="contact">Contact</a>
+        <a data-subpage="projects">Creations</a>
+        <a data-subpage="about">The Designer</a>
+        <a data-subpage="references">Fellow Freaks</a>
+        <a data-subpage="contact">Summon Me</a>
     </div>
 
     <div class="main-content" id="mainContent">
@@ -46,56 +104,107 @@
                 <div class="glass-panel hero-panel" data-row="0">
                     <div class="panel-fog"></div>
                     <div class="glass-content">
-                        <h1>Hi, I'm <span class="gradient-text">Your Name</span></h1>
-                        <p>Developer &amp; Designer crafting interactive, immersive digital experiences.</p>
-                        <a href="#" data-subpage="projects" class="btn">Explore Work</a>
+                        <p class="hero-whisper">// start wearing purple</p>
+                        <h1><span class="gradient-text">Start Wearing Purple</span></h1>
+                        <h2 class="hero-sub">Game Designer <span class="amp">&</span> Systems Architect</h2>
+                        <p class="hero-desc">Crafting grotesque beauty from elegant systems. Where dark-cute aesthetics meet obsessive mechanical design.</p>
+                        <div class="hero-cta">
+                            <a href="#" data-subpage="projects" class="btn">Enter the Basement</a>
+                            <a href="#" data-subpage="about" class="btn btn-ghost">Who did this?</a>
+                        </div>
+                        <div class="hero-scribble">
+                            <svg viewBox="0 0 200 20" class="scribble-line">
+                                <path d="M0 10 Q25 2 50 10 Q75 18 100 10 Q125 2 150 10 Q175 18 200 10" stroke="currentColor" stroke-width="1.5" fill="none" opacity="0.15"/>
+                            </svg>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Row 1: Projects -->
+            <!-- Row 1: Featured Games -->
             <div class="glass-row" data-row="1">
                 <div class="glass-panel" data-row="1" data-subpage="projects">
                     <div class="glass-content">
-                        <div class="panel-label">Projects</div>
-                        <h3>Project One</h3>
-                        <p>Interactive web experiences with React & Node.js</p>
-                        <div class="panel-tags"><span>React</span><span>Node.js</span></div>
+                        <div class="panel-label">⛧ Featured</div>
+                        <div class="game-preview">
+                            <div class="game-creature creature-isaac">
+                                <svg viewBox="0 0 80 80" fill="none">
+                                    <circle cx="40" cy="38" r="24" stroke="currentColor" stroke-width="2"/>
+                                    <circle cx="32" cy="32" r="5" fill="currentColor" opacity="0.7"/>
+                                    <circle cx="48" cy="32" r="5" fill="currentColor" opacity="0.7"/>
+                                    <circle cx="32" cy="32" r="2.5" fill="var(--bg)"/>
+                                    <circle cx="48" cy="32" r="2.5" fill="var(--bg)"/>
+                                    <path d="M34 44 Q40 50 46 44" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                                    <path d="M32 62 L32 72" stroke="currentColor" stroke-width="1.5"/>
+                                    <path d="M48 62 L48 72" stroke="currentColor" stroke-width="1.5"/>
+                                    <path d="M26 48 L18 54" stroke="currentColor" stroke-width="1.5"/>
+                                    <path d="M54 48 L62 54" stroke="currentColor" stroke-width="1.5"/>
+                                </svg>
+                            </div>
+                            <h3>Unnamed Creature RPG</h3>
+                            <p>A roguelike where every run breeds new abominations</p>
+                        </div>
+                        <div class="panel-tags"><span>Systems</span><span>Procedural</span></div>
                     </div>
                 </div>
                 <div class="glass-panel" data-row="1" data-subpage="projects">
                     <div class="glass-content">
-                        <div class="panel-label">Projects</div>
-                        <h3>Project Two</h3>
-                        <p>Real-time collaboration platform</p>
-                        <div class="panel-tags"><span>Vue</span><span>Firebase</span></div>
+                        <div class="panel-label">⛧ Featured</div>
+                        <div class="game-preview">
+                            <div class="game-creature creature-cat">
+                                <svg viewBox="0 0 80 80" fill="none">
+                                    <ellipse cx="40" cy="42" rx="18" ry="20" stroke="currentColor" stroke-width="2"/>
+                                    <path d="M24 28 L28 12 L34 24" stroke="currentColor" stroke-width="2" fill="none"/>
+                                    <path d="M56 28 L52 12 L46 24" stroke="currentColor" stroke-width="2" fill="none"/>
+                                    <circle cx="34" cy="36" r="4" fill="currentColor" opacity="0.7"/>
+                                    <circle cx="46" cy="36" r="4" fill="currentColor" opacity="0.7"/>
+                                    <line x1="34" y1="36" x2="46" y2="36" stroke="currentColor" stroke-width="0.5" opacity="0.3"/>
+                                    <path d="M37 44 Q40 47 43 44" stroke="currentColor" stroke-width="1.2" fill="none"/>
+                                    <path d="M28 62 Q40 70 52 62" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                                </svg>
+                            </div>
+                            <h3>Feline Machinations</h3>
+                            <p>Cat genetics simulator meets eldritch horror</p>
+                        </div>
+                        <div class="panel-tags"><span>Genetics</span><span>Simulation</span></div>
                     </div>
                 </div>
                 <div class="glass-panel" data-row="1" data-subpage="projects">
                     <div class="glass-content">
-                        <div class="panel-label">Projects</div>
-                        <h3>Project Three</h3>
-                        <p>AI-powered creative tools</p>
-                        <div class="panel-tags"><span>Python</span><span>AI/ML</span></div>
+                        <div class="panel-label">⛧ Featured</div>
+                        <div class="game-preview">
+                            <div class="game-creature creature-ghost">
+                                <svg viewBox="0 0 80 80" fill="none">
+                                    <path d="M20 40 Q20 14 40 14 Q60 14 60 40 L60 60 Q56 54 52 60 Q48 54 44 60 Q40 54 36 60 Q32 54 28 60 Q24 54 20 60 Z" stroke="currentColor" stroke-width="2" fill="none"/>
+                                    <circle cx="32" cy="34" r="5" fill="currentColor" opacity="0.7"/>
+                                    <circle cx="48" cy="34" r="5" fill="currentColor" opacity="0.7"/>
+                                    <ellipse cx="40" cy="46" rx="4" ry="5" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                                </svg>
+                            </div>
+                            <h3>Spectral Decay</h3>
+                            <p>You are the haunting. Systems-driven ghost sim.</p>
+                        </div>
+                        <div class="panel-tags"><span>Narrative</span><span>Systems</span></div>
                     </div>
                 </div>
             </div>
 
-            <!-- Row 2: About + Skills -->
+            <!-- Row 2: Design Philosophy -->
             <div class="glass-row" data-row="2">
                 <div class="glass-panel panel-wide" data-row="2" data-subpage="about">
                     <div class="glass-content">
-                        <div class="panel-label">About</div>
-                        <h3>Who I Am</h3>
-                        <p>I focus on clean structure, strong visuals, and thoughtful interaction. Building systems that feel precise, aesthetic, and intentional.</p>
+                        <div class="panel-label">✦ Design Philosophy</div>
+                        <h3 class="handwritten">"Systems should feel alive, like they're breathing and mutating on their own"</h3>
+                        <p>Procedural generation isn't randomness — it's teaching the machine to dream in the same nightmares you do.</p>
                     </div>
                 </div>
                 <div class="glass-panel" data-row="2" data-subpage="about">
                     <div class="glass-content">
-                        <div class="panel-label">Skills</div>
+                        <div class="panel-label">✦ Toolkit</div>
                         <div class="skill-chips">
-                            <span>Frontend</span><span>Backend</span>
-                            <span>Design</span><span>DevOps</span>
+                            <span>Unity</span><span>Godot</span>
+                            <span>Proc-Gen</span><span>Systems</span>
+                            <span>Pixel Art</span><span>Lua</span>
                         </div>
                     </div>
                 </div>
@@ -108,10 +217,10 @@
                         <div class="panel-person">
                             <img src="https://media.licdn.com/dms/image/v2/C4E03AQHBf3jTQ0QDoA/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1611150955292?e=2147483647&v=beta&t=cZ3k2oo_c3UBkRAj-p-xYWz7knrQCYmzztDWr-ACPEQ"
                                  alt="Anil Tahmaz"
-                                 onerror="this.src='https://ui-avatars.com/api/?name=AT&size=200&background=111&color=00ffd5&bold=true'">
+                                 onerror="this.src='https://ui-avatars.com/api/?name=AT&size=200&background=1a0a2e&color=c084fc&bold=true'">
                             <div>
                                 <h3>Anil Tahmaz</h3>
-                                <p class="person-role">Creative Developer</p>
+                                <p class="person-role">Creative Alchemist</p>
                             </div>
                         </div>
                     </div>
@@ -121,19 +230,19 @@
                         <div class="panel-person">
                             <img src="https://media.licdn.com/dms/image/v2/D4E03AQGKmA8lxJjmhw/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1695393294633?e=2147483647&v=beta&t=8H_ow7FWLJO3B6bT_dJ6DWpKEsxhEuFgHkKR8XnSJ9E"
                                  alt="Artem Shatail"
-                                 onerror="this.src='https://ui-avatars.com/api/?name=AS&size=200&background=111&color=b388ff&bold=true'">
+                                 onerror="this.src='https://ui-avatars.com/api/?name=AS&size=200&background=1a0a2e&color=a78bfa&bold=true'">
                             <div>
                                 <h3>Artem Shatail</h3>
-                                <p class="person-role">Software Engineer</p>
+                                <p class="person-role">Code Necromancer</p>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="glass-panel" data-row="3" data-subpage="contact">
                     <div class="glass-content">
-                        <div class="panel-label">Contact</div>
-                        <h3>Get in Touch</h3>
-                        <p>Let's build something together</p>
+                        <div class="panel-label">☽ Summon</div>
+                        <h3 class="handwritten">Send a raven</h3>
+                        <p>Or an email. Either works.</p>
                     </div>
                 </div>
             </div>
@@ -142,7 +251,7 @@
     </div>
 
     <div class="scroll-indicator" id="scrollIndicator">
-        <span>Scroll</span>
+        <span>Descend</span>
         <div class="scroll-arrow"></div>
     </div>
 </div>
@@ -154,72 +263,162 @@
     <div class="subpage-scroll" id="subpageScroll">
         <button class="back-btn" id="backBtn">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-            Back
+            Ascend
         </button>
 
-        <!-- Projects -->
+        <!-- Projects/Creations -->
         <div class="subpage" id="sub-projects">
             <div class="section-fog"></div>
             <div class="subpage-content">
-                <h2 class="subpage-title">Selected Projects</h2>
-                <p class="subpage-intro">A collection of work spanning web applications, creative tools, and interactive experiences.</p>
+                <h2 class="subpage-title">The Creations</h2>
+                <p class="subpage-intro handwritten-light">"Every game is a small universe of interlocking miseries and joys"</p>
                 <div class="subpage-grid">
                     <div class="subpage-card">
-                        <div class="card-number">01</div>
-                        <h3>Project One</h3>
-                        <p>A comprehensive web application built with React and Node.js, featuring real-time data visualization and interactive dashboards.</p>
-                        <div class="panel-tags"><span>React</span><span>Node.js</span><span>D3.js</span></div>
+                        <div class="card-number">I</div>
+                        <div class="card-creature">
+                            <svg viewBox="0 0 100 80" fill="none">
+                                <circle cx="50" cy="38" r="28" stroke="currentColor" stroke-width="2" opacity="0.3"/>
+                                <circle cx="40" cy="32" r="6" fill="currentColor" opacity="0.25"/>
+                                <circle cx="60" cy="32" r="6" fill="currentColor" opacity="0.25"/>
+                                <circle cx="40" cy="32" r="3" fill="var(--bg)"/>
+                                <circle cx="60" cy="32" r="3" fill="var(--bg)"/>
+                                <path d="M42 48 Q50 56 58 48" stroke="currentColor" stroke-width="1.5" fill="none" opacity="0.2"/>
+                            </svg>
+                        </div>
+                        <h3>Unnamed Creature RPG</h3>
+                        <p>A roguelike breeding simulator where every run generates unique creatures through a deep genetics system. Each abomination inherits traits, mutations, and visual features from its parents.</p>
+                        <div class="card-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Role</span>
+                                <span>Lead Designer & Systems Architect</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Engine</span>
+                                <span>Unity / C#</span>
+                            </div>
+                        </div>
+                        <div class="panel-tags"><span>Procedural</span><span>Genetics</span><span>Roguelike</span><span>Breeding</span></div>
                     </div>
                     <div class="subpage-card">
-                        <div class="card-number">02</div>
-                        <h3>Project Two</h3>
-                        <p>Real-time collaboration platform enabling teams to work together seamlessly with live editing and instant synchronization.</p>
-                        <div class="panel-tags"><span>Vue</span><span>Firebase</span><span>WebRTC</span></div>
+                        <div class="card-number">II</div>
+                        <div class="card-creature">
+                            <svg viewBox="0 0 100 80" fill="none">
+                                <ellipse cx="50" cy="42" rx="22" ry="24" stroke="currentColor" stroke-width="2" opacity="0.3"/>
+                                <path d="M30 28 L36 10 L42 24" stroke="currentColor" stroke-width="2" fill="none" opacity="0.25"/>
+                                <path d="M70 28 L64 10 L58 24" stroke="currentColor" stroke-width="2" fill="none" opacity="0.25"/>
+                                <circle cx="42" cy="36" r="4" fill="currentColor" opacity="0.25"/>
+                                <circle cx="58" cy="36" r="4" fill="currentColor" opacity="0.25"/>
+                            </svg>
+                        </div>
+                        <h3>Feline Machinations</h3>
+                        <p>A cat breeding simulation that starts cute and spirals into cosmic horror. Complex genetics meet emergent narrative as your cattery develops a mind of its own.</p>
+                        <div class="card-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Role</span>
+                                <span>Game Designer & Writer</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Engine</span>
+                                <span>Godot / GDScript</span>
+                            </div>
+                        </div>
+                        <div class="panel-tags"><span>Simulation</span><span>Horror</span><span>Narrative</span><span>Genetics</span></div>
                     </div>
                     <div class="subpage-card">
-                        <div class="card-number">03</div>
-                        <h3>Project Three</h3>
-                        <p>AI-powered creative tools that help designers and developers generate, iterate, and refine their ideas faster.</p>
-                        <div class="panel-tags"><span>Python</span><span>TensorFlow</span><span>FastAPI</span></div>
+                        <div class="card-number">III</div>
+                        <div class="card-creature">
+                            <svg viewBox="0 0 100 80" fill="none">
+                                <path d="M25 40 Q25 12 50 12 Q75 12 75 40 L75 60 Q70 52 65 60 Q60 52 55 60 Q50 52 45 60 Q40 52 35 60 Q30 52 25 60 Z" stroke="currentColor" stroke-width="2" fill="none" opacity="0.3"/>
+                                <circle cx="40" cy="32" r="5" fill="currentColor" opacity="0.25"/>
+                                <circle cx="60" cy="32" r="5" fill="currentColor" opacity="0.25"/>
+                                <ellipse cx="50" cy="44" rx="4" ry="5" stroke="currentColor" stroke-width="1.5" fill="none" opacity="0.2"/>
+                            </svg>
+                        </div>
+                        <h3>Spectral Decay</h3>
+                        <p>Invert the haunted house formula. You ARE the ghost. A systems-driven haunting simulator where fear is a resource and memories are your weapon.</p>
+                        <div class="card-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Role</span>
+                                <span>Systems Designer & Creative Director</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Engine</span>
+                                <span>Custom / Lua</span>
+                            </div>
+                        </div>
+                        <div class="panel-tags"><span>Systems</span><span>Narrative</span><span>Horror</span><span>Simulation</span></div>
                     </div>
                     <div class="subpage-card">
-                        <div class="card-number">04</div>
-                        <h3>Project Four</h3>
-                        <p>Mobile-first progressive web app with offline capabilities and native-like performance across all devices.</p>
-                        <div class="panel-tags"><span>PWA</span><span>TypeScript</span><span>Workbox</span></div>
+                        <div class="card-number">IV</div>
+                        <div class="card-creature">
+                            <svg viewBox="0 0 100 80" fill="none">
+                                <path d="M50 60 Q20 45 20 25 Q20 8 35 8 Q50 8 50 22 Q50 8 65 8 Q80 8 80 25 Q80 45 50 60Z" stroke="currentColor" stroke-width="2" fill="none" opacity="0.3"/>
+                                <line x1="38" y1="60" x2="34" y2="72" stroke="currentColor" stroke-width="1.5" opacity="0.2"/>
+                                <line x1="62" y1="60" x2="66" y2="72" stroke="currentColor" stroke-width="1.5" opacity="0.2"/>
+                            </svg>
+                        </div>
+                        <h3>Heartbeat Dungeon</h3>
+                        <p>A rhythm-roguelike where the dungeon's layout, enemies, and loot all pulse to a procedurally generated soundtrack. Your heartbeat is the metronome.</p>
+                        <div class="card-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Role</span>
+                                <span>Designer & Audio Programmer</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Engine</span>
+                                <span>Unity / FMOD</span>
+                            </div>
+                        </div>
+                        <div class="panel-tags"><span>Rhythm</span><span>Roguelike</span><span>Audio</span><span>Procedural</span></div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- About -->
+        <!-- About / The Designer -->
         <div class="subpage" id="sub-about">
             <div class="section-fog"></div>
             <div class="subpage-content">
-                <h2 class="subpage-title">About Me</h2>
+                <h2 class="subpage-title">The Designer</h2>
+                <p class="subpage-intro handwritten-light">"I make the things that crawl in the beautiful dark"</p>
                 <div class="about-layout">
                     <div class="about-block">
-                        <p>I focus on clean structure, strong visuals, and thoughtful interaction. I enjoy building systems that feel precise, aesthetic, and intentional.</p>
-                        <p>With years of experience across frontend, backend, and design, I bring a holistic approach to every project. Every pixel matters, every interaction should feel natural.</p>
+                        <p>I'm a game designer and systems architect obsessed with the space where procedural generation meets hand-crafted emotion. I believe the best games feel alive — like small ecosystems that breathe, mutate, and surprise even their creators.</p>
+                        <p>My work draws from the grotesque beauty of artists like Edmund McMillen, the systemic depth of Dwarf Fortress, and the raw energy of Gogol Bordello. Start wearing purple.</p>
+                        <p>Every system I design asks one question: <em>"What happens if we let it grow?"</em></p>
+                        <div class="about-manifesto">
+                            <h4 class="handwritten">Design Mantras</h4>
+                            <ul>
+                                <li>Systems over scripts</li>
+                                <li>Emergent stories beat written ones</li>
+                                <li>Ugly-beautiful is a valid aesthetic</li>
+                                <li>If the AI surprises you, you've won</li>
+                                <li>Complexity hidden behind simplicity</li>
+                            </ul>
+                        </div>
                     </div>
                     <div class="about-skills">
-                        <h3>Skills & Tools</h3>
+                        <h3>Toolkit & Dark Arts</h3>
                         <div class="skills-detailed">
                             <div class="skill-category">
-                                <h4>Frontend</h4>
-                                <span>React</span><span>Vue</span><span>TypeScript</span><span>CSS/SASS</span>
-                            </div>
-                            <div class="skill-category">
-                                <h4>Backend</h4>
-                                <span>Node.js</span><span>Python</span><span>PostgreSQL</span><span>Redis</span>
-                            </div>
-                            <div class="skill-category">
                                 <h4>Design</h4>
-                                <span>Figma</span><span>Motion</span><span>3D</span><span>Typography</span>
+                                <span>Systems Design</span><span>Level Design</span><span>Proc-Gen</span><span>Game Feel</span>
                             </div>
                             <div class="skill-category">
-                                <h4>DevOps</h4>
-                                <span>Docker</span><span>AWS</span><span>CI/CD</span><span>Linux</span>
+                                <h4>Engines</h4>
+                                <span>Unity</span><span>Godot</span><span>Custom</span><span>Löve2D</span>
+                            </div>
+                            <div class="skill-category">
+                                <h4>Code</h4>
+                                <span>C#</span><span>Lua</span><span>GDScript</span><span>Python</span>
+                            </div>
+                            <div class="skill-category">
+                                <h4>Art & Audio</h4>
+                                <span>Pixel Art</span><span>Aseprite</span><span>FMOD</span><span>Hand-drawn</span>
+                            </div>
+                            <div class="skill-category">
+                                <h4>Philosophy</h4>
+                                <span>Emergent Narrative</span><span>MDA Framework</span><span>Player Psychology</span><span>Feedback Loops</span>
                             </div>
                         </div>
                     </div>
@@ -227,60 +426,77 @@
             </div>
         </div>
 
-        <!-- References -->
+        <!-- References / Fellow Freaks -->
         <div class="subpage" id="sub-references">
             <div class="section-fog"></div>
             <div class="subpage-content">
-                <h2 class="subpage-title">Awesome Coworkers</h2>
-                <p class="subpage-intro">Talented people I've had the privilege of collaborating with.</p>
+                <h2 class="subpage-title">Fellow Freaks</h2>
+                <p class="subpage-intro handwritten-light">"The best collaborators are the ones who make you question your own sanity — in the best way"</p>
                 <div class="references-list">
                     <a href="https://aniltahmaz.com" target="_blank" rel="noopener noreferrer" class="ref-card">
                         <img src="https://media.licdn.com/dms/image/v2/C4E03AQHBf3jTQ0QDoA/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1611150955292?e=2147483647&v=beta&t=cZ3k2oo_c3UBkRAj-p-xYWz7knrQCYmzztDWr-ACPEQ"
                              alt="Anil Tahmaz"
-                             onerror="this.src='https://ui-avatars.com/api/?name=AT&size=200&background=111&color=00ffd5&bold=true'">
+                             onerror="this.src='https://ui-avatars.com/api/?name=AT&size=200&background=1a0a2e&color=c084fc&bold=true'">
                         <div class="ref-info">
                             <h3>Anil Tahmaz</h3>
-                            <p class="ref-role">Creative Developer & Designer</p>
-                            <p>Exceptional talent blending technical excellence with artistic vision. Creates immersive digital experiences that push boundaries.</p>
+                            <p class="ref-role">Creative Alchemist & Visual Sorcerer</p>
+                            <p>Turns technical constraints into artistic opportunities. The kind of person who makes you believe impossible things are just undiscovered techniques.</p>
                             <span class="ref-link">aniltahmaz.com <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg></span>
                         </div>
                     </a>
                     <a href="https://www.linkedin.com/in/artem-shatail-559343340/" target="_blank" rel="noopener noreferrer" class="ref-card">
                         <img src="https://media.licdn.com/dms/image/v2/D4E03AQGKmA8lxJjmhw/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1695393294633?e=2147483647&v=beta&t=8H_ow7FWLJO3B6bT_dJ6DWpKEsxhEuFgHkKR8XnSJ9E"
                              alt="Artem Shatail"
-                             onerror="this.src='https://ui-avatars.com/api/?name=AS&size=200&background=111&color=b388ff&bold=true'">
+                             onerror="this.src='https://ui-avatars.com/api/?name=AS&size=200&background=1a0a2e&color=a78bfa&bold=true'">
                         <div class="ref-info">
                             <h3>Artem Shatail</h3>
-                            <p class="ref-role">Software Engineer</p>
-                            <p>Skilled engineer with a passion for building robust, scalable systems. Brings clarity and precision to complex technical challenges.</p>
+                            <p class="ref-role">Code Necromancer & Backend Warlock</p>
+                            <p>Resurrects dead codebases and breathes life into systems that shouldn't work but somehow do. Uncomfortably good at optimization.</p>
                             <span class="ref-link">linkedin.com/in/artem-shatail <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg></span>
                         </div>
                     </a>
-                    <a href="#" target="_blank" rel="noopener noreferrer" class="ref-card">
-                        <img src="https://ui-avatars.com/api/?name=JD&size=200&background=111&color=ff6b9d&bold=true" alt="Jane Doe">
+                    <a href="#" class="ref-card">
+                        <img src="https://ui-avatars.com/api/?name=JD&size=200&background=1a0a2e&color=f472b6&bold=true" alt="Jane Doe">
                         <div class="ref-info">
                             <h3>Jane Doe</h3>
-                            <p class="ref-role">UX Lead & Strategist</p>
-                            <p>Transforms complex problems into elegant, intuitive solutions with meticulous attention to detail.</p>
-                            <span class="ref-link">janedoe.design <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg></span>
+                            <p class="ref-role">Pixel Witch & Animation Goblin</p>
+                            <p>Makes sprites that have more personality in 16x16 pixels than most characters have in full 3D. Her walk cycles haunt my dreams.</p>
+                            <span class="ref-link">janedoe.art <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg></span>
                         </div>
                     </a>
                 </div>
             </div>
         </div>
 
-        <!-- Contact -->
+        <!-- Contact / Summon -->
         <div class="subpage" id="sub-contact">
             <div class="section-fog"></div>
             <div class="subpage-content">
-                <h2 class="subpage-title">Get in Touch</h2>
-                <p class="subpage-intro">Have a project in mind or just want to say hello? I'd love to hear from you.</p>
+                <h2 class="subpage-title">Summon Me</h2>
+                <p class="subpage-intro handwritten-light">"Draw the sigil, light the candle, send the email"</p>
                 <form class="contact-form" id="contactForm">
-                    <input type="text" placeholder="Your Name" required>
-                    <input type="email" placeholder="Your Email" required>
-                    <textarea rows="5" placeholder="Your Message" required></textarea>
-                    <button type="submit" class="btn">Send Message</button>
+                    <input type="text" placeholder="Your true name" required>
+                    <input type="email" placeholder="Your raven's address (email)" required>
+                    <textarea rows="6" placeholder="Speak your dark purpose..." required></textarea>
+                    <button type="submit" class="btn">Send into the Void</button>
                 </form>
+                <div class="contact-alt">
+                    <p>Or find me in the usual haunts:</p>
+                    <div class="social-links">
+                        <a href="#" class="social-link">
+                            <span>itch.io</span>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg>
+                        </a>
+                        <a href="#" class="social-link">
+                            <span>GitHub</span>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg>
+                        </a>
+                        <a href="#" class="social-link">
+                            <span>Twitter/X</span>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg>
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
 
