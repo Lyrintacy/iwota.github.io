@@ -151,23 +151,24 @@ class MascotController {
         this.offsets = [];
         for (var i = 0; i < this.mascots.length; i++) {
             this.offsets.push({
-                phase: rand(0, Math.PI * 2), speed: rand(0.3, 0.7),
-                ampX: rand(15, 40), ampY: rand(20, 50)
+                phase: rand(0, Math.PI * 2), speed: rand(0.25, 0.55),
+                ampX: rand(18, 45), ampY: rand(25, 55)
             });
         }
     }
     update(scrollPct, time) {
-        var fadeIn = smoothstep(clamp((scrollPct - 0.15) / 0.1, 0, 1));
-        var fadeOut = 1 - smoothstep(clamp((scrollPct - 0.58) / 0.08, 0, 1));
+        var fadeIn = smoothstep(clamp((scrollPct - 0.12) / 0.08, 0, 1));
+        var fadeOut = 1 - smoothstep(clamp((scrollPct - 0.55) / 0.1, 0, 1));
         var visibility = fadeIn * fadeOut;
         for (var i = 0; i < this.mascots.length; i++) {
             var m = this.mascots[i]; if (!m) continue;
             var o = this.offsets[i];
             var floatX = Math.sin(time * o.speed + o.phase) * o.ampX;
             var floatY = Math.cos(time * o.speed * 0.7 + o.phase * 1.3) * o.ampY;
-            var rise = scrollPct * -150;
-            m.style.opacity = clamp(visibility, 0, 0.7);
-            m.style.transform = 'translate(' + floatX + 'px,' + (floatY + rise) + 'px)';
+            var rise = scrollPct * -120;
+            // more visible — opacity up to 0.85
+            m.style.opacity = clamp(visibility * 1.2, 0, 0.85);
+            m.style.transform = 'translate(' + floatX + 'px,' + (floatY + rise) + 'px) scale(' + (0.9 + visibility * 0.2) + ')';
         }
     }
 }

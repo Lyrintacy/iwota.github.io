@@ -313,3 +313,27 @@ body{font-family:'Inter',-apple-system,sans-serif;background:var(--dark);color:v
 }
 @media(max-width:480px){.zone-hero h1{font-size:1.6rem}.logo{font-size:.9rem}.rcard img{width:55px;height:55px}}
 @media(hover:none)and(pointer:coarse){.cursor-glow{display:none}.pcard:hover,.rcard:hover{transform:none}}
+
+/* ═══ Taller landscape layers ═══ */
+.land-layer{
+    position:absolute;
+    bottom:0;left:-5%;width:110%;
+    will-change:transform,opacity;
+    transform-origin:center bottom;
+    /* layers extend further up */
+}
+.land-layer svg{display:block;width:100%;height:auto;min-height:180px}
+
+/* ═══ Project grid hovers as one group ═══ */
+.pgrid{
+    position:relative;
+    padding:1rem;
+    margin:-1rem;
+    border-radius:20px;
+}
+
+/* ═══ Mascots bigger and brighter ═══ */
+.mascot-smiley{width:65px;height:65px;left:10%;top:48%}
+.mascot-cat{width:78px;height:78px;left:48%;top:42%}
+.mascot-ghost{width:72px;height:72px;left:80%;top:52%}
+.mascot{filter:drop-shadow(0 0 16px rgba(var(--pri-rgb),.4)) drop-shadow(0 0 30px rgba(var(--pri-rgb),.15))}
