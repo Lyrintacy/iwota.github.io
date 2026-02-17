@@ -32,7 +32,7 @@ function prideColor(idx, offset = 0) {
 
 const CONFIG = {
     floating: {
-        count: 40,
+        count: 45,
         radius: 130,
         repel: 80,
         speed: 0.2,
@@ -54,6 +54,7 @@ const CONFIG = {
             'git push origin basement',
             'npm run generate-horrors',
             '@keyframes writhe { }',
+            'transform: rot(666deg);',
             'console.log("guppy found");',
             'requestAnimationFrame(suffer)',
             'new Promise(escape) // rejected',

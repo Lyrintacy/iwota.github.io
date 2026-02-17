@@ -11,175 +11,227 @@
 </head>
 <body>
 
-<!-- Fixed sky with clouds -->
+<!-- Fixed sky -->
 <div class="sky" id="sky">
-    <div class="clouds-container" id="cloudsContainer">
-        <div class="cloud c1"><div class="cb"></div><div class="cb"></div><div class="cb"></div></div>
-        <div class="cloud c2"><div class="cb"></div><div class="cb"></div></div>
-        <div class="cloud c3"><div class="cb"></div><div class="cb"></div><div class="cb"></div></div>
-        <div class="cloud c4"><div class="cb"></div><div class="cb"></div></div>
-        <div class="cloud c5"><div class="cb"></div><div class="cb"></div><div class="cb"></div></div>
-        <div class="cloud c6"><div class="cb"></div><div class="cb"></div></div>
-        <div class="cloud c7"><div class="cb"></div><div class="cb"></div><div class="cb"></div></div>
-        <div class="cloud c8"><div class="cb"></div><div class="cb"></div></div>
-    </div>
+    <div class="cloud cloud-1"></div>
+    <div class="cloud cloud-2"></div>
+    <div class="cloud cloud-3"></div>
+    <div class="cloud cloud-4"></div>
+    <div class="cloud cloud-5"></div>
+    <div class="cloud cloud-6"></div>
+    <div class="cloud cloud-7"></div>
 </div>
 
-<!-- Landscape layers container — populated by JS -->
-<div class="landscape-wrap" id="landscapeWrap"></div>
+<!-- Canvas for pride strings woven into landscape -->
+<canvas id="ribbonCanvas"></canvas>
 
-<!-- Pride string canvases — one per gap between landscape layers -->
-<div class="string-layers" id="stringLayers"></div>
+<!-- Parallax landscape layers — rendered by JS -->
+<div class="landscape-container" id="landscapeContainer"></div>
 
-<!-- Floating code text -->
-<div class="floating-strings" id="floatingStrings"></div>
-<div class="cursor-glow" id="cursorGlow"></div>
-
-<!-- Scrollable content on top -->
+<!-- Scrollable content -->
 <div class="scroll-content" id="scrollContent">
 
+    <!-- Zone 0: Sky / Welcome -->
     <section class="zone zone-hero" id="home">
-        <div class="zone-inner">
+        <div class="zone-content">
             <p class="whisper">// start wearing purple</p>
             <h1><span class="gtext">Welcome to<br>My Basement</span></h1>
             <h2 class="hero-sub">Game Designer <span class="amp">&amp;</span> Systems Architect</h2>
-            <p class="hero-desc">Crafting grotesque beauty from elegant systems. Where dark-cute aesthetics meet obsessive mechanical design.</p>
+            <p class="hero-desc">Crafting grotesque beauty from elegant systems.<br>Where dark-cute aesthetics meet obsessive mechanical design.</p>
             <div class="hero-cta">
                 <a href="#projects" class="btn">Descend</a>
-                <a href="#about" class="btn btn-outline">Who lurks here?</a>
+                <a href="#about" class="btn btn-ghost">Who lurks here?</a>
             </div>
         </div>
         <div class="scroll-hint">
             <span>Scroll to descend</span>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.5"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+            <div class="scroll-arrow"></div>
         </div>
     </section>
 
+    <!-- Zone 1: Projects -->
     <section class="zone" id="projects">
-        <div class="zone-inner">
+        <div class="zone-content">
             <h2 class="section-title">The Creations</h2>
             <p class="section-sub handwritten">"Every game is a small universe of interlocking miseries and joys"</p>
-            <div class="pgrid">
-                <article class="pcard">
-                    <div class="pcard-num">I</div>
-                    <div class="pcard-icon">
-                        <svg viewBox="0 0 80 80" fill="none"><circle cx="40" cy="38" r="22" stroke="currentColor" stroke-width="2" opacity="0.5"/><circle cx="32" cy="32" r="5" fill="currentColor" opacity="0.4"/><circle cx="48" cy="32" r="5" fill="currentColor" opacity="0.4"/><circle cx="32" cy="32" r="2.5" fill="#1a0e35"/><circle cx="48" cy="32" r="2.5" fill="#1a0e35"/><path d="M34 46Q40 52 46 46" stroke="currentColor" stroke-width="1.5" fill="none" opacity="0.3"/><line x1="32" y1="60" x2="32" y2="70" stroke="currentColor" stroke-width="1.5" opacity="0.2"/><line x1="48" y1="60" x2="48" y2="70" stroke="currentColor" stroke-width="1.5" opacity="0.2"/></svg>
+            <div class="project-grid">
+                <div class="project-card">
+                    <div class="card-num">I</div>
+                    <div class="card-creature">
+                        <svg viewBox="0 0 80 80" fill="none">
+                            <circle cx="40" cy="38" r="22" stroke="currentColor" stroke-width="2" opacity="0.5"/>
+                            <circle cx="32" cy="32" r="5" fill="currentColor" opacity="0.4"/>
+                            <circle cx="48" cy="32" r="5" fill="currentColor" opacity="0.4"/>
+                            <circle cx="32" cy="32" r="2.5" fill="#1a0e35"/>
+                            <circle cx="48" cy="32" r="2.5" fill="#1a0e35"/>
+                            <path d="M34 46 Q40 52 46 46" stroke="currentColor" stroke-width="1.5" fill="none" opacity="0.3"/>
+                            <line x1="32" y1="60" x2="32" y2="70" stroke="currentColor" stroke-width="1.5" opacity="0.2"/>
+                            <line x1="48" y1="60" x2="48" y2="70" stroke="currentColor" stroke-width="1.5" opacity="0.2"/>
+                        </svg>
                     </div>
                     <h3>Unnamed Creature RPG</h3>
-                    <p>A roguelike breeding sim. Every run generates unique creatures through deep genetics. Each abomination inherits traits from its parents.</p>
-                    <div class="pcard-meta"><span class="pm-role">Lead Designer</span><span class="pm-tech">Unity / C#</span></div>
-                    <div class="pcard-tags"><span>Procedural</span><span>Genetics</span><span>Roguelike</span></div>
-                </article>
-                <article class="pcard">
-                    <div class="pcard-num">II</div>
-                    <div class="pcard-icon">
-                        <svg viewBox="0 0 80 80" fill="none"><ellipse cx="40" cy="42" rx="18" ry="20" stroke="currentColor" stroke-width="2" opacity="0.5"/><path d="M24 28L28 12L34 24" stroke="currentColor" stroke-width="2" fill="none" opacity="0.4"/><path d="M56 28L52 12L46 24" stroke="currentColor" stroke-width="2" fill="none" opacity="0.4"/><circle cx="34" cy="36" r="4" fill="currentColor" opacity="0.4"/><circle cx="46" cy="36" r="4" fill="currentColor" opacity="0.4"/><path d="M37 48Q40 51 43 48" stroke="currentColor" stroke-width="1.2" fill="none" opacity="0.3"/></svg>
+                    <p>A roguelike breeding sim where every run generates unique creatures through deep genetics.</p>
+                    <div class="card-meta">
+                        <span class="meta-role">Lead Designer & Systems Architect</span>
+                        <span class="meta-engine">Unity / C#</span>
+                    </div>
+                    <div class="card-tags"><span>Procedural</span><span>Genetics</span><span>Roguelike</span></div>
+                </div>
+                <div class="project-card">
+                    <div class="card-num">II</div>
+                    <div class="card-creature">
+                        <svg viewBox="0 0 80 80" fill="none">
+                            <ellipse cx="40" cy="42" rx="18" ry="20" stroke="currentColor" stroke-width="2" opacity="0.5"/>
+                            <path d="M24 28 L28 12 L34 24" stroke="currentColor" stroke-width="2" fill="none" opacity="0.4"/>
+                            <path d="M56 28 L52 12 L46 24" stroke="currentColor" stroke-width="2" fill="none" opacity="0.4"/>
+                            <circle cx="34" cy="36" r="4" fill="currentColor" opacity="0.4"/>
+                            <circle cx="46" cy="36" r="4" fill="currentColor" opacity="0.4"/>
+                            <path d="M37 48 Q40 51 43 48" stroke="currentColor" stroke-width="1.2" fill="none" opacity="0.3"/>
+                        </svg>
                     </div>
                     <h3>Feline Machinations</h3>
-                    <p>Cat breeding simulation that starts cute and spirals into cosmic horror. Complex genetics meet emergent narrative.</p>
-                    <div class="pcard-meta"><span class="pm-role">Game Designer</span><span class="pm-tech">Godot / GDScript</span></div>
-                    <div class="pcard-tags"><span>Simulation</span><span>Horror</span><span>Genetics</span></div>
-                </article>
-                <article class="pcard">
-                    <div class="pcard-num">III</div>
-                    <div class="pcard-icon">
-                        <svg viewBox="0 0 80 80" fill="none"><path d="M20 40Q20 14 40 14Q60 14 60 40L60 58Q56 52 52 58Q48 52 44 58Q40 52 36 58Q32 52 28 58Q24 52 20 58Z" stroke="currentColor" stroke-width="2" fill="none" opacity="0.5"/><circle cx="32" cy="32" r="5" fill="currentColor" opacity="0.4"/><circle cx="48" cy="32" r="5" fill="currentColor" opacity="0.4"/><ellipse cx="40" cy="44" rx="4" ry="5" stroke="currentColor" stroke-width="1.5" fill="none" opacity="0.3"/></svg>
+                    <p>Cat breeding simulation that starts cute and spirals into cosmic horror.</p>
+                    <div class="card-meta">
+                        <span class="meta-role">Game Designer & Writer</span>
+                        <span class="meta-engine">Godot / GDScript</span>
+                    </div>
+                    <div class="card-tags"><span>Simulation</span><span>Horror</span><span>Genetics</span></div>
+                </div>
+                <div class="project-card">
+                    <div class="card-num">III</div>
+                    <div class="card-creature">
+                        <svg viewBox="0 0 80 80" fill="none">
+                            <path d="M20 40 Q20 14 40 14 Q60 14 60 40 L60 58 Q56 52 52 58 Q48 52 44 58 Q40 52 36 58 Q32 52 28 58 Q24 52 20 58Z" stroke="currentColor" stroke-width="2" fill="none" opacity="0.5"/>
+                            <circle cx="32" cy="32" r="5" fill="currentColor" opacity="0.4"/>
+                            <circle cx="48" cy="32" r="5" fill="currentColor" opacity="0.4"/>
+                            <ellipse cx="40" cy="44" rx="4" ry="5" stroke="currentColor" stroke-width="1.5" fill="none" opacity="0.3"/>
+                        </svg>
                     </div>
                     <h3>Spectral Decay</h3>
-                    <p>You ARE the ghost. Systems-driven haunting where fear is a resource and memories are weapons.</p>
-                    <div class="pcard-meta"><span class="pm-role">Systems Designer</span><span class="pm-tech">Custom / Lua</span></div>
-                    <div class="pcard-tags"><span>Systems</span><span>Narrative</span><span>Horror</span></div>
-                </article>
+                    <p>You ARE the ghost. Systems-driven haunting where fear is a resource.</p>
+                    <div class="card-meta">
+                        <span class="meta-role">Systems Designer</span>
+                        <span class="meta-engine">Custom / Lua</span>
+                    </div>
+                    <div class="card-tags"><span>Systems</span><span>Narrative</span><span>Horror</span></div>
+                </div>
             </div>
         </div>
     </section>
 
+    <!-- Zone 2: About -->
     <section class="zone" id="about">
-        <div class="zone-inner">
+        <div class="zone-content">
             <h2 class="section-title">The Designer</h2>
             <p class="section-sub handwritten">"I make the things that crawl in the beautiful dark"</p>
-            <div class="about-cols">
+            <div class="about-grid">
                 <div class="about-text">
-                    <p>I'm obsessed with the space where procedural generation meets hand-crafted emotion. The best games feel alive — ecosystems that breathe, mutate, and surprise their creators.</p>
+                    <p>I'm a game designer obsessed with the space where procedural generation meets hand-crafted emotion. The best games feel alive — ecosystems that breathe, mutate, and surprise even their creators.</p>
                     <p>My work draws from Edmund McMillen's grotesque beauty, Dwarf Fortress's systemic depth, and Gogol Bordello's raw energy.</p>
-                    <p>Every system asks: <em>"What happens if we let it grow?"</em></p>
-                    <div class="mantras">
+                    <p>Every system asks one question: <em>"What happens if we let it grow?"</em></p>
+                    <div class="manifesto">
                         <h4 class="handwritten">Design Mantras</h4>
                         <ul>
                             <li>Systems over scripts</li>
                             <li>Emergent stories beat written ones</li>
                             <li>Ugly-beautiful is valid</li>
                             <li>If the AI surprises you, you've won</li>
-                            <li>Complexity behind simplicity</li>
+                            <li>Complexity hidden behind simplicity</li>
                         </ul>
                     </div>
                 </div>
                 <div class="skills-col">
                     <h3>Toolkit</h3>
-                    <div class="sg"><h4>Design</h4><div class="st"><span>Systems</span><span>Levels</span><span>Proc-Gen</span><span>Game Feel</span></div></div>
-                    <div class="sg"><h4>Engines</h4><div class="st"><span>Unity</span><span>Godot</span><span>Custom</span><span>Löve2D</span></div></div>
-                    <div class="sg"><h4>Code</h4><div class="st"><span>C#</span><span>Lua</span><span>GDScript</span><span>Python</span></div></div>
-                    <div class="sg"><h4>Art</h4><div class="st"><span>Pixel Art</span><span>Aseprite</span><span>FMOD</span><span>Hand-drawn</span></div></div>
+                    <div class="skill-group"><h4>Design</h4><div class="stags"><span>Systems</span><span>Levels</span><span>Proc-Gen</span><span>Game Feel</span></div></div>
+                    <div class="skill-group"><h4>Engines</h4><div class="stags"><span>Unity</span><span>Godot</span><span>Custom</span><span>Löve2D</span></div></div>
+                    <div class="skill-group"><h4>Code</h4><div class="stags"><span>C#</span><span>Lua</span><span>GDScript</span><span>Python</span></div></div>
+                    <div class="skill-group"><h4>Art</h4><div class="stags"><span>Pixel Art</span><span>Aseprite</span><span>FMOD</span><span>Hand-drawn</span></div></div>
                 </div>
             </div>
         </div>
     </section>
 
+    <!-- Zone 3: People -->
     <section class="zone" id="references">
-        <div class="zone-inner">
+        <div class="zone-content">
             <h2 class="section-title">Fellow Freaks</h2>
             <p class="section-sub handwritten">"The best collaborators make you question your sanity"</p>
             <div class="ref-list">
-                <a href="https://aniltahmaz.com" target="_blank" rel="noopener noreferrer" class="rcard">
+                <a href="https://aniltahmaz.com" target="_blank" rel="noopener noreferrer" class="ref-card">
                     <img src="https://media.licdn.com/dms/image/v2/C4E03AQHBf3jTQ0QDoA/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1611150955292?e=2147483647&v=beta&t=cZ3k2oo_c3UBkRAj-p-xYWz7knrQCYmzztDWr-ACPEQ" alt="Anil Tahmaz" onerror="this.src='https://ui-avatars.com/api/?name=AT&size=200&background=1a0a2e&color=c084fc&bold=true'">
-                    <div><h3>Anil Tahmaz</h3><p class="rcard-role">Creative Alchemist</p><p>Turns constraints into art. Makes impossible things feel like undiscovered techniques.</p><span class="rcard-link">aniltahmaz.com →</span></div>
+                    <div class="ref-info">
+                        <h3>Anil Tahmaz</h3>
+                        <p class="ref-role">Creative Alchemist</p>
+                        <p>Turns constraints into art. Makes impossible things feel like undiscovered techniques.</p>
+                        <span class="ref-link">aniltahmaz.com →</span>
+                    </div>
                 </a>
-                <a href="https://www.linkedin.com/in/artem-shatail-559343340/" target="_blank" rel="noopener noreferrer" class="rcard">
+                <a href="https://www.linkedin.com/in/artem-shatail-559343340/" target="_blank" rel="noopener noreferrer" class="ref-card">
                     <img src="https://media.licdn.com/dms/image/v2/D4E03AQGKmA8lxJjmhw/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1695393294633?e=2147483647&v=beta&t=8H_ow7FWLJO3B6bT_dJ6DWpKEsxhEuFgHkKR8XnSJ9E" alt="Artem Shatail" onerror="this.src='https://ui-avatars.com/api/?name=AS&size=200&background=1a0a2e&color=a78bfa&bold=true'">
-                    <div><h3>Artem Shatail</h3><p class="rcard-role">Code Necromancer</p><p>Resurrects dead codebases. Uncomfortably good at optimization.</p><span class="rcard-link">linkedin.com/in/artem-shatail →</span></div>
+                    <div class="ref-info">
+                        <h3>Artem Shatail</h3>
+                        <p class="ref-role">Code Necromancer</p>
+                        <p>Resurrects dead codebases. Uncomfortably good at optimization.</p>
+                        <span class="ref-link">linkedin.com/in/artem-shatail →</span>
+                    </div>
                 </a>
-                <a href="#" class="rcard">
+                <a href="#" class="ref-card">
                     <img src="https://ui-avatars.com/api/?name=JD&size=200&background=1a0a2e&color=f472b6&bold=true" alt="Jane Doe">
-                    <div><h3>Jane Doe</h3><p class="rcard-role">Pixel Witch</p><p>More personality in 16×16 than most have in full 3D.</p><span class="rcard-link">janedoe.art →</span></div>
+                    <div class="ref-info">
+                        <h3>Jane Doe</h3>
+                        <p class="ref-role">Pixel Witch</p>
+                        <p>More personality in 16x16 pixels than most characters have in full 3D.</p>
+                        <span class="ref-link">janedoe.art →</span>
+                    </div>
                 </a>
             </div>
         </div>
     </section>
 
-    <section class="zone zone-deep" id="contact">
-        <div class="zone-inner">
+    <!-- Zone 4: Contact — the basement -->
+    <section class="zone zone-basement" id="contact">
+        <div class="zone-content">
             <h2 class="section-title">The Basement</h2>
-            <p class="section-sub handwritten">"You made it all the way down. Respect."</p>
-            <form class="cform" id="contactForm">
+            <p class="section-sub handwritten">"You made it. Draw the sigil, send the email."</p>
+            <form class="contact-form" id="contactForm">
                 <input type="text" placeholder="Your true name" required>
                 <input type="email" placeholder="Your raven's address" required>
                 <textarea rows="6" placeholder="Speak your dark purpose..." required></textarea>
                 <button type="submit" class="btn">Send into the Void</button>
             </form>
-            <div class="deep-links">
+            <div class="basement-links">
                 <a href="#">itch.io →</a>
                 <a href="#">GitHub →</a>
                 <a href="#">Twitter →</a>
             </div>
-            <p class="deep-copy">© 2025 YourName · Built in the dark</p>
+            <p class="basement-footer">© 2025 YourName · Built in the dark</p>
         </div>
     </section>
 
 </div>
 
+<!-- Floating code -->
+<div class="floating-strings" id="floatingStrings"></div>
+<div class="cursor-glow" id="cursorGlow"></div>
+
+<!-- Nav -->
 <header class="navbar" id="navbar">
-    <div class="logo"><span class="licon">☠</span><span>YourName</span></div>
-    <nav class="dnav">
+    <div class="logo" id="logoBtn"><span class="logo-icon">☠</span><span>YourName</span></div>
+    <nav class="desktop-nav">
         <a href="#home">Surface</a>
         <a href="#projects">Creations</a>
         <a href="#about">Designer</a>
         <a href="#references">Freaks</a>
         <a href="#contact">Basement</a>
     </nav>
-    <button class="mbtn" id="mobileMenuBtn" aria-label="Menu"><span></span><span></span><span></span></button>
+    <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Menu"><span></span><span></span><span></span></button>
 </header>
-<div class="mnav" id="mobileNav">
-    <a href="#home">Surface</a><a href="#projects">Creations</a><a href="#about">Designer</a><a href="#references">Freaks</a><a href="#contact">Basement</a>
+<div class="mobile-nav" id="mobileNav">
+    <a href="#home">Surface</a>
+    <a href="#projects">Creations</a>
+    <a href="#about">Designer</a>
+    <a href="#references">Freaks</a>
+    <a href="#contact">Basement</a>
 </div>
 <div class="scroll-progress" id="scrollProgress"></div>
 
