@@ -184,7 +184,7 @@ class LivingString {
             if (bloomIntensity > 0.2) {
                 for (let i = 0; i < points.length - 1; i += step * 2) {
                     const p1 = points[i], p2 = points[Math.min(i + step * 2, points.length - 1)];
-                    const w = (widths[i] || this.baseWidth) + 14 + bloomIntensity * 22;
+                    const w = (widths[i] || this.baseWidth) + 14 + bloomIntensity * 14;
                     const o = (opacities[i] || 0.2) * bloomIntensity * 0.22;
                     if (o < 0.002) continue;
                     ctx.beginPath();
