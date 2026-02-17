@@ -1,7 +1,3 @@
-/**
- * Shared utilities & configuration
- */
-
 const lerp = (a, b, t) => a + (b - a) * t;
 const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
 const rand = (lo, hi) => Math.random() * (hi - lo) + lo;

@@ -15,192 +15,278 @@
 <div class="cursor-glow" id="cursorGlow"></div>
 <div class="scroll-progress" id="scrollProgress"></div>
 
-<!-- Navigation -->
-<header class="navbar">
-    <div class="logo">YourName</div>
-    <nav class="desktop-nav">
-        <a href="#home">Home</a>
-        <a href="#projects">Projects</a>
-        <a href="#about">About</a>
-        <a href="#references">People</a>
-        <a href="#contact">Contact</a>
-    </nav>
-    <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Menu">
-        <span></span><span></span><span></span>
-    </button>
-</header>
+<!-- ══════════ MAIN PAGE ══════════ -->
+<div class="main-page" id="mainPage">
 
-<div class="mobile-nav" id="mobileNav">
-    <a href="#home">Home</a>
-    <a href="#projects">Projects</a>
-    <a href="#about">About</a>
-    <a href="#references">People</a>
-    <a href="#contact">Contact</a>
-</div>
+    <header class="navbar" id="navbar">
+        <div class="logo" id="logoBtn">YourName</div>
+        <nav class="desktop-nav">
+            <a data-subpage="projects">Projects</a>
+            <a data-subpage="about">About</a>
+            <a data-subpage="references">People</a>
+            <a data-subpage="contact">Contact</a>
+        </nav>
+        <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Menu">
+            <span></span><span></span><span></span>
+        </button>
+    </header>
 
-<!-- Hero -->
-<section id="home" class="hero" data-section="0">
-    <div class="section-fog"></div>
-    <div class="hero-content">
-        <h1>Hi, I'm <span>Oskar Wota</span></h1>
-        <p>Developer &amp; Designer crafting interactive, immersive digital experiences.</p>
-        <a href="#projects" class="btn">Explore Work</a>
+    <div class="mobile-nav" id="mobileNav">
+        <a data-subpage="projects">Projects</a>
+        <a data-subpage="about">About</a>
+        <a data-subpage="references">People</a>
+        <a data-subpage="contact">Contact</a>
     </div>
-    <div class="scroll-indicator">
+
+    <div class="main-content" id="mainContent">
+        <div class="glass-grid" id="glassGrid">
+
+            <!-- Row 0: Hero -->
+            <div class="glass-row" data-row="0">
+                <div class="glass-panel hero-panel" data-row="0">
+                    <div class="panel-fog"></div>
+                    <div class="glass-content">
+                        <h1>Hi, I'm <span class="gradient-text">Your Name</span></h1>
+                        <p>Developer &amp; Designer crafting interactive, immersive digital experiences.</p>
+                        <a href="#" data-subpage="projects" class="btn">Explore Work</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 1: Projects -->
+            <div class="glass-row" data-row="1">
+                <div class="glass-panel" data-row="1" data-subpage="projects">
+                    <div class="glass-content">
+                        <div class="panel-label">Projects</div>
+                        <h3>Project One</h3>
+                        <p>Interactive web experiences with React & Node.js</p>
+                        <div class="panel-tags"><span>React</span><span>Node.js</span></div>
+                    </div>
+                </div>
+                <div class="glass-panel" data-row="1" data-subpage="projects">
+                    <div class="glass-content">
+                        <div class="panel-label">Projects</div>
+                        <h3>Project Two</h3>
+                        <p>Real-time collaboration platform</p>
+                        <div class="panel-tags"><span>Vue</span><span>Firebase</span></div>
+                    </div>
+                </div>
+                <div class="glass-panel" data-row="1" data-subpage="projects">
+                    <div class="glass-content">
+                        <div class="panel-label">Projects</div>
+                        <h3>Project Three</h3>
+                        <p>AI-powered creative tools</p>
+                        <div class="panel-tags"><span>Python</span><span>AI/ML</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 2: About + Skills -->
+            <div class="glass-row" data-row="2">
+                <div class="glass-panel panel-wide" data-row="2" data-subpage="about">
+                    <div class="glass-content">
+                        <div class="panel-label">About</div>
+                        <h3>Who I Am</h3>
+                        <p>I focus on clean structure, strong visuals, and thoughtful interaction. Building systems that feel precise, aesthetic, and intentional.</p>
+                    </div>
+                </div>
+                <div class="glass-panel" data-row="2" data-subpage="about">
+                    <div class="glass-content">
+                        <div class="panel-label">Skills</div>
+                        <div class="skill-chips">
+                            <span>Frontend</span><span>Backend</span>
+                            <span>Design</span><span>DevOps</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 3: People + Contact -->
+            <div class="glass-row" data-row="3">
+                <div class="glass-panel" data-row="3" data-subpage="references">
+                    <div class="glass-content">
+                        <div class="panel-person">
+                            <img src="https://media.licdn.com/dms/image/v2/C4E03AQHBf3jTQ0QDoA/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1611150955292?e=2147483647&v=beta&t=cZ3k2oo_c3UBkRAj-p-xYWz7knrQCYmzztDWr-ACPEQ"
+                                 alt="Anil Tahmaz"
+                                 onerror="this.src='https://ui-avatars.com/api/?name=AT&size=200&background=111&color=00ffd5&bold=true'">
+                            <div>
+                                <h3>Anil Tahmaz</h3>
+                                <p class="person-role">Creative Developer</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="glass-panel" data-row="3" data-subpage="references">
+                    <div class="glass-content">
+                        <div class="panel-person">
+                            <img src="https://media.licdn.com/dms/image/v2/D4E03AQGKmA8lxJjmhw/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1695393294633?e=2147483647&v=beta&t=8H_ow7FWLJO3B6bT_dJ6DWpKEsxhEuFgHkKR8XnSJ9E"
+                                 alt="Artem Shatail"
+                                 onerror="this.src='https://ui-avatars.com/api/?name=AS&size=200&background=111&color=b388ff&bold=true'">
+                            <div>
+                                <h3>Artem Shatail</h3>
+                                <p class="person-role">Software Engineer</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="glass-panel" data-row="3" data-subpage="contact">
+                    <div class="glass-content">
+                        <div class="panel-label">Contact</div>
+                        <h3>Get in Touch</h3>
+                        <p>Let's build something together</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="scroll-indicator" id="scrollIndicator">
         <span>Scroll</span>
         <div class="scroll-arrow"></div>
     </div>
-</section>
+</div>
 
-<!-- Projects -->
-<section id="projects" class="section" data-section="1">
-    <div class="section-fog"></div>
-    <div class="section-inner">
-        <h2 class="section-title">Selected Projects</h2>
-        <div class="project-grid">
-            <div class="project-card">
-                <div class="project-number">01</div>
-                <h3>Project One</h3>
-                <p>Short description explaining what this project is about.</p>
-                <div class="project-tags"><span>React</span><span>Node.js</span></div>
-            </div>
-            <div class="project-card">
-                <div class="project-number">02</div>
-                <h3>Project Two</h3>
-                <p>Short description explaining what this project is about.</p>
-                <div class="project-tags"><span>Vue</span><span>Firebase</span></div>
-            </div>
-            <div class="project-card">
-                <div class="project-number">03</div>
-                <h3>Project Three</h3>
-                <p>Short description explaining what this project is about.</p>
-                <div class="project-tags"><span>Python</span><span>AI/ML</span></div>
+<!-- ══════════ SUBPAGE OVERLAY ══════════ -->
+<div class="subpage-overlay" id="subpageOverlay">
+    <div class="void-transition" id="voidTransition"></div>
+
+    <div class="subpage-scroll" id="subpageScroll">
+        <button class="back-btn" id="backBtn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Back
+        </button>
+
+        <!-- Projects -->
+        <div class="subpage" id="sub-projects">
+            <div class="section-fog"></div>
+            <div class="subpage-content">
+                <h2 class="subpage-title">Selected Projects</h2>
+                <p class="subpage-intro">A collection of work spanning web applications, creative tools, and interactive experiences.</p>
+                <div class="subpage-grid">
+                    <div class="subpage-card">
+                        <div class="card-number">01</div>
+                        <h3>Project One</h3>
+                        <p>A comprehensive web application built with React and Node.js, featuring real-time data visualization and interactive dashboards.</p>
+                        <div class="panel-tags"><span>React</span><span>Node.js</span><span>D3.js</span></div>
+                    </div>
+                    <div class="subpage-card">
+                        <div class="card-number">02</div>
+                        <h3>Project Two</h3>
+                        <p>Real-time collaboration platform enabling teams to work together seamlessly with live editing and instant synchronization.</p>
+                        <div class="panel-tags"><span>Vue</span><span>Firebase</span><span>WebRTC</span></div>
+                    </div>
+                    <div class="subpage-card">
+                        <div class="card-number">03</div>
+                        <h3>Project Three</h3>
+                        <p>AI-powered creative tools that help designers and developers generate, iterate, and refine their ideas faster.</p>
+                        <div class="panel-tags"><span>Python</span><span>TensorFlow</span><span>FastAPI</span></div>
+                    </div>
+                    <div class="subpage-card">
+                        <div class="card-number">04</div>
+                        <h3>Project Four</h3>
+                        <p>Mobile-first progressive web app with offline capabilities and native-like performance across all devices.</p>
+                        <div class="panel-tags"><span>PWA</span><span>TypeScript</span><span>Workbox</span></div>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-</section>
 
-<!-- About -->
-<section id="about" class="section" data-section="2">
-    <div class="section-fog"></div>
-    <div class="section-inner">
-        <h2 class="section-title">About Me</h2>
-        <p class="about-text">
-            I focus on clean structure, strong visuals, and thoughtful interaction.
-            I enjoy building systems that feel precise, aesthetic, and intentional.
-        </p>
-        <div class="skills-grid">
-            <div class="skill-item">Frontend</div>
-            <div class="skill-item">Backend</div>
-            <div class="skill-item">Design</div>
-            <div class="skill-item">DevOps</div>
+        <!-- About -->
+        <div class="subpage" id="sub-about">
+            <div class="section-fog"></div>
+            <div class="subpage-content">
+                <h2 class="subpage-title">About Me</h2>
+                <div class="about-layout">
+                    <div class="about-block">
+                        <p>I focus on clean structure, strong visuals, and thoughtful interaction. I enjoy building systems that feel precise, aesthetic, and intentional.</p>
+                        <p>With years of experience across frontend, backend, and design, I bring a holistic approach to every project. Every pixel matters, every interaction should feel natural.</p>
+                    </div>
+                    <div class="about-skills">
+                        <h3>Skills & Tools</h3>
+                        <div class="skills-detailed">
+                            <div class="skill-category">
+                                <h4>Frontend</h4>
+                                <span>React</span><span>Vue</span><span>TypeScript</span><span>CSS/SASS</span>
+                            </div>
+                            <div class="skill-category">
+                                <h4>Backend</h4>
+                                <span>Node.js</span><span>Python</span><span>PostgreSQL</span><span>Redis</span>
+                            </div>
+                            <div class="skill-category">
+                                <h4>Design</h4>
+                                <span>Figma</span><span>Motion</span><span>3D</span><span>Typography</span>
+                            </div>
+                            <div class="skill-category">
+                                <h4>DevOps</h4>
+                                <span>Docker</span><span>AWS</span><span>CI/CD</span><span>Linux</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
-</section>
 
-<!-- References -->
-<section id="references" class="section" data-section="3">
-    <div class="section-fog"></div>
-    <div class="section-inner">
-        <h2 class="section-title">Awesome Coworkers</h2>
-        <p class="references-intro">
-            Talented people I've had the privilege of collaborating with.
-        </p>
-        <div class="references-grid">
-
-            <!-- Anil Tahmaz -->
-            <a href="https://aniltahmaz.com" target="_blank" rel="noopener noreferrer" class="reference-card">
-                <div class="reference-image">
-                    <img src="https://media.licdn.com/dms/image/v2/C4E03AQHBf3jTQ0QDoA/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1611150955292?e=2147483647&v=beta&t=cZ3k2oo_c3UBkRAj-p-xYWz7knrQCYmzztDWr-ACPEQ"
-                         alt="Anil Tahmaz"
-                         onerror="this.src='https://ui-avatars.com/api/?name=AT&size=200&background=111&color=00ffd5&bold=true'">
-                    <div class="reference-glow"></div>
+        <!-- References -->
+        <div class="subpage" id="sub-references">
+            <div class="section-fog"></div>
+            <div class="subpage-content">
+                <h2 class="subpage-title">Awesome Coworkers</h2>
+                <p class="subpage-intro">Talented people I've had the privilege of collaborating with.</p>
+                <div class="references-list">
+                    <a href="https://aniltahmaz.com" target="_blank" rel="noopener noreferrer" class="ref-card">
+                        <img src="https://media.licdn.com/dms/image/v2/C4E03AQHBf3jTQ0QDoA/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1611150955292?e=2147483647&v=beta&t=cZ3k2oo_c3UBkRAj-p-xYWz7knrQCYmzztDWr-ACPEQ"
+                             alt="Anil Tahmaz"
+                             onerror="this.src='https://ui-avatars.com/api/?name=AT&size=200&background=111&color=00ffd5&bold=true'">
+                        <div class="ref-info">
+                            <h3>Anil Tahmaz</h3>
+                            <p class="ref-role">Creative Developer & Designer</p>
+                            <p>Exceptional talent blending technical excellence with artistic vision. Creates immersive digital experiences that push boundaries.</p>
+                            <span class="ref-link">aniltahmaz.com <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg></span>
+                        </div>
+                    </a>
+                    <a href="https://www.linkedin.com/in/artem-shatail-559343340/" target="_blank" rel="noopener noreferrer" class="ref-card">
+                        <img src="https://media.licdn.com/dms/image/v2/D4E03AQGKmA8lxJjmhw/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1695393294633?e=2147483647&v=beta&t=8H_ow7FWLJO3B6bT_dJ6DWpKEsxhEuFgHkKR8XnSJ9E"
+                             alt="Artem Shatail"
+                             onerror="this.src='https://ui-avatars.com/api/?name=AS&size=200&background=111&color=b388ff&bold=true'">
+                        <div class="ref-info">
+                            <h3>Artem Shatail</h3>
+                            <p class="ref-role">Software Engineer</p>
+                            <p>Skilled engineer with a passion for building robust, scalable systems. Brings clarity and precision to complex technical challenges.</p>
+                            <span class="ref-link">linkedin.com/in/artem-shatail <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg></span>
+                        </div>
+                    </a>
+                    <a href="#" target="_blank" rel="noopener noreferrer" class="ref-card">
+                        <img src="https://ui-avatars.com/api/?name=JD&size=200&background=111&color=ff6b9d&bold=true" alt="Jane Doe">
+                        <div class="ref-info">
+                            <h3>Jane Doe</h3>
+                            <p class="ref-role">UX Lead & Strategist</p>
+                            <p>Transforms complex problems into elegant, intuitive solutions with meticulous attention to detail.</p>
+                            <span class="ref-link">janedoe.design <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg></span>
+                        </div>
+                    </a>
                 </div>
-                <div class="reference-info">
-                    <h3>Anil Tahmaz</h3>
-                    <p class="reference-role">Creative Developer & Designer</p>
-                    <p class="reference-desc">
-                        Exceptional talent blending technical excellence with artistic vision.
-                        Creates immersive digital experiences that push boundaries.
-                    </p>
-                    <span class="reference-link">
-                        aniltahmaz.com
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg>
-                    </span>
-                </div>
-            </a>
-
-            <!-- Artem Shatailo -->
-            <a href="https://www.linkedin.com/in/artem-shatailo/" target="_blank" rel="noopener noreferrer" class="reference-card">
-                <div class="reference-image">
-                    <img src="https://media.licdn.com/dms/image/v2/D4E03AQGKmA8lxJjmhw/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1695393294633?e=2147483647&v=beta&t=8H_ow7FWLJO3B6bT_dJ6DWpKEsxhEuFgHkKR8XnSJ9E"
-                         alt="Artem Shatailo"
-                         onerror="this.src='https://ui-avatars.com/api/?name=AS&size=200&background=111&color=b388ff&bold=true'">
-                    <div class="reference-glow"></div>
-                </div>
-                <div class="reference-info">
-                    <h3>Artem Shatailo</h3>
-                    <p class="reference-role">Software Engineer</p>
-                    <p class="reference-desc">
-                        Skilled engineer with a passion for building robust, scalable systems.
-                        Brings clarity and precision to complex technical challenges.
-                    </p>
-                    <span class="reference-link">
-                        linkedin.com/in/artem-shatailo
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg>
-                    </span>
-                </div>
-            </a>
-
-            <!-- Additional reference -->
-            <a href="#" target="_blank" rel="noopener noreferrer" class="reference-card">
-                <div class="reference-image">
-                    <img src="https://ui-avatars.com/api/?name=JD&size=200&background=111&color=ff6b9d&bold=true"
-                         alt="Jane Doe">
-                    <div class="reference-glow"></div>
-                </div>
-                <div class="reference-info">
-                    <h3>Jane Doe</h3>
-                    <p class="reference-role">UX Lead & Strategist</p>
-                    <p class="reference-desc">
-                        Transforms complex problems into elegant, intuitive solutions
-                        with meticulous attention to detail.
-                    </p>
-                    <span class="reference-link">
-                        janedoe.design
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg>
-                    </span>
-                </div>
-            </a>
-
+            </div>
         </div>
-    </div>
-</section>
 
-<!-- Contact -->
-<section id="contact" class="section" data-section="4">
-    <div class="section-fog"></div>
-    <div class="section-inner">
-        <h2 class="section-title">Get in Touch</h2>
-        <form class="contact-form">
-            <input type="text" placeholder="Your Name" required>
-            <input type="email" placeholder="Your Email" required>
-            <textarea rows="5" placeholder="Your Message" required></textarea>
-            <button type="submit" class="btn">Send Message</button>
-        </form>
-    </div>
-</section>
+        <!-- Contact -->
+        <div class="subpage" id="sub-contact">
+            <div class="section-fog"></div>
+            <div class="subpage-content">
+                <h2 class="subpage-title">Get in Touch</h2>
+                <p class="subpage-intro">Have a project in mind or just want to say hello? I'd love to hear from you.</p>
+                <form class="contact-form" id="contactForm">
+                    <input type="text" placeholder="Your Name" required>
+                    <input type="email" placeholder="Your Email" required>
+                    <textarea rows="5" placeholder="Your Message" required></textarea>
+                    <button type="submit" class="btn">Send Message</button>
+                </form>
+            </div>
+        </div>
 
-<footer>
-    <p>&copy; 2026 Your Name</p>
-    <div class="footer-links">
-        <a href="#">GitHub</a>
-        <a href="#">LinkedIn</a>
-        <a href="#">Twitter</a>
     </div>
-</footer>
+</div>
 
-<!-- Scripts loaded in order -->
 <script src="js/utils.js"></script>
 <script src="js/ribbons.js"></script>
 <script src="js/floating.js"></script>
