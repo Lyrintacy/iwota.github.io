@@ -28,7 +28,7 @@ class BasementManager {
                     '<div class="pm-row"><span class="pm-label">Team</span><span class="pm-value">' + proj.team + '</span></div>' +
                     '<div class="pm-row"><span class="pm-label">Engine</span><span class="pm-value">' + proj.engine + '</span></div>' +
                     '<div class="pm-row"><span class="pm-label">Timeline</span><span class="pm-value">' + proj.timeframe + '</span></div>' +
-                    '<a href="#bp-' + proj.id + '" class="pcard-go">Read more in the Basement →</a>' +
+                    '<a href="#bp-' + proj.id + '" class="pcard-go">' + TEXTS.games.cardGoLabel + '</a>' +
                 '</div>';
             grid.appendChild(card);
         }
@@ -75,7 +75,7 @@ class BasementManager {
                 '</div>' +
                 '<div class="bproject-tags">' + tagsHTML + '</div>' +
                 '<div class="bproject-content">' + paragraphsHTML + '</div>' +
-                '<button class="bproject-toggle"><span>Read more</span>' +
+                '<button class="bproject-toggle"><span>' + TEXTS.basement.expandLabel + '</span>' +
                     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>' +
                 '</button>';
             container.appendChild(block);
@@ -98,7 +98,7 @@ class BasementManager {
                 btn.addEventListener('click', function() {
                     var project = btn.closest('.bproject');
                     var isExpanded = project.classList.toggle('expanded');
-                    btn.querySelector('span').textContent = isExpanded ? 'Show less' : 'Read more';
+                    btn.querySelector('span').textContent = isExpanded ? TEXTS.basement.collapseLabel : TEXTS.basement.expandLabel;
                 });
             })(toggles[i]);
         }
@@ -113,7 +113,7 @@ class BasementManager {
         if (target && target.classList.contains('bproject')) {
             target.classList.add('expanded');
             var btn = target.querySelector('.bproject-toggle span');
-            if (btn) btn.textContent = 'Show less';
+            if (btn) btn.textContent = TEXTS.basement.collapseLabel;
             setTimeout(function() { target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 300);
         }
     }
