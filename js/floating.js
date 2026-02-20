@@ -102,34 +102,50 @@ class DustParticles {
         this.init();
         window.addEventListener('resize', this.resize.bind(this));
     }
+    
     resize() {
         var dpr = Math.min(devicePixelRatio || 1, 2);
-        this.canvas.width = innerWidth * dpr; this.canvas.height = innerHeight * dpr;
+        this.canvas.width = innerWidth * dpr; 
+        this.canvas.height = innerHeight * dpr;
         this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
+    
     init() {
         this.particles = [];
         for (var i = 0; i < 60; i++) {
             this.particles.push({
-                x: rand(0, innerWidth), y: rand(0, innerHeight),
-                r: rand(1.5, 8), speed: rand(0.08, 0.4),
-                driftX: rand(-0.25, 0.25), phase: rand(0, Math.PI * 2),
-                opacity: rand(0.015, 0.1), blur: rand(3, 12)
+                x: rand(0, innerWidth), 
+                y: rand(0, innerHeight),
+                r: rand(1.5, 8), 
+                speed: rand(0.08, 0.4),
+                driftX: rand(-0.25, 0.25), 
+                phase: rand(0, Math.PI * 2),
+                opacity: rand(0.015, 0.1), 
+                blur: rand(3, 12)
             });
         }
     }
+    
     update(time, opacity) {
         this.canvas.style.opacity = opacity;
         if (opacity < 0.01) return;
+        
         this.ctx.clearRect(0, 0, innerWidth, innerHeight);
+        
         for (var i = 0; i < this.particles.length; i++) {
             var p = this.particles[i];
             p.y -= p.speed;
             p.x += Math.sin(time * 0.3 + p.phase) * p.driftX;
-            if (p.y < -15) { p.y = innerHeight + 15; p.x = rand(0, innerWidth); }
+            
+            if (p.y < -15) { 
+                p.y = innerHeight + 15; 
+                p.x = rand(0, innerWidth); 
+            }
             if (p.x < -15) p.x = innerWidth + 15;
             if (p.x > innerWidth + 15) p.x = -15;
+            
             var pulse = Math.sin(time * 0.5 + p.phase) * 0.3 + 0.7;
+            
             this.ctx.save();
             this.ctx.globalAlpha = p.opacity * pulse;
             this.ctx.filter = 'blur(' + p.blur + 'px)';
@@ -151,22 +167,27 @@ class MascotController {
         this.offsets = [];
         for (var i = 0; i < this.mascots.length; i++) {
             this.offsets.push({
-                phase: rand(0, Math.PI * 2), speed: rand(0.25, 0.55),
-                ampX: rand(18, 45), ampY: rand(25, 55)
+                phase: rand(0, Math.PI * 2), 
+                speed: rand(0.25, 0.55),
+                ampX: rand(18, 45), 
+                ampY: rand(25, 55)
             });
         }
     }
+    
     update(scrollPct, time) {
         var fadeIn = smoothstep(clamp((scrollPct - 0.12) / 0.08, 0, 1));
         var fadeOut = 1 - smoothstep(clamp((scrollPct - 0.55) / 0.1, 0, 1));
         var visibility = fadeIn * fadeOut;
+        
         for (var i = 0; i < this.mascots.length; i++) {
-            var m = this.mascots[i]; if (!m) continue;
+            var m = this.mascots[i]; 
+            if (!m) continue;
             var o = this.offsets[i];
             var floatX = Math.sin(time * o.speed + o.phase) * o.ampX;
             var floatY = Math.cos(time * o.speed * 0.7 + o.phase * 1.3) * o.ampY;
             var rise = scrollPct * -120;
-            // more visible — opacity up to 0.85
+            
             m.style.opacity = clamp(visibility * 1.2, 0, 0.85);
             m.style.transform = 'translate(' + floatX + 'px,' + (floatY + rise) + 'px) scale(' + (0.9 + visibility * 0.2) + ')';
         }

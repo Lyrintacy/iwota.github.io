@@ -10,17 +10,17 @@ class LivingString {
         this.homeOffset += rand(-8, 8);
 
         this.crossings = [];
-        var crossCount = randI(2, 4); // more crossings for curvature
+        var crossCount = randI(2, 4);
         for (var c = 0; c < crossCount; c++) {
             this.crossings.push({
                 pos: rand(0.1, 0.9),
-                width: rand(0.1, 0.3), // wider crossing zones
+                width: rand(0.1, 0.3),
                 amp: rand(30, 70) * (Math.random() > 0.5 ? 1 : -1)
             });
         }
 
         this.waves = [];
-        var waveCount = randI(4, 6); // more wave layers = more organic curves
+        var waveCount = randI(4, 6);
         for (var w = 0; w < waveCount; w++) {
             this.waves.push({
                 amp: w === 0 ? rand(18, 40) : w === 1 ? rand(10, 25) : rand(2, Math.max(1, 12 - w * 2)),
@@ -80,7 +80,6 @@ class LivingString {
             var amp = wave.amp * (1 - localS * 0.3);
             offset += Math.sin(i * wave.freq + time * wave.speed * (1 - localS * 0.15) + wave.phase + travel * 0.03) * amp;
         }
-        // more crossing weave = more organic curves
         for (var c = 0; c < this.crossings.length; c++) {
             var cross = this.crossings[c];
             var d = Math.abs(t - cross.pos);
@@ -157,7 +156,7 @@ class LivingString {
             ctx.lineWidth = w; ctx.stroke();
         }
 
-        // triple bloom
+        // bloom layers
         var bi = (this.currentPulse * 0.6 + this.smoothExcitement * 0.4) * 1.2;
         if (bi > 0.04) {
             ctx.globalCompositeOperation = 'lighter';
@@ -231,7 +230,7 @@ class LivingString {
     }
 }
 
-/* ═══════ STRING STREAM — more curved spine ═══════ */
+/* ═══════ STRING STREAM ═══════ */
 class StringStream {
     constructor(canvas, index) {
         this.canvas = canvas;
@@ -246,14 +245,12 @@ class StringStream {
     generatePath() {
         var w = this.canvas.width, h = this.canvas.height;
         var diag = Math.hypot(w, h), ext = diag * 0.6;
-        // more angle variation for curvier paths
         this.angle = rand(-0.7, 0.7);
         var cx = w * rand(0.15, 0.85), cy = h * rand(0.15, 0.85);
         this.sx = cx - Math.cos(this.angle) * (diag / 2 + ext);
         this.sy = cy - Math.sin(this.angle) * (diag / 2 + ext);
         this.ex = cx + Math.cos(this.angle) * (diag / 2 + ext);
         this.ey = cy + Math.sin(this.angle) * (diag / 2 + ext);
-        // control points pushed further from center = more curve
         this.c1x = w * rand(0.05, 0.45);
         this.c1y = cy + rand(-h * 0.45, h * 0.45);
         this.c2x = w * rand(0.55, 0.95);
@@ -267,7 +264,7 @@ class StringStream {
     }
 
     getControlPoints(time) {
-        var s = this.seed, a = 25; // more wobble in control points
+        var s = this.seed, a = 25;
         var w = function(t, f, p) { return Math.sin(t * f + p); };
         return {
             c1x: this.c1x + (w(time, 0.05, s) + w(time, 0.02, s * 2.3) * 0.5 + w(time, 0.008, s * 0.7) * 0.8) * a,
@@ -282,14 +279,15 @@ class StringStream {
         return mt * mt * mt * p0 + 3 * mt * mt * t * p1 + 3 * mt * t * t * p2 + t * t * t * p3;
     }
 
-    sampleSpine(n, px, py) {
+    sampleSpine(n, px, py, isInteractive) {
         var cp = this.getControlPoints(this.time);
         var ir = 130, is = 30, pts = [];
         for (var i = 0; i <= n; i++) {
             var t = i / n;
             var x = this.bezier(t, this.sx, cp.c1x, cp.c2x, this.ex);
             var y = this.bezier(t, this.sy, cp.c1y, cp.c2y, this.ey);
-            if (px > 0) {
+            // Only react to pointer if interactive (desktop)
+            if (isInteractive && px > 0) {
                 var dx = x - px, dy = y - py, d = Math.hypot(dx, dy);
                 if (d < ir && d > 1) {
                     var f = Math.pow(1 - d / ir, 2), angle = Math.atan2(dy, dx);
@@ -308,10 +306,10 @@ class StringStream {
         return { pts: pts, perps: perps };
     }
 
-    computeSqueeze(pts, px, py) {
+    computeSqueeze(pts, px, py, isInteractive) {
         var ir = 130;
         return pts.map(function(p) {
-            if (px < 0) return 0;
+            if (!isInteractive || px < 0) return 0;
             var d = Math.hypot(p.x - px, p.y - py);
             if (d >= ir) return 0;
             return smoothstep(1 - d / ir) * 0.35;
@@ -323,10 +321,10 @@ class StringStream {
         this.colorShift = scrollProg * PRIDE.length * 0.7;
     }
 
-    draw(ctx, px, py) {
-        var segments = 90; // more segments for smoother curves
-        var result = this.sampleSpine(segments, px, py);
-        var squeeze = this.computeSqueeze(result.pts, px, py);
+    draw(ctx, px, py, isInteractive) {
+        var segments = 90;
+        var result = this.sampleSpine(segments, px, py, isInteractive);
+        var squeeze = this.computeSqueeze(result.pts, px, py, isInteractive);
         var maxSq = 0;
         for (var i = 0; i < squeeze.length; i++) { if (squeeze[i] > maxSq) maxSq = squeeze[i]; }
         for (var i = 0; i < this.strings.length; i++) this.strings[i].update(0.016, this.time, maxSq);
@@ -341,18 +339,23 @@ class StringStream {
 
 /* ═══════ RIBBON CANVAS ═══════ */
 class RibbonCanvas {
-    constructor(canvas) {
+    constructor(canvas, isMobile) {
         this.canvas = canvas;
         this.ctx = canvas.getContext('2d');
-        this.rawPx = -1000; this.rawPy = -1000;
-        this.px = -1000; this.py = -1000;
+        this.isMobile = isMobile;
+        this.rawPx = -1000; 
+        this.rawPy = -1000;
+        this.px = -1000; 
+        this.py = -1000;
         this.slot = null;
-        this.scroll = 0; this.lastScroll = 0;
+        this.scroll = 0; 
+        this.lastScroll = 0;
         this.lastTime = performance.now();
         this.resize();
         this.createSlot();
         window.addEventListener('resize', this.resize.bind(this));
     }
+    
     resize() {
         var dpr = Math.min(devicePixelRatio || 1, 2);
         this.canvas.width = innerWidth * dpr;
@@ -362,57 +365,79 @@ class RibbonCanvas {
         this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         this.createSlot();
     }
+    
     createSlot() {
         this.slot = { current: new StringStream(this.canvas, 0), incoming: null, progress: 1 };
     }
+    
     crossfade() {
         if (this.slot.incoming) return;
         this.slot.incoming = new StringStream(this.canvas, 0);
         this.slot.progress = 0;
     }
-    updatePointer(x, y) { this.rawPx = x; this.rawPy = y; }
+    
+    updatePointer(x, y) { 
+        // Only update if not mobile
+        if (!this.isMobile) {
+            this.rawPx = x; 
+            this.rawPy = y; 
+        }
+    }
+    
     updateScroll(s) {
         var delta = Math.abs(s - this.lastScroll);
         if (delta > 0.18) { this.crossfade(); this.lastScroll = s; }
         this.scroll = s;
     }
+    
     animate() {
         var now = performance.now();
         var dt = Math.min((now - this.lastTime) / 1000, 0.1);
         this.lastTime = now;
-        var sm = 0.055;
-        if (this.rawPx > 0) {
-            if (this.px < 0) { this.px = this.rawPx; this.py = this.rawPy; }
-            else { this.px = lerp(this.px, this.rawPx, sm); this.py = lerp(this.py, this.rawPy, sm); }
-        } else {
-            this.px = lerp(this.px, -1000, sm * 0.12);
-            this.py = lerp(this.py, -1000, sm * 0.12);
+        
+        // Only smooth pointer on desktop
+        if (!this.isMobile) {
+            var sm = 0.055;
+            if (this.rawPx > 0) {
+                if (this.px < 0) { this.px = this.rawPx; this.py = this.rawPy; }
+                else { this.px = lerp(this.px, this.rawPx, sm); this.py = lerp(this.py, this.rawPy, sm); }
+            } else {
+                this.px = lerp(this.px, -1000, sm * 0.12);
+                this.py = lerp(this.py, -1000, sm * 0.12);
+            }
         }
+        
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         var allNodes = [];
         var slot = this.slot;
+        
         if (slot.incoming) {
-            slot.progress += dt / 4.5; // slower crossfade
+            slot.progress += dt / 4.5;
             if (slot.progress >= 1) { slot.current = slot.incoming; slot.incoming = null; slot.progress = 1; }
         }
+        
         var ease = smoothstep(clamp(slot.progress, 0, 1));
         slot.current.update(dt, this.scroll);
         this.ctx.save();
         this.ctx.globalAlpha = slot.incoming ? (1 - ease) : 1;
-        slot.current.draw(this.ctx, this.px, this.py);
+        slot.current.draw(this.ctx, this.px, this.py, !this.isMobile); // pass interactivity flag
         this.ctx.restore();
+        
         if (slot.current._allSampledPoints) {
             for (var j = 0; j < slot.current._allSampledPoints.length; j++) allNodes.push(slot.current._allSampledPoints[j]);
         }
+        
         if (slot.incoming) {
             slot.incoming.update(dt, this.scroll);
-            this.ctx.save(); this.ctx.globalAlpha = ease;
-            slot.incoming.draw(this.ctx, this.px, this.py);
+            this.ctx.save(); 
+            this.ctx.globalAlpha = ease;
+            slot.incoming.draw(this.ctx, this.px, this.py, !this.isMobile);
             this.ctx.restore();
             if (slot.incoming._allSampledPoints) {
                 for (var j = 0; j < slot.incoming._allSampledPoints.length; j++) allNodes.push(slot.incoming._allSampledPoints[j]);
             }
         }
+        
         window.__stringNodes = allNodes;
     }
 }
@@ -441,6 +466,7 @@ class WovenStrings {
         this.resize();
         window.addEventListener('resize', this.resize.bind(this));
     }
+    
     _createString(li, idx) {
         return {
             colorIdx: (li * 2.1 + idx * 1.4) % PRIDE.length,
@@ -450,24 +476,33 @@ class WovenStrings {
                 { amp: rand(6, 18), freq: rand(0.007, 0.016), speed: rand(0.12, 0.3), phase: rand(0, Math.PI * 2) },
                 { amp: rand(1.5, 5), freq: rand(0.02, 0.045), speed: rand(0.25, 0.45), phase: rand(0, Math.PI * 2) }
             ],
-            width: rand(0.8, 2), opMin: rand(0.03, 0.08), opMax: rand(0.15, 0.35),
-            breathPhase: rand(0, Math.PI * 2), breathSpeed: rand(0.1, 0.3),
-            travelDir: Math.random() > 0.5 ? 1 : -1, travelSpeed: rand(0.05, 0.2)
+            width: rand(0.8, 2), 
+            opMin: rand(0.03, 0.08), 
+            opMax: rand(0.15, 0.35),
+            breathPhase: rand(0, Math.PI * 2), 
+            breathSpeed: rand(0.1, 0.3),
+            travelDir: Math.random() > 0.5 ? 1 : -1, 
+            travelSpeed: rand(0.05, 0.2)
         };
     }
+    
     resize() {
         var dpr = Math.min(devicePixelRatio || 1, 2);
         for (var i = 0; i < this.canvases.length; i++) {
-            this.canvases[i].width = innerWidth * dpr; this.canvases[i].height = innerHeight * dpr;
-            this.canvases[i].style.width = innerWidth + 'px'; this.canvases[i].style.height = innerHeight + 'px';
+            this.canvases[i].width = innerWidth * dpr; 
+            this.canvases[i].height = innerHeight * dpr;
+            this.canvases[i].style.width = innerWidth + 'px'; 
+            this.canvases[i].style.height = innerHeight + 'px';
         }
         this.dpr = dpr;
     }
+    
     update(dt, sp) {
         this.time += dt;
         var cs = sp * PRIDE.length * 0.5;
         var bv = lerp(0.4, 1, smoothstep(clamp(sp * 1.5, 0, 1)));
         var bm = sp > 0.4 ? 'screen' : 'multiply';
+        
         for (var i = 0; i < this.N; i++) {
             var ctx = this.contexts[i];
             ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
@@ -477,14 +512,17 @@ class WovenStrings {
             for (var j = 0; j < this.strings[i].length; j++) this._drawString(ctx, this.strings[i][j], cs);
         }
     }
+    
     _drawString(ctx, s, cs) {
         var w = innerWidth, h = innerHeight, segs = 80, t = this.time;
         var breath = Math.sin(t * s.breathSpeed + s.breathPhase) * 0.5 + 0.5;
         var opacity = lerp(s.opMin, s.opMax, breath);
         var c = prideColor(s.colorIdx, cs);
         var travel = t * s.travelSpeed * s.travelDir;
-        ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+        ctx.lineCap = 'round'; 
+        ctx.lineJoin = 'round';
         var prevX, prevY;
+        
         for (var i = 0; i <= segs; i++) {
             var pct = i / segs, x = pct * w, y = s.homeY * h;
             for (var wv = 0; wv < s.waves.length; wv++) {
@@ -494,16 +532,23 @@ class WovenStrings {
             if (i > 0) {
                 var shimmer = Math.sin(i * 0.1 + t * 0.7 + s.breathPhase) * 0.25 + 0.75;
                 var segOp = opacity * shimmer;
-                ctx.beginPath(); ctx.moveTo(prevX, prevY); ctx.lineTo(x, y);
+                ctx.beginPath(); 
+                ctx.moveTo(prevX, prevY); 
+                ctx.lineTo(x, y);
                 ctx.strokeStyle = 'rgba(' + c.r + ',' + c.g + ',' + c.b + ',' + clamp(segOp, 0, 0.5) + ')';
-                ctx.lineWidth = s.width * (0.75 + breath * 0.4); ctx.stroke();
+                ctx.lineWidth = s.width * (0.75 + breath * 0.4); 
+                ctx.stroke();
                 if (segOp > 0.08) {
-                    ctx.beginPath(); ctx.moveTo(prevX, prevY); ctx.lineTo(x, y);
+                    ctx.beginPath(); 
+                    ctx.moveTo(prevX, prevY); 
+                    ctx.lineTo(x, y);
                     ctx.strokeStyle = 'rgba(' + c.r + ',' + c.g + ',' + c.b + ',' + (segOp * 0.15) + ')';
-                    ctx.lineWidth = s.width + 3; ctx.stroke();
+                    ctx.lineWidth = s.width + 3; 
+                    ctx.stroke();
                 }
             }
-            prevX = x; prevY = y;
+            prevX = x; 
+            prevY = y;
         }
     }
 }

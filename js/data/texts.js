@@ -30,18 +30,18 @@ var TEXTS = {
     // ═══ About section ═══
     about: {
         title: 'The Designer',
-        subtitle: '"I make the things that crawl in the beautiful dark"',
+        subtitle: '"Can have some crayz ideas, but knows how to make it alive"',
         bio: [
-            'I\'m obsessed with the space where procedural generation meets hand-crafted emotion. The best games feel alive — ecosystems that breathe, mutate, and surprise their creators.',
-            'My work draws from <em>Edmund McMillen\'s</em> grotesque beauty, <em>Dwarf Fortress\'s</em> systemic depth, and <em>Gogol Bordello\'s</em> raw energy.',
-            'Every system asks: <em>"What happens if we let it grow?"</em>'
+            'I\'m obsessed with the space where procedural generation meets hand-crafted emotion. The best games feel alive — ecosystems that surprise their creators.',
+            'Grotesque beauty, and raw energy.',
+            '.[].[..].].].;].];.];.].];.].];.].];.].];.].];.].];.].];.].];.].];.].];.].];.].];.].];.].];.].',
+            'I\'m a systems designer at heart, but I also love pixel art, sound design, and writing. I\'ve been known to dive into code when the situation calls for it.',
         ],
         mantrasTitle: 'Design Mantras',
         mantras: [
             'Systems over scripts',
             'Emergent stories beat written ones',
             'Ugly-beautiful is valid',
-            'If the AI surprises you, you\'ve won',
             'Complexity behind simplicity'
         ],
         toolkitTitle: 'Toolkit',
