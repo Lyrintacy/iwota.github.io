@@ -43,13 +43,13 @@ var CONFIG = {
 
     // ═══ Ribbon behavior ═══
     ribbons: {
-        cursorRadius: 130,        // how far cursor affects ribbons
+        cursorRadius: 500,        // how far cursor affects ribbons
         cursorStrength: 30,       // how much cursor pushes ribbons
         maxSqueeze: 0.35,         // max deformation near cursor
         crossfadeDuration: 4.5,   // seconds for ribbon crossfade
         scrollTriggerDelta: 0.18, // scroll change to trigger new ribbons
         stringsPerStream: [8, 12],
-        waveCount: [4, 6],
+        waveCount: [0, 0],
         baseWidth: [1.5, 5]
     },
 

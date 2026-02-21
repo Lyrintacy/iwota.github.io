@@ -12,6 +12,7 @@
 </head>
 <body>
 
+<!-- SKY & WHITE CLOUDS -->
 <div class="sky" id="sky">
     <div class="clouds-container" id="cloudsContainer">
         <div class="cloud c1"><div class="cb"></div><div class="cb"></div><div class="cb"></div></div>
@@ -25,10 +26,15 @@
     </div>
 </div>
 
+<!-- DARK CLOUDS (Procedurally generated) -->
+<div class="dark-clouds" id="darkClouds"></div>
+
+<!-- VISUAL LAYERS -->
 <div class="landscape-wrap" id="landscapeWrap"></div>
 <div class="string-layers" id="stringLayers"></div>
 <div class="underground-overlay" id="undergroundOverlay"></div>
 
+<!-- MASCOTS -->
 <div class="mascot-layer" id="mascotLayer">
     <svg class="mascot mascot-smiley" viewBox="0 0 80 80" fill="none">
         <circle cx="40" cy="40" r="28" stroke="currentColor" stroke-width="2.5" opacity="0.6"/>
@@ -42,11 +48,7 @@
         <path d="M58 28L54 10L46 24" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.5"/>
         <circle cx="32" cy="38" r="4" fill="currentColor" opacity="0.5"/>
         <circle cx="48" cy="38" r="4" fill="currentColor" opacity="0.5"/>
-        <path d="M36 50Q40 54 44 50" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.35"/>
-        <line x1="18" y1="42" x2="28" y2="40" stroke="currentColor" stroke-width="1" opacity="0.2"/>
-        <line x1="18" y1="46" x2="28" y2="45" stroke="currentColor" stroke-width="1" opacity="0.2"/>
-        <line x1="52" y1="40" x2="62" y2="42" stroke="currentColor" stroke-width="1" opacity="0.2"/>
-        <line x1="52" y1="45" x2="62" y2="46" stroke="currentColor" stroke-width="1" opacity="0.2"/>
+        <path d="M37 48Q40 51 43 48" stroke="currentColor" stroke-width="1.5" fill="none" opacity="0.35"/>
     </svg>
     <svg class="mascot mascot-ghost" viewBox="0 0 80 80" fill="none">
         <path d="M20 42Q20 14 40 14Q60 14 60 42L60 60Q56 52 52 60Q48 52 44 60Q40 52 36 60Q32 52 28 60Q24 52 20 60Z" stroke="currentColor" stroke-width="2.5" fill="none" opacity="0.6"/>
@@ -56,24 +58,29 @@
     </svg>
 </div>
 
-<canvas class="dust-canvas" id="dustCanvas"></canvas>
+<!-- MULTI-LAYER DUST -->
+<div class="dust-layers" id="dustLayers">
+    <canvas class="dust-canvas dust-back" id="dustCanvasBack"></canvas>
+    <canvas class="dust-canvas dust-mid" id="dustCanvasMid"></canvas>
+    <canvas class="dust-canvas dust-front" id="dustCanvasFront"></canvas>
+</div>
+
+<!-- FLOATING CODE & CURSOR -->
 <div class="floating-strings" id="floatingStrings"></div>
 <div class="cursor-glow" id="cursorGlow"></div>
 
+<!-- MAIN CONTENT -->
 <div class="scroll-content" id="scrollContent">
 
     <section class="zone zone-hero" id="home">
         <div class="zone-inner hero-layout">
             <div class="hero-left">
                 <div class="hero-photo-wrap">
-                    <img src="assets/photo.png" alt="Oskar Wota" class="hero-photo"
-                         onerror="this.style.background='linear-gradient(135deg,#1a0a2e,#2d1b69)';this.alt='';this.style.minHeight='180px'">
+                    <img src="assets/photo.png" alt="Oskar Wota" class="hero-photo" onerror="this.style.background='linear-gradient(135deg,#1a0a2e,#2d1b69)';this.alt='';this.style.minHeight='180px'">
                 </div>
                 <img src="assets/logo.png" alt="Logo" class="hero-logo" onerror="this.style.display='none'">
             </div>
-            <div class="hero-right" id="heroRight">
-                <!-- populated by JS from TEXTS -->
-            </div>
+            <div class="hero-right" id="heroRight"></div>
         </div>
         <div class="scroll-hint">
             <span id="scrollHintText"></span>
@@ -92,15 +99,11 @@
     <section class="zone zone-transition" id="transition1"></section>
 
     <section class="zone" id="about">
-        <div class="zone-inner" id="aboutInner">
-            <!-- populated by JS from TEXTS -->
-        </div>
+        <div class="zone-inner" id="aboutInner"></div>
     </section>
 
     <section class="zone" id="contact">
-        <div class="zone-inner" id="contactInner">
-            <!-- populated by JS from TEXTS -->
-        </div>
+        <div class="zone-inner" id="contactInner"></div>
     </section>
 
     <section class="zone" id="references">
@@ -119,11 +122,10 @@
         </div>
     </section>
 
-    <footer class="site-footer" id="siteFooter">
-        <!-- populated by JS from TEXTS -->
-    </footer>
+    <footer class="site-footer" id="siteFooter"></footer>
 </div>
 
+<!-- NAVBAR -->
 <header class="navbar" id="navbar">
     <div class="logo" id="navLogo"></div>
     <nav class="dnav" id="dnavLinks"></nav>
@@ -132,143 +134,59 @@
 <div class="mnav" id="mobileNav"></div>
 <div class="scroll-progress" id="scrollProgress"></div>
 
-<!-- DATA FILES — edit these to change content -->
+<!-- DATA -->
 <script src="js/data/config.js"></script>
 <script src="js/data/projects.js"></script>
 <script src="js/data/references.js"></script>
 <script src="js/data/texts.js"></script>
-
-<!-- CORE — CORRECT ORDER WITH LANDSCAPE.JS -->
-<script src="js/utils.js"></script>
-<script src="js/landscape.js"></script>
-<script src="js/ribbons.js"></script>
-<script src="js/floating.js"></script>
-<script src="js/basement.js"></script>
-<script src="js/app.js"></script>
-
-<!-- Populate text from TEXTS data -->
-<script>
-(function() {
-    var T = TEXTS;
-
-    // Hero
-    var hero = document.getElementById('heroRight');
-    hero.innerHTML =
-        '<p class="whisper">' + T.hero.whisper + '</p>' +
-        '<h1><span class="gtext">' + T.hero.name + '</span></h1>' +
-        '<h2 class="hero-sub">' + T.hero.subtitle + ' <span class="amp">' + T.hero.subtitleAmp + '</span> ' + T.hero.subtitle2 + '</h2>' +
-        '<p class="hero-desc">' + T.hero.description + ' <em>' + T.hero.descriptionEm + '</em></p>' +
-        '<div class="hero-cta">' +
-            '<a href="#games" class="btn">' + T.hero.ctaPrimary + '</a>' +
-            '<a href="#about" class="btn btn-outline">' + T.hero.ctaSecondary + '</a>' +
-        '</div>';
-    document.getElementById('scrollHintText').textContent = T.hero.scrollHint;
-
-    // Games
-    document.getElementById('gamesTitle').textContent = T.games.title;
-    document.getElementById('gamesSub').textContent = T.games.subtitle;
-
-    // About
-    var aboutHTML =
-        '<h2 class="section-title">' + T.about.title + '</h2>' +
-        '<p class="section-sub handwritten">' + T.about.subtitle + '</p>' +
-        '<div class="about-cols"><div class="about-text">';
-    for (var i = 0; i < T.about.bio.length; i++) aboutHTML += '<p>' + T.about.bio[i] + '</p>';
-    aboutHTML += '<div class="mantras"><h4 class="handwritten">' + T.about.mantrasTitle + '</h4><ul>';
-    for (var i = 0; i < T.about.mantras.length; i++) aboutHTML += '<li>' + T.about.mantras[i] + '</li>';
-    aboutHTML += '</ul></div></div><div class="skills-col"><h3>' + T.about.toolkitTitle + '</h3>';
-    for (var i = 0; i < T.about.skills.length; i++) {
-        var sg = T.about.skills[i];
-        aboutHTML += '<div class="sg"><h4>' + sg.label + '</h4><div class="st">';
-        for (var j = 0; j < sg.items.length; j++) aboutHTML += '<span>' + sg.items[j] + '</span>';
-        aboutHTML += '</div></div>';
-    }
-    aboutHTML += '</div></div>';
-    document.getElementById('aboutInner').innerHTML = aboutHTML;
-
-    // Contact
-    var contactHTML =
-        '<h2 class="section-title">' + T.contact.title + '</h2>' +
-        '<p class="section-sub handwritten">' + T.contact.subtitle + '</p>' +
-        '<form class="cform" id="contactForm" action="https://formsubmit.co/' + T.contact.emailTo + '" method="POST">' +
-            '<input type="hidden" name="_subject" value="' + T.contact.emailSubject + '">' +
-            '<input type="hidden" name="_captcha" value="false">' +
-            '<input type="text" name="name" placeholder="' + T.contact.placeholderName + '" required>' +
-            '<input type="email" name="email" placeholder="' + T.contact.placeholderEmail + '" required>' +
-            '<textarea name="message" rows="6" placeholder="' + T.contact.placeholderMessage + '" required></textarea>' +
-            '<button type="submit" class="btn">' + T.contact.submitLabel + '</button>' +
-        '</form>';
-    document.getElementById('contactInner').innerHTML = contactHTML;
-
-    // References
-    document.getElementById('refsTitle').textContent = T.references.title;
-    document.getElementById('refsSub').textContent = T.references.subtitle;
-
-    // Basement
-    document.getElementById('basementTitle').textContent = T.basement.title;
-    document.getElementById('basementSub').textContent = T.basement.subtitle;
-
-    // Nav with icons
-    var logo = document.getElementById('navLogo');
-    logo.innerHTML = '<span class="licon">' + T.nav.logoIcon + '</span><span>' + T.nav.logo + '</span>';
-    logo.onclick = function() { document.getElementById('home').scrollIntoView({behavior:'smooth'}); };
-
-    var dnav = document.getElementById('dnavLinks');
-    var mnav = document.getElementById('mobileNav');
-    
-    // Add navigation links
-    for (var i = 0; i < T.nav.links.length; i++) {
-        var link = T.nav.links[i];
-        dnav.innerHTML += '<a href="' + link.href + '">' + link.label + '</a>';
-        mnav.innerHTML += '<a href="' + link.href + '">' + link.label + '</a>';
-    }
-    
-    // Add social icons to nav (desktop only)
-    dnav.innerHTML += '<a href="https://lyrintacy.itch.io/" target="_blank" rel="noopener" class="nav-icon-link" aria-label="Itch.io">' +
-        '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 245.371 220.736" fill="currentColor">' +
-        '<path d="M31.99 1.365C21.287 7.72.2 31.945 0 38.298v10.516C0 62.144 12.46 73.86 23.773 73.86c13.584 0 24.902-11.258 24.903-24.62 0 13.362 10.93 24.62 24.515 24.62 13.586 0 24.165-11.258 24.165-24.62 0 13.362 11.622 24.62 25.207 24.62h.246c13.586 0 25.208-11.258 25.208-24.62 0 13.362 10.58 24.62 24.164 24.62 13.585 0 24.515-11.258 24.515-24.62 0 13.362 11.32 24.62 24.903 24.62 11.313 0 23.773-11.714 23.773-25.046V38.298c-.2-6.354-21.287-30.58-31.988-36.933C180.118.197 125.943 0 122.686 0c-3.256 0-57.43.197-90.696 1.365zM65.424 88.78c-1.596 14.52-15.618 97.97-18.426 116.16-.773 4.996-1.25 10.01-1.014 15.02.322 6.85 3.374 13.365 8.16 18.243 5.828 5.95 13.93 9.245 22.112 9.02 7.024-.19 13.782-3.016 19.948-6.04 9.854-4.834 19.107-11.08 28.02-17.537 4.908 3.722 9.987 7.277 15.445 10.238 6.165 3.338 13.01 5.98 20.11 6.188 8.183.24 16.288-3.06 22.12-9.017 4.78-4.883 7.83-11.393 8.16-18.243.235-5.01-.242-10.02-1.016-15.02-2.808-18.19-16.83-101.64-18.426-116.16l-98.19 7.15z"/>' +
-        '</svg></a>';
-    
-    dnav.innerHTML += '<a href="https://x.com/Daisy_DevOskar" target="_blank" rel="noopener" class="nav-icon-link" aria-label="Twitter/X">' +
-        '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">' +
-        '<path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>' +
-        '</svg></a>';
-
-    // Footer with icons
-    var footerHTML = '<div class="deep-links">';
-    
-    // Itch.io with icon
-    footerHTML += '<a href="https://lyrintacy.itch.io/" target="_blank" rel="noopener">' +
-        '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 245.371 220.736" fill="currentColor">' +
-        '<path d="M31.99 1.365C21.287 7.72.2 31.945 0 38.298v10.516C0 62.144 12.46 73.86 23.773 73.86c13.584 0 24.902-11.258 24.903-24.62 0 13.362 10.93 24.62 24.515 24.62 13.586 0 24.165-11.258 24.165-24.62 0 13.362 11.622 24.62 25.207 24.62h.246c13.586 0 25.208-11.258 25.208-24.62 0 13.362 10.58 24.62 24.164 24.62 13.585 0 24.515-11.258 24.515-24.62 0 13.362 11.32 24.62 24.903 24.62 11.313 0 23.773-11.714 23.773-25.046V38.298c-.2-6.354-21.287-30.58-31.988-36.933C180.118.197 125.943 0 122.686 0c-3.256 0-57.43.197-90.696 1.365zM65.424 88.78c-1.596 14.52-15.618 97.97-18.426 116.16-.773 4.996-1.25 10.01-1.014 15.02.322 6.85 3.374 13.365 8.16 18.243 5.828 5.95 13.93 9.245 22.112 9.02 7.024-.19 13.782-3.016 19.948-6.04 9.854-4.834 19.107-11.08 28.02-17.537 4.908 3.722 9.987 7.277 15.445 10.238 6.165 3.338 13.01 5.98 20.11 6.188 8.183.24 16.288-3.06 22.12-9.017 4.78-4.883 7.83-11.393 8.16-18.243.235-5.01-.242-10.02-1.016-15.02-2.808-18.19-16.83-101.64-18.426-116.16l-98.19 7.15z"/>' +
-        '</svg> itch.io</a>';
-    
-    // LinkedIn with icon
-    footerHTML += '<a href="https://www.linkedin.com/in/oskar-wota-6b0b27381/" target="_blank" rel="noopener">' +
-        '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">' +
-        '<path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>' +
-        '</svg> LinkedIn</a>';
-    
-    // Twitter/X with icon
-    footerHTML += '<a href="https://x.com/Daisy_DevOskar" target="_blank" rel="noopener">' +
-        '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">' +
-        '<path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>' +
-        '</svg> X</a>';
-    
-    footerHTML += '</div><p class="deep-copy">' + T.footer.copyright + '</p>';
-    document.getElementById('siteFooter').innerHTML = footerHTML;
-})();
-
-
-</script>
-</body>
-</html>
 
 <!-- CORE -->
 <script src="js/utils.js"></script>
 <script src="js/landscape.js"></script>
 <script src="js/ribbons.js"></script>
 <script src="js/floating.js"></script>
-<script src="js/basement.js"></script>
 <script src="js/app.js"></script>
-<script src="js/editor.js"></script>
+
+<!-- POPULATE TEXT -->
+<script>
+(function(){
+    var T=TEXTS,h=document.getElementById('heroRight');
+    h.innerHTML='<p class="whisper">'+T.hero.whisper+'</p><h1><span class="gtext">'+T.hero.name+'</span></h1><h2 class="hero-sub">'+T.hero.subtitle+' <span class="amp">'+T.hero.subtitleAmp+'</span> '+T.hero.subtitle2+'</h2><p class="hero-desc">'+T.hero.description+' <em>'+T.hero.descriptionEm+'</em></p><div class="hero-cta"><a href="#games" class="btn">'+T.hero.ctaPrimary+'</a><a href="#about" class="btn btn-outline">'+T.hero.ctaSecondary+'</a></div>';
+    document.getElementById('scrollHintText').textContent=T.hero.scrollHint;
+    document.getElementById('gamesTitle').textContent=T.games.title;
+    document.getElementById('gamesSub').textContent=T.games.subtitle;
+    
+    var ab='<h2 class="section-title">'+T.about.title+'</h2><p class="section-sub handwritten">'+T.about.subtitle+'</p><div class="about-cols"><div class="about-text">';
+    for(var i=0;i<T.about.bio.length;i++)ab+='<p>'+T.about.bio[i]+'</p>';
+    ab+='<div class="mantras"><h4 class="handwritten">'+T.about.mantrasTitle+'</h4><ul>';
+    for(var i=0;i<T.about.mantras.length;i++)ab+='<li>'+T.about.mantras[i]+'</li>';
+    ab+='</ul></div></div><div class="skills-col"><h3>'+T.about.toolkitTitle+'</h3>';
+    for(var i=0;i<T.about.skills.length;i++){var s=T.about.skills[i];ab+='<div class="sg"><h4>'+s.label+'</h4><div class="st">';for(var j=0;j<s.items.length;j++)ab+='<span>'+s.items[j]+'</span>';ab+='</div></div>';}
+    ab+='</div></div>';
+    document.getElementById('aboutInner').innerHTML=ab;
+    
+    document.getElementById('contactInner').innerHTML='<h2 class="section-title">'+T.contact.title+'</h2><p class="section-sub handwritten">'+T.contact.subtitle+'</p><form class="cform" id="contactForm" action="https://formsubmit.co/'+T.contact.emailTo+'" method="POST"><input type="hidden" name="_subject" value="'+T.contact.emailSubject+'"><input type="hidden" name="_captcha" value="false"><input type="text" name="name" placeholder="'+T.contact.placeholderName+'" required><input type="email" name="email" placeholder="'+T.contact.placeholderEmail+'" required><textarea name="message" rows="6" placeholder="'+T.contact.placeholderMessage+'" required></textarea><button type="submit" class="btn">'+T.contact.submitLabel+'</button></form>';
+    
+    document.getElementById('refsTitle').textContent=T.references.title;
+    document.getElementById('refsSub').textContent=T.references.subtitle;
+    document.getElementById('basementTitle').textContent=T.basement.title;
+    document.getElementById('basementSub').textContent=T.basement.subtitle;
+    
+    var logo=document.getElementById('navLogo');
+    logo.innerHTML='<span class="licon">'+T.nav.logoIcon+'</span><span>'+T.nav.logo+'</span>';
+    logo.onclick=function(){document.getElementById('home').scrollIntoView({behavior:'smooth'});};
+    
+    var dn=document.getElementById('dnavLinks'),mn=document.getElementById('mobileNav');
+    for(var i=0;i<T.nav.links.length;i++){var l=T.nav.links[i];dn.innerHTML+='<a href="'+l.href+'">'+l.label+'</a>';mn.innerHTML+='<a href="'+l.href+'">'+l.label+'</a>';}
+    dn.innerHTML+='<a href="https://lyrintacy.itch.io/" target="_blank" class="nav-icon-link" aria-label="Itch.io"><svg width="16" height="16" viewBox="0 0 245 220" fill="currentColor"><path d="M31.99 1.365C21.287 7.72.2 31.945 0 38.298v10.516C0 62.144 12.46 73.86 23.773 73.86c13.584 0 24.902-11.258 24.903-24.62 0 13.362 10.93 24.62 24.515 24.62 13.586 0 24.165-11.258 24.165-24.62 0 13.362 11.622 24.62 25.207 24.62h.246c13.586 0 25.208-11.258 25.208-24.62 0 13.362 10.58 24.62 24.164 24.62 13.585 0 24.515-11.258 24.515-24.62 0 13.362 11.32 24.62 24.903 24.62 11.313 0 23.773-11.714 23.773-25.046V38.298c-.2-6.354-21.287-30.58-31.988-36.933C180.118.197 125.943 0 122.686 0c-3.256 0-57.43.197-90.696 1.365z"/></svg></a>';
+    dn.innerHTML+='<a href="https://x.com/Daisy_DevOskar" target="_blank" class="nav-icon-link" aria-label="X"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>';
+    
+    var ft='<div class="deep-links"><a href="https://lyrintacy.itch.io/" target="_blank"><svg width="16" height="16" viewBox="0 0 245 220" fill="currentColor"><path d="M31.99 1.365C21.287 7.72.2 31.945 0 38.298v10.516C0 62.144 12.46 73.86 23.773 73.86c13.584 0 24.902-11.258 24.903-24.62 0 13.362 10.93 24.62 24.515 24.62 13.586 0 24.165-11.258 24.165-24.62 0 13.362 11.622 24.62 25.207 24.62h.246c13.586 0 25.208-11.258 25.208-24.62 0 13.362 10.58 24.62 24.164 24.62 13.585 0 24.515-11.258 24.515-24.62 0 13.362 11.32 24.62 24.903 24.62 11.313 0 23.773-11.714 23.773-25.046V38.298c-.2-6.354-21.287-30.58-31.988-36.933C180.118.197 125.943 0 122.686 0c-3.256 0-57.43.197-90.696 1.365z"/></svg> itch.io</a>';
+    ft+='<a href="https://www.linkedin.com/in/oskar-wota-6b0b27381/" target="_blank"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg> LinkedIn</a>';
+    ft+='<a href="https://x.com/Daisy_DevOskar" target="_blank"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg> X</a></div>';
+    ft+='<p class="deep-copy">'+T.footer.copyright+'</p>';
+    document.getElementById('siteFooter').innerHTML=ft;
+})();
+</script>
+</body>
+</html>
