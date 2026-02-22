@@ -245,204 +245,389 @@ class BasementManager{
     }
 }
 
-/* ═══════ DARK CLOUDS (Behind content, puffy shapes, black→grey) ═══════ */
+/* ═══════ DARK CLOUDS — NO BLUR, IMPROVED SHAPES ═══════ */
 class DarkClouds{
     constructor(){
-        this.container=document.getElementById('darkClouds');
-        if(!this.container){
-            this.container=document.createElement('div');
-            this.container.id='darkClouds';
-            this.container.className='dark-clouds';
-            var sky=document.getElementById('sky');
-            if(sky)sky.parentNode.insertBefore(this.container,sky.nextSibling);
-            else document.body.insertBefore(this.container,document.body.firstChild);
-        }
-        this.container.innerHTML='';
-        this.clouds=[];
-        
-        // 6 layers: front (black, top) → back (pale grey, lower)
-        this.layers=[
-            {count:3,yBase:-10,size:[250,400],grey:8,zIndex:6,hSpeed:[0.12,0.25],hDrift:[50,90],vSpeed:[0.06,0.12],vDrift:[10,25]},
-            {count:4,yBase:-5,size:[200,320],grey:25,zIndex:5,hSpeed:[0.1,0.2],hDrift:[40,70],vSpeed:[0.05,0.1],vDrift:[8,18]},
-            {count:5,yBase:0,size:[160,260],grey:50,zIndex:4,hSpeed:[0.08,0.16],hDrift:[30,55],vSpeed:[0.04,0.08],vDrift:[6,14]},
-            {count:6,yBase:6,size:[120,200],grey:80,zIndex:3,hSpeed:[0.06,0.12],hDrift:[22,40],vSpeed:[0.03,0.06],vDrift:[5,10]},
-            {count:7,yBase:12,size:[90,160],grey:120,zIndex:2,hSpeed:[0.04,0.09],hDrift:[15,30],vSpeed:[0.02,0.05],vDrift:[4,8]},
-            {count:8,yBase:20,size:[60,120],grey:170,zIndex:1,hSpeed:[0.03,0.06],hDrift:[10,20],vSpeed:[0.015,0.03],vDrift:[3,6]}
+        this.container = document.getElementById('darkClouds') || (() => {
+            const d = document.createElement('div');
+            d.id = 'darkClouds'; d.className = 'dark-clouds';
+            document.body.prepend(d);
+            return d;
+        })();
+        this.container.innerHTML = '';
+        this.clouds = [];
+
+        this.layers = [
+            {count:9,  size:[180,320], grey:0,   opacity:1.00, yOffset:-28, sizeMul:1.00, speed:0.68, drift:95,  scrollMul:4.2},
+            {count:11, size:[140,240], grey:0,   opacity:0.82, yOffset:8,   sizeMul:0.78, speed:0.52, drift:78,  scrollMul:3.1},
+            {count:13, size:[105,185], grey:12,  opacity:0.64, yOffset:18,  sizeMul:0.62, speed:0.40, drift:62,  scrollMul:2.2},
+            {count:15, size:[78, 138], grey:28,  opacity:0.46, yOffset:28,  sizeMul:0.48, speed:0.29, drift:48,  scrollMul:1.4},
+            {count:17, size:[55, 100], grey:45,  opacity:0.31, yOffset:36,  sizeMul:0.36, speed:0.20, drift:35,  scrollMul:0.8},
+            {count:20, size:[38, 68],  grey:65,  opacity:0.18, yOffset:44,  sizeMul:0.25, speed:0.13, drift:25,  scrollMul:0.4}
         ];
-        
+
         this.generateClouds();
     }
-    
+
     generateClouds(){
-        var NS='http://www.w3.org/2000/svg';
-        
-        for(var li=0;li<this.layers.length;li++){
-            var layer=this.layers[li];
-            
-            for(var i=0;i<layer.count;i++){
-                var w=rand(layer.size[0],layer.size[1]);
-                var h=w*rand(0.35,0.5);
-                var x=rand(-15,100);
-                var y=layer.yBase+rand(-5,5);
-                
-                // Create SVG with extra padding for puffy shape
-                var svg=document.createElementNS(NS,'svg');
-                var padding=40;
-                svg.setAttribute('viewBox',(-padding)+' '+(-padding)+' '+(w+padding*2)+' '+(h+padding*2));
-                svg.style.cssText='position:absolute;width:'+(w+padding*2)+'px;height:'+(h+padding*2)+'px;left:'+x+'%;top:'+y+'%;z-index:'+layer.zIndex+';pointer-events:none;overflow:visible;';
-                
-                // Color: grey value (0=black, 255=white)
-                var g=layer.grey;
-                var fillColor='rgb('+g+','+g+','+Math.min(g+10,255)+')';
-                
-                // Create puffy cloud with many overlapping circles
-                var blobCount=randI(8,14);
-                var centerX=w/2;
-                var centerY=h/2;
-                
-                for(var b=0;b<blobCount;b++){
-                    var angle=rand(0,Math.PI*2);
-                    var dist=rand(0,w*0.35);
-                    var bx=centerX+Math.cos(angle)*dist;
-                    var by=centerY+Math.sin(angle)*dist*0.6;
-                    var br=rand(w*0.15,w*0.35);
-                    
-                    var circle=document.createElementNS(NS,'circle');
-                    circle.setAttribute('cx',bx);
-                    circle.setAttribute('cy',by);
-                    circle.setAttribute('r',br);
-                    circle.setAttribute('fill',fillColor);
+        const NS = 'http://www.w3.org/2000/svg';
+
+        for(let li = 0; li < this.layers.length; li++){
+            const l = this.layers[li];
+
+            for(let i = 0; i < l.count; i++){
+                const baseW = rand(l.size[0], l.size[1]);
+                const w = baseW * l.sizeMul;
+                const h = w * rand(0.35, 0.46);
+                const x = rand(-40, 120);
+                const y = li === 0 ? -28 + rand(-15, 10) : l.yOffset + rand(-10, 12);
+
+                const svg = document.createElementNS(NS, 'svg');
+                const pad = 45;
+                svg.setAttribute('viewBox', `${-pad} ${-pad} ${w+pad*2} ${h+pad*2}`);
+                svg.style.cssText = `
+                    position:absolute;
+                    width:${w+pad*2}px;
+                    height:${h+pad*2}px;
+                    left:${x}%;
+                    top:${y}%;
+                    pointer-events:none;
+                    overflow:visible;
+                    opacity:${l.opacity};
+                `;
+
+                const fill = l.grey === 0 ? '#000000' : `rgb(${l.grey},${l.grey},${l.grey})`;
+
+                const cx = w / 2;
+                const cy = h / 2;
+
+                // Main body — dense core
+                const coreBlobs = li === 0 ? randI(16, 22) : randI(10, 16);
+                for(let b = 0; b < coreBlobs; b++){
+                    const angle = rand(0, Math.PI * 2);
+                    const dist = rand(0, w * 0.32);
+                    const bx = cx + Math.cos(angle) * dist;
+                    const by = cy + Math.sin(angle) * dist * 0.6;
+                    const br = rand(w * 0.18, w * 0.38);
+
+                    const circle = document.createElementNS(NS, 'circle');
+                    circle.setAttribute('cx', bx);
+                    circle.setAttribute('cy', by);
+                    circle.setAttribute('r', br);
+                    circle.setAttribute('fill', fill);
                     svg.appendChild(circle);
                 }
-                
-                // Add extra puffs on edges for organic shape
-                var edgePuffs=randI(4,8);
-                for(var e=0;e<edgePuffs;e++){
-                    var angle=rand(0,Math.PI*2);
-                    var bx=centerX+Math.cos(angle)*w*0.4;
-                    var by=centerY+Math.sin(angle)*h*0.4;
-                    var br=rand(w*0.1,w*0.2);
-                    
-                    var circle=document.createElementNS(NS,'circle');
-                    circle.setAttribute('cx',bx);
-                    circle.setAttribute('cy',by);
-                    circle.setAttribute('r',br);
-                    circle.setAttribute('fill',fillColor);
+
+                // Top puffs — bumpy silhouette
+                const topPuffs = randI(5, 9);
+                for(let t = 0; t < topPuffs; t++){
+                    const spread = (t / topPuffs - 0.5) * w * 0.85;
+                    const bx = cx + spread + rand(-w * 0.08, w * 0.08);
+                    const by = cy - h * rand(0.25, 0.5);
+                    const br = rand(w * 0.1, w * 0.22);
+
+                    const circle = document.createElementNS(NS, 'circle');
+                    circle.setAttribute('cx', bx);
+                    circle.setAttribute('cy', by);
+                    circle.setAttribute('r', br);
+                    circle.setAttribute('fill', fill);
                     svg.appendChild(circle);
                 }
-                
+
+                // Flat bottom
+                const bottomRect = document.createElementNS(NS, 'rect');
+                bottomRect.setAttribute('x', cx - w * 0.4);
+                bottomRect.setAttribute('y', cy);
+                bottomRect.setAttribute('width', w * 0.8);
+                bottomRect.setAttribute('height', h * 0.35);
+                bottomRect.setAttribute('rx', h * 0.08);
+                bottomRect.setAttribute('fill', fill);
+                svg.appendChild(bottomRect);
+
+                // Side wisps
+                const wisps = randI(3, 6);
+                for(let s = 0; s < wisps; s++){
+                    const side = Math.random() < 0.5 ? -1 : 1;
+                    const bx = cx + side * w * rand(0.35, 0.5);
+                    const by = cy + rand(-h * 0.15, h * 0.2);
+                    const br = rand(w * 0.06, w * 0.14);
+
+                    const circle = document.createElementNS(NS, 'circle');
+                    circle.setAttribute('cx', bx);
+                    circle.setAttribute('cy', by);
+                    circle.setAttribute('r', br);
+                    circle.setAttribute('fill', fill);
+                    svg.appendChild(circle);
+                }
+
                 this.container.appendChild(svg);
-                
+
                 this.clouds.push({
-                    el:svg,
-                    layer:li,
-                    hPhase:rand(0,Math.PI*2),
-                    hSpeed:rand(layer.hSpeed[0],layer.hSpeed[1]),
-                    hDrift:rand(layer.hDrift[0],layer.hDrift[1]),
-                    vPhase:rand(0,Math.PI*2),
-                    vSpeed:rand(layer.vSpeed[0],layer.vSpeed[1]),
-                    vDrift:rand(layer.vDrift[0],layer.vDrift[1])
+                    el: svg,
+                    baseY: y,
+                    speed: l.speed,
+                    drift: l.drift,
+                    phase: rand(0, Math.PI * 2),
+                    scrollMul: l.scrollMul,
+                    layerIndex: li
                 });
             }
         }
     }
-    
-    update(scrollPct,time){
-        var fadeOut=1-smoothstep(clamp(scrollPct*2.5,0,1));
-        
-        for(var i=0;i<this.clouds.length;i++){
-            var c=this.clouds[i];
-            var hOffset=Math.sin(time*c.hSpeed+c.hPhase)*c.hDrift;
-            var vOffset=Math.sin(time*c.vSpeed+c.vPhase)*c.vDrift;
-            // Back layers move down more on scroll
-            var scrollOffset=scrollPct*100*(6-c.layer)*0.3;
-            
-            c.el.style.transform='translate('+hOffset+'px,'+(vOffset+scrollOffset)+'px)';
-            c.el.style.opacity=fadeOut;
+
+    update(scrollPct, time){
+        const fadeOut = 1 - smoothstep(clamp(scrollPct * 3.6, 0, 1));
+        const globalUp = Math.sin(time * 0.07) * 16;
+
+        for(const c of this.clouds){
+            const wind = Math.sin(time * c.speed + c.phase) * c.drift;
+            const parallaxX = scrollPct * 210 * c.scrollMul;
+            const bob = Math.sin(time * 0.85 + c.phase) * (6 - c.layerIndex);
+            const yOffset = globalUp + bob;
+
+            c.el.style.transform = `translate(${wind + parallaxX}px, ${yOffset}px)`;
+            c.el.style.opacity = fadeOut * this.layers[c.layerIndex].opacity;
         }
     }
 }
-/* ═══════ MULTI-LAYER DUST (No Scroll Reaction) ═══════ */
+
+/* ═══════ DUST PARTICLES — LATE APPEAR, PERFORMANCE OPTIMIZED ═══════ */
 class DustParticles{
     constructor(){
-        this.layers=[
-            {canvas:document.getElementById('dustCanvasBack'),count:100,size:[0.5,2],speed:[0.01,0.05],op:[0.01,0.03],blur:[8,18],color:'rgba(100,80,140,1)'},
-            {canvas:document.getElementById('dustCanvasMid'),count:60,size:[1.5,4],speed:[0.03,0.12],op:[0.02,0.06],blur:[5,12],color:'rgba(140,120,180,1)'},
-            {canvas:document.getElementById('dustCanvasFront'),count:35,size:[3,8],speed:[0.08,0.3],op:[0.04,0.12],blur:[2,6],color:'rgba(180,160,220,1)'}
+        this.layerConfigs = [
+            // EXTREME FRONT — few big soft glowing orbs
+            {
+                z: 9999,
+                baseCount: 6,
+                size: [28, 55],
+                driftX: [0.06, 0.18],
+                driftY: [0.03, 0.10],
+                blur: [42, 72],
+                baseOpacity: 0.7,
+                color: 'rgba(175,160,215,1)',
+                edge: true,
+                countMultiplier: 0.5
+            },
+            // FRONT — medium blurry chunks
+            {
+                z: 53,
+                id: 'dustCanvasFront',
+                baseCount: 22,
+                size: [10, 24],
+                driftX: [0.10, 0.28],
+                driftY: [0.05, 0.14],
+                blur: [24, 42],
+                baseOpacity: 0.58,
+                color: 'rgba(155,140,205,1)',
+                edge: true,
+                countMultiplier: 0.65
+            },
+            // MID — smaller, more of them
+            {
+                z: 52,
+                id: 'dustCanvasMid',
+                baseCount: 70,
+                size: [3, 9],
+                driftX: [0.14, 0.45],
+                driftY: [0.08, 0.24],
+                blur: [8, 18],
+                baseOpacity: 0.42,
+                color: 'rgba(125,115,175,1)',
+                countMultiplier: 0.9
+            },
+            // BACK — dense tiny sharp specks
+            {
+                z: 51,
+                id: 'dustCanvasBack',
+                baseCount: 150,
+                size: [0.5, 3],
+                driftX: [0.20, 0.65],
+                driftY: [0.12, 0.38],
+                blur: [1, 5],
+                baseOpacity: 0.24,
+                color: 'rgba(100,90,150,1)',
+                countMultiplier: 1.2
+            }
         ];
-        
-        // Extreme front layer
-        this.frontCanvas=document.createElement('canvas');
-        this.frontCanvas.style.cssText='position:fixed;inset:0;width:100%;height:100%;z-index:9999;pointer-events:none;opacity:0;';
-        document.body.appendChild(this.frontCanvas);
-        this.layers.push({canvas:this.frontCanvas,count:15,size:[8,20],speed:[0.15,0.5],op:[0.06,0.18],blur:[1,4],color:'rgba(220,200,255,1)',avoidCenter:true});
-        
-        this.contexts=[];
-        this.particles=[];
-        
-        for(var i=0;i<this.layers.length;i++){
-            var l=this.layers[i];
-            if(!l.canvas)continue;
-            this.contexts.push(l.canvas.getContext('2d'));
-            var ps=[];
-            for(var j=0;j<l.count;j++)ps.push(this._create(l));
+
+        this.layers = [];
+        this.ctxs = [];
+        this.particles = [];
+        this.lastWidth = 0;
+        this.frameSkip = 0;
+
+        this.buildLayers();
+        this.resize();
+        window.addEventListener('resize', () => this.onResize());
+    }
+
+    getCount(config){
+        const w = innerWidth;
+        const scale = clamp(w / 1920, 0.2, 1.5);
+        return Math.max(2, Math.round(config.baseCount * scale * config.countMultiplier));
+    }
+
+    getOrCreate(id, z){
+        let c = document.getElementById(id);
+        if(!c){
+            c = document.createElement('canvas');
+            c.id = id;
+            c.style.cssText = `position:fixed;inset:0;width:100%;height:100%;z-index:${z};pointer-events:none;`;
+            document.body.appendChild(c);
+        }
+        return c;
+    }
+
+    createCanvas(z){
+        const c = document.createElement('canvas');
+        c.style.cssText = `position:fixed;inset:0;width:100%;height:100%;z-index:${z};pointer-events:none;`;
+        document.body.appendChild(c);
+        return c;
+    }
+
+    buildLayers(){
+        for(const l of this.layers){
+            if(l.c && !l.c.id) l.c.remove();
+        }
+
+        this.layers = [];
+        this.ctxs = [];
+        this.particles = [];
+
+        for(const config of this.layerConfigs){
+            const c = config.id
+                ? this.getOrCreate(config.id, config.z)
+                : this.createCanvas(config.z);
+
+            const count = this.getCount(config);
+
+            const layer = {
+                c: c,
+                count: count,
+                size: config.size,
+                driftX: config.driftX,
+                driftY: config.driftY,
+                blur: config.blur,
+                baseOpacity: config.baseOpacity,
+                color: config.color,
+                edge: config.edge || false
+            };
+
+            this.layers.push(layer);
+
+            const ctx = c.getContext('2d');
+            this.ctxs.push(ctx);
+
+            const ps = [];
+            for(let i = 0; i < count; i++) ps.push(this.make(layer));
             this.particles.push(ps);
         }
-        this.resize();
-        window.addEventListener('resize',this.resize.bind(this));
+
+        this.lastWidth = innerWidth;
     }
-    
-    _create(l){
-        var x,y;
-        if(l.avoidCenter){
-            x=Math.random()>0.5?rand(0,innerWidth*0.25):rand(innerWidth*0.75,innerWidth);
-            y=Math.random()>0.5?rand(0,innerHeight*0.3):rand(innerHeight*0.7,innerHeight);
-        }else{
-            x=rand(0,innerWidth);
-            y=rand(0,innerHeight);
+
+    make(l){
+        let x, y;
+
+        if(l.edge){
+            const zone = Math.random();
+            if(zone < 0.3){
+                x = rand(0, 0.18); y = rand(0, 1);
+            } else if(zone < 0.6){
+                x = rand(0.82, 1); y = rand(0, 1);
+            } else if(zone < 0.8){
+                x = rand(0, 1); y = rand(0, 0.2);
+            } else {
+                x = rand(0, 1); y = rand(0.8, 1);
+            }
+        } else {
+            x = rand(0, 1); y = rand(0, 1);
+            if(Math.random() < 0.4){
+                x = x < 0.5 ? x * 0.5 : 1 - (1 - x) * 0.5;
+            }
         }
-        return{x:x,y:y,r:rand(l.size[0],l.size[1]),speed:rand(l.speed[0],l.speed[1]),driftX:rand(-0.3,0.3),driftAmp:rand(10,25),phase:rand(0,Math.PI*2),op:rand(l.op[0],l.op[1]),blur:rand(l.blur[0],l.blur[1]),pulseSpeed:rand(0.2,0.6),pulsePhase:rand(0,Math.PI*2)};
+
+        return {
+            nx: x, ny: y,
+            homeX: x, homeY: y,
+            r: rand(l.size[0], l.size[1]),
+            orbitSpeedX: rand(l.driftX[0], l.driftX[1]) * (Math.random() < 0.5 ? 1 : -1),
+            orbitSpeedY: rand(l.driftY[0], l.driftY[1]) * (Math.random() < 0.5 ? 1 : -1),
+            orbitRadiusX: rand(0.02, 0.08),
+            orbitRadiusY: rand(0.015, 0.06),
+            phaseX: rand(0, Math.PI * 2),
+            phaseY: rand(0, Math.PI * 2),
+            blur: rand(l.blur[0], l.blur[1]),
+            particleOpacity: rand(0.45, 1.0),
+            pulseSpeed: rand(0.15, 0.5),
+            pulsePhase: rand(0, Math.PI * 2)
+        };
     }
-    
+
     resize(){
-        var dpr=Math.min(devicePixelRatio||1,2);
-        for(var i=0;i<this.layers.length;i++){
-            var c=this.layers[i].canvas;
-            if(!c)continue;
-            c.width=innerWidth*dpr;c.height=innerHeight*dpr;
-            if(this.contexts[i])this.contexts[i].setTransform(dpr,0,0,dpr,0,0);
-        }
+        const dpr = Math.min(devicePixelRatio || 1, 1.5); // cap DPR for performance
+        this.layers.forEach((l, i) => {
+            if(!l.c) return;
+            l.c.width = innerWidth * dpr;
+            l.c.height = innerHeight * dpr;
+            if(this.ctxs[i]) this.ctxs[i].setTransform(dpr, 0, 0, dpr, 0, 0);
+        });
     }
-    
-    update(time,scrollPct){
-        var fadeIn=smoothstep(clamp((scrollPct-0.35)/0.15,0,1));
-        var layerOps=[fadeIn*0.5,fadeIn*0.7,fadeIn*0.9,fadeIn*1.0];
-        
-        for(var li=0;li<this.layers.length;li++){
-            var l=this.layers[li],c=l.canvas,ctx=this.contexts[li],ps=this.particles[li];
-            if(!c||!ctx||!ps)continue;
-            c.style.opacity=layerOps[li];
-            if(layerOps[li]<0.01)continue;
-            ctx.clearRect(0,0,innerWidth,innerHeight);
-            
-            for(var pi=0;pi<ps.length;pi++){
-                var p=ps[pi];
-                // Just float up - NO scroll reaction
-                p.y-=p.speed;
-                p.x+=Math.sin(time*0.3+p.phase)*p.driftX;
-                
-                // Wrap
-                if(p.y<-30){p.y=innerHeight+30;p.x=l.avoidCenter?(Math.random()>0.5?rand(0,innerWidth*0.25):rand(innerWidth*0.75,innerWidth)):rand(0,innerWidth)}
-                if(p.x<-30)p.x=innerWidth+30;
-                if(p.x>innerWidth+30)p.x=-30;
-                
-                var pulse=Math.sin(time*p.pulseSpeed+p.pulsePhase)*0.3+0.7;
+
+    onResize(){
+        const widthChange = Math.abs(innerWidth - this.lastWidth) / this.lastWidth;
+        if(widthChange > 0.25){
+            this.buildLayers();
+        }
+        this.resize();
+    }
+
+    update(time, scrollPct){
+        // LATE APPEAR — starts at 45% scroll (after "summon me" section)
+        const show = smoothstep(clamp((scrollPct - 0.45) / 0.15, 0, 1));
+
+        // Skip every other frame when nearly invisible
+        if(show < 0.3){
+            this.frameSkip++;
+            if(this.frameSkip % 2 !== 0) return;
+        }
+
+        for(let li = 0; li < this.layers.length; li++){
+            const l = this.layers[li];
+            const ctx = this.ctxs[li];
+            const ps = this.particles[li];
+            if(!ctx || !ps) continue;
+
+            l.c.style.opacity = show;
+            if(show < 0.02) continue;
+
+            ctx.clearRect(0, 0, innerWidth, innerHeight);
+
+            // Back layers update less frequently for performance
+            const skipRate = li === 3 ? 3 : li === 2 ? 2 : 1;
+            const shouldUpdate = this.frameSkip % skipRate === 0;
+
+            for(const p of ps){
+                if(shouldUpdate){
+                    p.nx = p.homeX + Math.sin(time * p.orbitSpeedX + p.phaseX) * p.orbitRadiusX;
+                    p.ny = p.homeY + Math.sin(time * p.orbitSpeedY + p.phaseY) * p.orbitRadiusY;
+
+                    if(p.nx < -0.05) p.nx += 1.1;
+                    if(p.nx > 1.05) p.nx -= 1.1;
+                    if(p.ny < -0.05) p.ny += 1.1;
+                    if(p.ny > 1.05) p.ny -= 1.1;
+                }
+
+                const x = p.nx * innerWidth;
+                const y = p.ny * innerHeight;
+                const pulse = Math.sin(time * p.pulseSpeed + p.pulsePhase) * 0.15 + 0.88;
+
                 ctx.save();
-                ctx.globalAlpha=p.op*pulse;
-                ctx.filter='blur('+p.blur+'px)';
+                ctx.globalAlpha = p.particleOpacity * l.baseOpacity * pulse;
+                ctx.filter = `blur(${p.blur}px)`;
+                ctx.fillStyle = l.color;
                 ctx.beginPath();
-                ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-                ctx.fillStyle=l.color;
+                ctx.arc(x, y, p.r, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.restore();
             }
