@@ -211,20 +211,94 @@ class BasementManager{
         }
     }
 
-    buildBasementProjects(){
-        var container=document.getElementById('basementProjects');if(!container)return;
-        for(var idx=0;idx<PROJECTS.length;idx++){
-            var p=PROJECTS[idx],block=document.createElement('div');
-            block.className='bproject';block.id='bp-'+p.id;
-            var thumbHTML=p.thumbnail?'<img src="'+p.thumbnail+'" alt="'+p.title+'" class="bproject-thumb-img" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><div style="width:100%;height:100%;display:none;align-items:center;justify-content:center;color:var(--pri);opacity:.4">'+p.icon+'</div>':'<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--pri);opacity:.4">'+p.icon+'</div>';
-            var tagsHTML='';if(p.tags)for(var t=0;t<p.tags.length;t++)tagsHTML+='<span>'+p.tags[t]+'</span>';
-            var engineHTML='<span class="engine-icon">'+this.getEngineIcon(p.engine||'')+' '+(p.engine||'')+'</span>';
-            var linksHTML='';if(p.links&&p.links.length){linksHTML='<div class="bp-links">';for(var l=0;l<p.links.length;l++){var lnk=p.links[l];linksHTML+='<a href="'+lnk.url+'" target="_blank" rel="noopener" class="bp-link">'+this.getLinkIcon(lnk.icon||'link')+' '+lnk.label+'</a>';}linksHTML+='</div>';}
-            var contentHTML='';if(p.content&&p.content.length)for(var c=0;c<p.content.length;c++)contentHTML+=this.renderContentBlock(p.content[c]);else if(p.paragraphs)for(var c=0;c<p.paragraphs.length;c++)contentHTML+='<p class="bp-text">'+p.paragraphs[c]+'</p>';
-            block.innerHTML='<div class="bproject-header" data-target="bp-'+p.id+'"><div class="bproject-header-inner"><div class="bproject-thumb">'+thumbHTML+'</div><div class="bproject-header-text"><h3>'+p.title+'</h3><p class="bproject-tagline">'+(p.tagline||'')+'</p></div></div></div><div class="bproject-meta"><div><span class="bm-label">Role</span><span class="bm-value">'+(p.role||'')+'</span></div><div><span class="bm-label">Team</span><span class="bm-value">'+(p.team||'')+'</span></div><div><span class="bm-label">Engine</span><span class="bm-value">'+engineHTML+'</span></div><div><span class="bm-label">Timeline</span><span class="bm-value">'+(p.timeframe||'')+'</span></div></div><div class="bproject-tags">'+tagsHTML+'</div>'+linksHTML+'<div class="bproject-content">'+contentHTML+'</div><button class="bproject-toggle"><span>'+TEXTS.basement.expandLabel+'</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>';
-            container.appendChild(block);
+   buildBasementProjects(){
+    var container=document.getElementById('basementProjects');
+    if(!container)return;
+    var self=this;
+    
+    for(var i=0;i<PROJECTS.length;i++){
+        var p=PROJECTS[i];
+        var block=document.createElement('div');
+        block.className='bproject';
+        block.id = 'bp-' + p.id;
+    block.setAttribute('data-project-id', p.id);
+        
+        // Thumbnail
+        var thumb=p.thumbnail
+            ?'<img src="'+p.thumbnail+'" class="bproject-thumb-img" alt="'+p.title+'" onerror="this.style.display=\'none\'">'
+            :'<div class="bproject-thumb-fallback">'+p.icon+'</div>';
+        
+        // Tags
+        var tags='';
+        if(p.tags)for(var t=0;t<p.tags.length;t++)tags+='<span>'+p.tags[t]+'</span>';
+        
+        // Content
+        var content='';
+        if(p.content&&p.content.length){
+            for(var c=0;c<p.content.length;c++)content+=self.renderContentBlock(p.content[c]);
+        }else if(p.paragraphs){
+            for(var c=0;c<p.paragraphs.length;c++)content+='<p>'+p.paragraphs[c]+'</p>';
         }
+        
+        // Links inside content
+        if(p.links&&p.links.length){
+            content+='<div class="bp-links">';
+            for(var l=0;l<p.links.length;l++){
+                var lnk=p.links[l];
+                content+='<a href="'+lnk.url+'" target="_blank" rel="noopener" class="bp-link">'+self.getLinkIcon(lnk.icon||'link')+' '+lnk.label+'</a>';
+            }
+            content+='</div>';
+        }
+        
+        // Build HTML
+        block.innerHTML=
+            // Header
+            '<div class="bproject-header">'+
+                '<div class="bproject-header-inner">'+
+                    '<div class="bproject-thumb">'+thumb+'</div>'+
+                    '<div class="bproject-header-text">'+
+                        '<h3>'+p.title+'</h3>'+
+                        '<p class="bproject-tagline">'+(p.tagline||'')+'</p>'+
+                    '</div>'+
+                '</div>'+
+            '</div>'+
+            
+            // Meta
+            '<div class="bproject-meta">'+
+                '<div><span class="bm-label">Role</span><span class="bm-value">'+(p.role||'—')+'</span></div>'+
+                '<div><span class="bm-label">Team</span><span class="bm-value">'+(p.team||'—')+'</span></div>'+
+                '<div><span class="bm-label">Engine</span><span class="bm-value">'+self.getEngineIcon(p.engine||'')+' '+(p.engine||'—')+'</span></div>'+
+                '<div><span class="bm-label">Timeline</span><span class="bm-value">'+(p.timeframe||'—')+'</span></div>'+
+            '</div>'+
+            
+            // Content
+            '<div class="bproject-content">'+content+'</div>'+
+            
+            // Continue Reading
+            '<div class="bproject-read-more">'+
+                '<button class="btn-continue">'+
+                    (TEXTS.basement.expandLabel||'Continue Reading')+' '+
+                    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>'+
+                '</button>'+
+            '</div>'+
+            
+            // Collapse
+            '<div class="bproject-collapse">'+
+                '<button class="btn-collapse">'+
+                    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>'+
+                    ' '+(TEXTS.basement.collapseLabel||'Collapse')+
+                '</button>'+
+            '</div>'+
+            
+            // Tags
+            '<div class="bproject-tags">'+tags+'</div>'+
+            
+            // Stickers
+            '<div class="bproject-stickers"></div>';
+        
+        container.appendChild(block);
     }
+}
 
     bindEvents(){
         var self=this;
@@ -391,62 +465,33 @@ class DarkClouds{
     }
 }
 
-/* ═══════ DUST PARTICLES — LATE APPEAR, PERFORMANCE OPTIMIZED ═══════ */
-class DustParticles{
-    constructor(){
+/* ═══════ DUST PARTICLES — PERFORMANCE OPTIMIZED WITH BLUR SPRITES ═══════ */
+class DustParticles {
+    constructor() {
         this.layerConfigs = [
-            // EXTREME FRONT — few big soft glowing orbs
             {
-                z: 9999,
-                baseCount: 6,
-                size: [28, 55],
-                driftX: [0.06, 0.18],
-                driftY: [0.03, 0.10],
-                blur: [42, 72],
-                baseOpacity: 0.7,
-                color: 'rgba(175,160,215,1)',
-                edge: true,
-                countMultiplier: 0.5
+                z: 9999, baseCount: 6, size: [28, 55],
+                driftX: [0.06, 0.18], driftY: [0.03, 0.10],
+                blur: [42, 72], baseOpacity: 0.7,
+                color: 'rgba(175,160,215,1)', edge: true, countMultiplier: 0.5
             },
-            // FRONT — medium blurry chunks
             {
-                z: 53,
-                id: 'dustCanvasFront',
-                baseCount: 22,
-                size: [10, 24],
-                driftX: [0.10, 0.28],
-                driftY: [0.05, 0.14],
-                blur: [24, 42],
-                baseOpacity: 0.58,
-                color: 'rgba(155,140,205,1)',
-                edge: true,
-                countMultiplier: 0.65
+                z: 53, id: 'dustCanvasFront', baseCount: 22, size: [10, 24],
+                driftX: [0.10, 0.28], driftY: [0.05, 0.14],
+                blur: [24, 42], baseOpacity: 0.58,
+                color: 'rgba(155,140,205,1)', edge: true, countMultiplier: 0.65
             },
-            // MID — smaller, more of them
             {
-                z: 52,
-                id: 'dustCanvasMid',
-                baseCount: 70,
-                size: [3, 9],
-                driftX: [0.14, 0.45],
-                driftY: [0.08, 0.24],
-                blur: [8, 18],
-                baseOpacity: 0.42,
-                color: 'rgba(125,115,175,1)',
-                countMultiplier: 0.9
+                z: 52, id: 'dustCanvasMid', baseCount: 70, size: [3, 9],
+                driftX: [0.14, 0.45], driftY: [0.08, 0.24],
+                blur: [8, 18], baseOpacity: 0.42,
+                color: 'rgba(125,115,175,1)', countMultiplier: 0.9
             },
-            // BACK — dense tiny sharp specks
             {
-                z: 51,
-                id: 'dustCanvasBack',
-                baseCount: 150,
-                size: [0.5, 3],
-                driftX: [0.20, 0.65],
-                driftY: [0.12, 0.38],
-                blur: [1, 5],
-                baseOpacity: 0.24,
-                color: 'rgba(100,90,150,1)',
-                countMultiplier: 1.2
+                z: 51, id: 'dustCanvasBack', baseCount: 150, size: [0.5, 3],
+                driftX: [0.20, 0.65], driftY: [0.12, 0.38],
+                blur: [1, 5], baseOpacity: 0.24,
+                color: 'rgba(100,90,150,1)', countMultiplier: 1.2
             }
         ];
 
@@ -455,21 +500,50 @@ class DustParticles{
         this.particles = [];
         this.lastWidth = 0;
         this.frameSkip = 0;
+        this.spriteCache = new Map();
 
         this.buildLayers();
         this.resize();
         window.addEventListener('resize', () => this.onResize());
     }
 
-    getCount(config){
-        const w = innerWidth;
-        const scale = clamp(w / 1920, 0.2, 1.5);
+    /* ── Sprite factory: blur once, reuse forever ── */
+    createSprite(radius, blur, color) {
+        // Quantize to maximise cache hits
+        const rQ = Math.round(radius * 2) / 2;
+        const bQ = Math.round(blur);
+        const key = `${rQ}_${bQ}_${color}`;
+
+        let sprite = this.spriteCache.get(key);
+        if (sprite) return sprite;
+
+        // Padding = 3σ captures 99.7 % of the Gaussian energy
+        const pad = bQ * 3 + 2;
+        const dim = Math.ceil((rQ + pad) * 2);
+
+        const c = document.createElement('canvas');
+        c.width = c.height = dim;
+        const ctx = c.getContext('2d');
+        ctx.filter = `blur(${bQ}px)`;          // ← applied ONCE
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(dim / 2, dim / 2, rQ, 0, Math.PI * 2);
+        ctx.fill();
+
+        sprite = { canvas: c, offset: dim / 2 };
+        this.spriteCache.set(key, sprite);
+        return sprite;
+    }
+
+    /* ── helpers (unchanged) ── */
+    getCount(config) {
+        const scale = clamp(innerWidth / 1920, 0.2, 1.5);
         return Math.max(2, Math.round(config.baseCount * scale * config.countMultiplier));
     }
 
-    getOrCreate(id, z){
+    getOrCreate(id, z) {
         let c = document.getElementById(id);
-        if(!c){
+        if (!c) {
             c = document.createElement('canvas');
             c.id = id;
             c.style.cssText = `position:fixed;inset:0;width:100%;height:100%;z-index:${z};pointer-events:none;`;
@@ -478,23 +552,25 @@ class DustParticles{
         return c;
     }
 
-    createCanvas(z){
+    createCanvas(z) {
         const c = document.createElement('canvas');
         c.style.cssText = `position:fixed;inset:0;width:100%;height:100%;z-index:${z};pointer-events:none;`;
         document.body.appendChild(c);
         return c;
     }
 
-    buildLayers(){
-        for(const l of this.layers){
-            if(l.c && !l.c.id) l.c.remove();
+    /* ── build / rebuild ── */
+    buildLayers() {
+        for (const l of this.layers) {
+            if (l.c && !l.c.id) l.c.remove();
         }
 
         this.layers = [];
         this.ctxs = [];
         this.particles = [];
+        this.spriteCache.clear();
 
-        for(const config of this.layerConfigs){
+        for (const config of this.layerConfigs) {
             const c = config.id
                 ? this.getOrCreate(config.id, config.z)
                 : this.createCanvas(config.z);
@@ -502,138 +578,166 @@ class DustParticles{
             const count = this.getCount(config);
 
             const layer = {
-                c: c,
-                count: count,
-                size: config.size,
-                driftX: config.driftX,
-                driftY: config.driftY,
-                blur: config.blur,
-                baseOpacity: config.baseOpacity,
-                color: config.color,
-                edge: config.edge || false
+                c, count,
+                size: config.size, driftX: config.driftX, driftY: config.driftY,
+                blur: config.blur, baseOpacity: config.baseOpacity,
+                color: config.color, edge: config.edge || false
             };
 
             this.layers.push(layer);
-
-            const ctx = c.getContext('2d');
-            this.ctxs.push(ctx);
+            this.ctxs.push(c.getContext('2d'));
 
             const ps = [];
-            for(let i = 0; i < count; i++) ps.push(this.make(layer));
+            for (let i = 0; i < count; i++) ps.push(this.make(layer));
             this.particles.push(ps);
         }
 
         this.lastWidth = innerWidth;
     }
 
-    make(l){
+    make(l) {
         let x, y;
 
-        if(l.edge){
+        if (l.edge) {
             const zone = Math.random();
-            if(zone < 0.3){
-                x = rand(0, 0.18); y = rand(0, 1);
-            } else if(zone < 0.6){
-                x = rand(0.82, 1); y = rand(0, 1);
-            } else if(zone < 0.8){
-                x = rand(0, 1); y = rand(0, 0.2);
-            } else {
-                x = rand(0, 1); y = rand(0.8, 1);
-            }
+            if (zone < 0.3)      { x = rand(0, 0.18); y = rand(0, 1); }
+            else if (zone < 0.6) { x = rand(0.82, 1); y = rand(0, 1); }
+            else if (zone < 0.8) { x = rand(0, 1); y = rand(0, 0.2); }
+            else                 { x = rand(0, 1); y = rand(0.8, 1); }
         } else {
             x = rand(0, 1); y = rand(0, 1);
-            if(Math.random() < 0.4){
+            if (Math.random() < 0.4) {
                 x = x < 0.5 ? x * 0.5 : 1 - (1 - x) * 0.5;
             }
         }
 
+        const r    = rand(l.size[0], l.size[1]);
+        const blur = rand(l.blur[0], l.blur[1]);
+        const pOp  = rand(0.45, 1.0);
+
         return {
             nx: x, ny: y,
-            homeX: x, homeY: y,
-            r: rand(l.size[0], l.size[1]),
-            orbitSpeedX: rand(l.driftX[0], l.driftX[1]) * (Math.random() < 0.5 ? 1 : -1),
-            orbitSpeedY: rand(l.driftY[0], l.driftY[1]) * (Math.random() < 0.5 ? 1 : -1),
+            homeX: x, homeY: y, r,
+            orbitSpeedX:  rand(l.driftX[0], l.driftX[1]) * (Math.random() < 0.5 ? 1 : -1),
+            orbitSpeedY:  rand(l.driftY[0], l.driftY[1]) * (Math.random() < 0.5 ? 1 : -1),
             orbitRadiusX: rand(0.02, 0.08),
             orbitRadiusY: rand(0.015, 0.06),
             phaseX: rand(0, Math.PI * 2),
             phaseY: rand(0, Math.PI * 2),
-            blur: rand(l.blur[0], l.blur[1]),
-            particleOpacity: rand(0.45, 1.0),
+            blur,
+            particleOpacity: pOp,
+            baseAlpha: pOp * l.baseOpacity,   // pre-multiply (constant part)
             pulseSpeed: rand(0.15, 0.5),
-            pulsePhase: rand(0, Math.PI * 2)
+            pulsePhase: rand(0, Math.PI * 2),
+            sprite: this.createSprite(r, blur, l.color)   // ← cached sprite
         };
     }
 
-    resize(){
-        const dpr = Math.min(devicePixelRatio || 1, 1.5); // cap DPR for performance
+    resize() {
+        const dpr = Math.min(devicePixelRatio || 1, 1.5);
         this.layers.forEach((l, i) => {
-            if(!l.c) return;
-            l.c.width = innerWidth * dpr;
+            if (!l.c) return;
+            l.c.width  = innerWidth  * dpr;
             l.c.height = innerHeight * dpr;
-            if(this.ctxs[i]) this.ctxs[i].setTransform(dpr, 0, 0, dpr, 0, 0);
+            if (this.ctxs[i]) this.ctxs[i].setTransform(dpr, 0, 0, dpr, 0, 0);
         });
     }
 
-    onResize(){
+    onResize() {
         const widthChange = Math.abs(innerWidth - this.lastWidth) / this.lastWidth;
-        if(widthChange > 0.25){
-            this.buildLayers();
-        }
+        if (widthChange > 0.25) this.buildLayers();
         this.resize();
     }
 
-    update(time, scrollPct){
-        // LATE APPEAR — starts at 45% scroll (after "summon me" section)
+    /* ── render loop ── */
+    update(time, scrollPct) {
         const show = smoothstep(clamp((scrollPct - 0.45) / 0.15, 0, 1));
 
-        // Skip every other frame when nearly invisible
-        if(show < 0.3){
+        if (show < 0.3) {
             this.frameSkip++;
-            if(this.frameSkip % 2 !== 0) return;
+            if (this.frameSkip % 2 !== 0) return;
         }
 
-        for(let li = 0; li < this.layers.length; li++){
-            const l = this.layers[li];
+        const W = innerWidth;
+        const H = innerHeight;
+
+        for (let li = 0; li < this.layers.length; li++) {
+            const l   = this.layers[li];
             const ctx = this.ctxs[li];
-            const ps = this.particles[li];
-            if(!ctx || !ps) continue;
+            const ps  = this.particles[li];
+            if (!ctx || !ps) continue;
 
             l.c.style.opacity = show;
-            if(show < 0.02) continue;
+            if (show < 0.02) continue;
 
-            ctx.clearRect(0, 0, innerWidth, innerHeight);
+            ctx.clearRect(0, 0, W, H);
 
-            // Back layers update less frequently for performance
-            const skipRate = li === 3 ? 3 : li === 2 ? 2 : 1;
-            const shouldUpdate = this.frameSkip % skipRate === 0;
+            const skipRate    = li === 3 ? 3 : li === 2 ? 2 : 1;
+            const shouldMove  = this.frameSkip % skipRate === 0;
 
-            for(const p of ps){
-                if(shouldUpdate){
+            for (let i = 0; i < ps.length; i++) {
+                const p = ps[i];
+
+                if (shouldMove) {
                     p.nx = p.homeX + Math.sin(time * p.orbitSpeedX + p.phaseX) * p.orbitRadiusX;
                     p.ny = p.homeY + Math.sin(time * p.orbitSpeedY + p.phaseY) * p.orbitRadiusY;
-
-                    if(p.nx < -0.05) p.nx += 1.1;
-                    if(p.nx > 1.05) p.nx -= 1.1;
-                    if(p.ny < -0.05) p.ny += 1.1;
-                    if(p.ny > 1.05) p.ny -= 1.1;
+                    if (p.nx < -0.05) p.nx += 1.1;
+                    if (p.nx >  1.05) p.nx -= 1.1;
+                    if (p.ny < -0.05) p.ny += 1.1;
+                    if (p.ny >  1.05) p.ny -= 1.1;
                 }
 
-                const x = p.nx * innerWidth;
-                const y = p.ny * innerHeight;
                 const pulse = Math.sin(time * p.pulseSpeed + p.pulsePhase) * 0.15 + 0.88;
 
-                ctx.save();
-                ctx.globalAlpha = p.particleOpacity * l.baseOpacity * pulse;
-                ctx.filter = `blur(${p.blur}px)`;
-                ctx.fillStyle = l.color;
-                ctx.beginPath();
-                ctx.arc(x, y, p.r, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.restore();
+                ctx.globalAlpha = p.baseAlpha * pulse;
+                ctx.drawImage(
+                    p.sprite.canvas,
+                    p.nx * W - p.sprite.offset,
+                    p.ny * H - p.sprite.offset
+                );
             }
         }
     }
 }
-
 /* ═══════ INIT ═══════ */
 document.addEventListener('DOMContentLoaded',function(){new App()});
+
+// Continue Reading / Collapse functionality
+document.addEventListener('click', function(e) {
+    // Continue Reading button
+    if (e.target.closest('.btn-continue')) {
+        e.preventDefault();
+        var card = e.target.closest('.bproject');
+        if (card) {
+            // Close any other expanded projects first (optional)
+            var others = document.querySelectorAll('.bproject.expanded');
+            for (var i = 0; i < others.length; i++) {
+                if (others[i] !== card) others[i].classList.remove('expanded');
+            }
+            
+            card.classList.add('expanded');
+            
+            // Smooth scroll to keep card header in view
+            setTimeout(function() {
+                var headerRect = card.getBoundingClientRect();
+                if (headerRect.top < 80) {
+                    card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 100);
+        }
+    }
+    
+    // Collapse button
+    if (e.target.closest('.btn-collapse')) {
+        e.preventDefault();
+        var card = e.target.closest('.bproject');
+        if (card) {
+            card.classList.remove('expanded');
+            
+            // Scroll back to card
+            setTimeout(function() {
+                card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+        }
+    }
+});
