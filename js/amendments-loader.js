@@ -5,18 +5,14 @@
     var AMENDMENTS_URL = './data/amendments.json';
     var storedAmendments = null;
     
-    // Inject styles for loaded amendments
+    // Inject styles
     var style = document.createElement('style');
     style.textContent = 
-        // Sticker styles
         '.bproject-stickers{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none!important;overflow:visible;z-index:50}' +
         '.bproject-stickers .ed-sticker,.bproject-stickers .amendment-sticker{pointer-events:none!important}' +
         '.amendment-sticker img{pointer-events:none!important}' +
-        // Fancy font support
         '.fancy,.alt-font,.font-display{font-family:var(--font-display),cursive}' +
-        // Divider styles
         '.amendment-divider{pointer-events:none}' +
-        // Whisper style (if not defined)
         '.whisper{font-size:0.85em;opacity:0.6;font-style:italic}';
     document.head.appendChild(style);
     
@@ -28,6 +24,12 @@
             })
             .then(function(data){
                 storedAmendments = data;
+                
+                // Apply project order FIRST
+                if(data.projectOrder && data.projectOrder.length){
+                    applyProjectOrder(data.projectOrder);
+                }
+                
                 applyAmendments(data);
                 setupProjectObserver();
                 console.log('✅ Amendments loaded:', data._exported || 'unknown date');
@@ -37,16 +39,64 @@
             });
     }
     
+    // Apply project order to both projects and thumbnails
+    function applyProjectOrder(order){
+        if(!order || !order.length) return;
+        
+        // Find project container
+        var firstProject = document.querySelector('.bproject');
+        if(!firstProject) return;
+        var projectContainer = firstProject.parentElement;
+        
+        // Find thumbnail container (adjust selectors to match your HTML)
+        var thumbContainer = document.querySelector('.games-grid, .project-thumbs, .pcard-container, .basement-thumbs, .games-section .grid');
+        
+        var reorderedProjects = 0;
+        var reorderedThumbs = 0;
+        
+        // Reorder projects
+        for(var i = 0; i < order.length; i++){
+            var projectId = order[i];
+            var project = document.querySelector('.bproject[data-project-id="' + projectId + '"]');
+            if(project){
+                projectContainer.appendChild(project);
+                reorderedProjects++;
+            }
+        }
+        
+        // Reorder thumbnails to match
+        if(thumbContainer){
+            for(var i = 0; i < order.length; i++){
+                var projectId = order[i];
+                // Try different selector patterns for thumbnails
+                var thumb = thumbContainer.querySelector(
+                    '[data-project-id="' + projectId + '"],' +
+                    '[data-target="' + projectId + '"],' +
+                    '[href="#' + projectId + '"],' +
+                    '.pcard[data-project="' + projectId + '"]'
+                );
+                if(thumb){
+                    thumbContainer.appendChild(thumb);
+                    reorderedThumbs++;
+                }
+            }
+        }
+        
+        if(reorderedProjects > 0){
+            console.log('📋 Reordered ' + reorderedProjects + ' projects' + 
+                       (reorderedThumbs > 0 ? ' and ' + reorderedThumbs + ' thumbnails' : ''));
+        }
+    }
+    
     function applyAmendments(data){
         var applied = 0;
         
-        // Apply text changes (with class/type support)
+        // Apply text changes
         if(data.textChanges && data.textChanges.length){
             data.textChanges.forEach(function(change){
                 try {
                     var el = document.querySelector(change.selector);
                     if(el){
-                        // Check if element type changed (tag conversion)
                         if(change.newTag && el.tagName.toLowerCase() !== change.newTag.toLowerCase()){
                             el = convertElement(el, change);
                         } else {
@@ -87,7 +137,6 @@
                 try {
                     var parent = document.querySelector(divider.parentSelector);
                     if(parent){
-                        // Check for duplicate
                         var existingDividers = parent.querySelectorAll('.amendment-divider');
                         var isDupe = false;
                         for(var i = 0; i < existingDividers.length; i++){
@@ -100,8 +149,6 @@
                             var div = document.createElement('div');
                             div.className = 'ed-divider amendment-divider';
                             div.setAttribute('style', divider.styles);
-                            
-                            // Insert at position if specified
                             if(divider.position !== undefined && parent.children[divider.position]){
                                 parent.insertBefore(div, parent.children[divider.position]);
                             } else {
@@ -120,7 +167,6 @@
                 try {
                     var parent = document.querySelector(link.parentSelector);
                     if(parent){
-                        // Check for duplicate
                         var existingLinks = parent.querySelectorAll('.amendment-link a');
                         var isDupe = false;
                         for(var i = 0; i < existingLinks.length; i++){
@@ -142,8 +188,6 @@
                             a.rel = 'noopener noreferrer';
                             
                             wrapper.appendChild(a);
-                            
-                            // Insert at position if specified
                             if(link.position !== undefined && parent.children[link.position]){
                                 parent.insertBefore(wrapper, parent.children[link.position]);
                             } else {
@@ -156,7 +200,7 @@
             });
         }
         
-        // Apply new blocks (generic HTML blocks)
+        // Apply new blocks
         if(data.newBlocks && data.newBlocks.length){
             data.newBlocks.forEach(function(block){
                 try {
@@ -177,7 +221,7 @@
             });
         }
         
-        // Apply element conversions (type changes)
+        // Apply element conversions
         if(data.conversions && data.conversions.length){
             data.conversions.forEach(function(conv){
                 try {
@@ -195,28 +239,20 @@
         }
     }
     
-    // Apply classes while preserving important ones
     function applyClasses(el, classString){
-        // Parse class string
         var newClasses = classString.split(' ').filter(function(c){
             return c && !c.startsWith('ed-') && c !== 'expanded';
         });
-        
-        // Get existing important classes to preserve
         var preserve = ['bproject', 'bproject-content', 'bp-figure', 'bp-gallery'];
         var existing = Array.from(el.classList).filter(function(c){
             return preserve.indexOf(c) !== -1;
         });
-        
-        // Build final class list
         var finalClasses = existing.concat(newClasses.filter(function(c){
             return existing.indexOf(c) === -1;
         }));
-        
         el.className = finalClasses.join(' ');
     }
     
-    // Convert element to new tag type
     function convertElement(el, conversion){
         var newTag = conversion.newTag || guessTagFromClasses(conversion.classes);
         if(!newTag) return el;
@@ -230,7 +266,6 @@
         if(conversion.styles) newEl.setAttribute('style', conversion.styles);
         if(conversion.classes) applyClasses(newEl, conversion.classes);
         
-        // Copy data attributes
         for(var key in el.dataset){
             newEl.dataset[key] = el.dataset[key];
         }
@@ -245,7 +280,6 @@
         return newEl;
     }
     
-    // Guess tag from class names
     function guessTagFromClasses(classes){
         if(!classes) return null;
         if(classes.includes('bp-heading') || classes.includes('section-title')) return 'h4';
@@ -258,14 +292,10 @@
             var projectCard = null;
             var stickerLayer = null;
             
-            // Method 1: Find by projectId (preferred)
             if(sticker.projectId){
-                projectCard = document.querySelector(
-                    '.bproject[data-project-id="' + sticker.projectId + '"]'
-                );
+                projectCard = document.querySelector('.bproject[data-project-id="' + sticker.projectId + '"]');
             }
             
-            // Method 2: Fallback to parentSelector
             if(!projectCard && sticker.parentSelector){
                 stickerLayer = document.querySelector(sticker.parentSelector);
                 if(stickerLayer){
@@ -273,7 +303,6 @@
                 }
             }
             
-            // Find or create sticker layer
             if(projectCard){
                 stickerLayer = projectCard.querySelector('.bproject-stickers');
                 if(!stickerLayer){
@@ -282,8 +311,7 @@
                     projectCard.appendChild(stickerLayer);
                 }
                 projectCard.style.position = 'relative';
-            } 
-            else if(sticker.parentSelector){
+            } else if(sticker.parentSelector){
                 stickerLayer = document.querySelector(sticker.parentSelector);
                 if(stickerLayer){
                     stickerLayer.style.position = 'relative';
@@ -295,7 +323,6 @@
                 return false;
             }
             
-            // Check for duplicates
             var existingStickers = stickerLayer.querySelectorAll('.ed-sticker, .amendment-sticker');
             for(var i = 0; i < existingStickers.length; i++){
                 var existing = existingStickers[i];
@@ -307,7 +334,6 @@
                 }
             }
             
-            // Create sticker element
             var div = document.createElement('div');
             div.className = 'ed-sticker amendment-sticker';
             div.dataset.rotation = sticker.rotation || '0';
@@ -343,16 +369,15 @@
         }
     }
     
-    // Watch for project expansions
     function setupProjectObserver(){
         if(!storedAmendments) return;
         
-        var hasStickers = storedAmendments.stickers && storedAmendments.stickers.length;
-        var hasDividers = storedAmendments.dividers && storedAmendments.dividers.length;
-        var hasLinks = storedAmendments.links && storedAmendments.links.length;
-        var hasText = storedAmendments.textChanges && storedAmendments.textChanges.length;
+        var hasContent = (storedAmendments.stickers && storedAmendments.stickers.length) ||
+                        (storedAmendments.dividers && storedAmendments.dividers.length) ||
+                        (storedAmendments.links && storedAmendments.links.length) ||
+                        (storedAmendments.textChanges && storedAmendments.textChanges.length);
         
-        if(!hasStickers && !hasDividers && !hasLinks && !hasText) return;
+        if(!hasContent) return;
         
         var projects = document.querySelectorAll('.bproject');
         if(!projects.length) return;
@@ -378,12 +403,10 @@
         });
     }
     
-    // Re-apply amendments for a specific project
     function reapplyAmendmentsForProject(projectId, projectEl){
         if(!storedAmendments) return;
         var applied = 0;
         
-        // Re-apply stickers
         if(storedAmendments.stickers){
             var existingStickers = projectEl.querySelectorAll('.amendment-sticker');
             if(existingStickers.length === 0){
@@ -395,7 +418,6 @@
             }
         }
         
-        // Re-apply text changes within this project
         if(storedAmendments.textChanges){
             storedAmendments.textChanges.forEach(function(change){
                 if(change.selector.includes(projectId)){
@@ -413,7 +435,6 @@
             });
         }
         
-        // Re-apply dividers within this project
         if(storedAmendments.dividers){
             var existingDividers = projectEl.querySelectorAll('.amendment-divider');
             if(existingDividers.length === 0){
@@ -434,7 +455,6 @@
             }
         }
         
-        // Re-apply links within this project
         if(storedAmendments.links){
             var existingLinks = projectEl.querySelectorAll('.amendment-link');
             if(existingLinks.length === 0){

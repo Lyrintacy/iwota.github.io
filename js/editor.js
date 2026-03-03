@@ -1,6 +1,7 @@
 class LiveEditor{
     constructor(){
         this.active=false;this.selectedEl=null;this.undoStack=[];this.stickerDragging=null;this.stickerOffset={x:0,y:0};
+        this.projectOrder=null; // Track project order changes
 
         // Shortcode patterns
         this.shortcodes=[
@@ -35,7 +36,20 @@ class LiveEditor{
             '.ed-type-select{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:8px}'+
             '.ed-type-btn{padding:6px 4px;font-size:11px;border-radius:4px;border:1px solid #444;background:#1a1a2e;color:#fff;cursor:pointer;transition:all 0.2s}'+
             '.ed-type-btn:hover{border-color:#c084fc;background:#2a2a4e}'+
-            '.ed-type-btn.active{background:#c084fc;color:#000;border-color:#c084fc}';
+            '.ed-type-btn.active{background:#c084fc;color:#000;border-color:#c084fc}'+
+            // Project card selection
+            '.editor-active .bproject{cursor:pointer}'+
+            '.editor-active .bproject.ed-project-selected{outline:3px solid #c084fc;outline-offset:4px}'+
+            '.editor-active .bproject:not(.expanded):hover{outline:2px dashed #c084fc66;outline-offset:2px}'+
+            // Project order panel
+            '.ed-project-list{max-height:300px;overflow-y:auto;margin:8px 0}'+
+            '.ed-project-item{display:flex;align-items:center;gap:8px;padding:8px;background:rgba(0,0,0,0.3);border-radius:4px;margin-bottom:4px;cursor:grab}'+
+            '.ed-project-item:active{cursor:grabbing}'+
+            '.ed-project-item.dragging{opacity:0.5;background:rgba(192,132,252,0.2)}'+
+            '.ed-project-item .ed-proj-num{width:20px;height:20px;background:#c084fc;color:#000;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:bold}'+
+            '.ed-project-item .ed-proj-name{flex:1;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'+
+            '.ed-project-item .ed-proj-btns{display:flex;gap:2px}'+
+            '.ed-project-item .ed-proj-btns button{padding:2px 6px;font-size:10px}';
         document.head.appendChild(s);
 
         this.buildUI();this.bindShortcut();
@@ -43,7 +57,7 @@ class LiveEditor{
     
     buildUI(){
         var toolbar=document.createElement('div');toolbar.id='editorToolbar';
-        toolbar.innerHTML='<div class="ed-header"><span class="ed-title">☠ Live Editor</span><div class="ed-controls"><button class="ed-btn" id="edAddImage" title="Add Image">🖼️</button><button class="ed-btn" id="edAddText" title="Add Text">📝</button><button class="ed-btn" id="edAddHeading" title="Add Heading">📌</button><button class="ed-btn" id="edAddQuote" title="Add Quote">💬</button><button class="ed-btn" id="edAddDivider" title="Add Divider">➖</button><button class="ed-btn" id="edAddLink" title="Add Link/Button">🔗</button><button class="ed-btn" id="edAddSticker" title="Add Sticker">⭐</button><span class="ed-sep"></span><button class="ed-btn" id="edUndo" title="Undo">↩️</button><button class="ed-btn ed-amendment" id="edExportAmendment" title="Export Amendment">📄 Export</button><button class="ed-btn ed-close" id="edClose" title="Close">✕</button></div></div><div class="ed-status" id="edStatus">F2 to toggle • Click to edit • Right-click for menu</div>';
+        toolbar.innerHTML='<div class="ed-header"><span class="ed-title">☠ Live Editor</span><div class="ed-controls"><button class="ed-btn" id="edAddImage" title="Add Image">🖼️</button><button class="ed-btn" id="edAddText" title="Add Text">📝</button><button class="ed-btn" id="edAddHeading" title="Add Heading">📌</button><button class="ed-btn" id="edAddQuote" title="Add Quote">💬</button><button class="ed-btn" id="edAddDivider" title="Add Divider">➖</button><button class="ed-btn" id="edAddLink" title="Add Link/Button">🔗</button><button class="ed-btn" id="edAddSticker" title="Add Sticker">⭐</button><span class="ed-sep"></span><button class="ed-btn" id="edReorderProjects" title="Reorder Projects">📋</button><button class="ed-btn" id="edUndo" title="Undo">↩️</button><button class="ed-btn ed-amendment" id="edExportAmendment" title="Export Amendment">📄 Export</button><button class="ed-btn ed-close" id="edClose" title="Close">✕</button></div></div><div class="ed-status" id="edStatus">F2 to toggle • Click to edit • Right-click for menu</div>';
         document.body.appendChild(toolbar);
         
         var formatBar=document.createElement('div');formatBar.id='edFormatBar';
@@ -69,12 +83,10 @@ class LiveEditor{
                 if(e.ctrlKey&&e.key==='z'){e.preventDefault();self.undo();}
                 if(e.key==='Delete'&&self.selectedEl&&!self.selectedEl.isContentEditable)self.deleteSelected();
                 if(e.key==='Escape'){self.deselectAll();self.hideContext();}
-                // Arrow keys to move elements
                 if(e.altKey&&self.selectedEl){
                     if(e.key==='ArrowUp'){e.preventDefault();self.moveElement(self.selectedEl,'up');}
                     if(e.key==='ArrowDown'){e.preventDefault();self.moveElement(self.selectedEl,'down');}
                 }
-                // Enter to process shortcodes
                 if(e.key==='Enter'&&self.selectedEl&&self.selectedEl.isContentEditable){
                     var processed=self.processShortcodes(self.selectedEl);
                     if(processed){e.preventDefault();}
@@ -102,6 +114,15 @@ class LiveEditor{
         this._clickHandler=function(e){
             if(!self.active)return;
             var target=e.target;
+            
+            // Check for project card click (not expanded, not on editable content)
+            var projectCard=target.closest('.bproject');
+            if(projectCard&&!projectCard.classList.contains('expanded')&&!target.closest('.ed-editable,.ed-interactive,.ed-sticker')){
+                e.stopPropagation();
+                self.selectProject(projectCard);
+                return;
+            }
+            
             if(target.closest('.ed-sticker')){e.stopPropagation();self.selectElement(target.closest('.ed-sticker'));return;}
             if(target.closest('.ed-divider')){e.stopPropagation();self.selectElement(target.closest('.ed-divider'));return;}
             if(target.closest('.ed-link-block')){e.stopPropagation();e.preventDefault();self.selectElement(target.closest('.ed-link-block'));return;}
@@ -114,6 +135,15 @@ class LiveEditor{
         
         this._contextHandler=function(e){
             if(!self.active)return;
+            
+            // Project card context menu
+            var projectCard=e.target.closest('.bproject');
+            if(projectCard&&!projectCard.classList.contains('expanded')){
+                e.preventDefault();
+                self.showProjectContext(e,projectCard);
+                return;
+            }
+            
             var target=e.target.closest('.ed-block,.ed-interactive,.ed-editable,.ed-sticker,.ed-divider,.ed-link-block');
             if(target){e.preventDefault();self.showContext(e,target);}
         };
@@ -147,6 +177,7 @@ class LiveEditor{
         document.getElementById('edAddDivider').onclick=function(){self.addDivider();};
         document.getElementById('edAddLink').onclick=function(){self.addLinkBlock();};
         document.getElementById('edAddSticker').onclick=function(){self.addSticker();};
+        document.getElementById('edReorderProjects').onclick=function(){self.showProjectReorderPanel();};
         document.getElementById('edUndo').onclick=function(){self.undo();};
         document.getElementById('edExportAmendment').onclick=function(){self.exportAmendment();};
         document.getElementById('edClose').onclick=function(){self.toggle();};
@@ -167,7 +198,6 @@ class LiveEditor{
             })(fmtBtns[i]);
         }
         
-        // Fancy font button
         document.getElementById('edFmtFancy').addEventListener('mousedown',function(e){
             e.preventDefault();
             self.toggleFancyFont();
@@ -184,6 +214,8 @@ class LiveEditor{
         for(var i=0;i<interactives.length;i++)interactives[i].classList.remove('ed-interactive','ed-selected');
         var blocks=document.querySelectorAll('.ed-block');
         for(var i=0;i<blocks.length;i++)blocks[i].classList.remove('ed-block','ed-selected');
+        var selectedProjects=document.querySelectorAll('.ed-project-selected');
+        for(var i=0;i<selectedProjects.length;i++)selectedProjects[i].classList.remove('ed-project-selected');
         if(this._clickHandler)document.removeEventListener('click',this._clickHandler);
         if(this._contextHandler)document.removeEventListener('contextmenu',this._contextHandler);
         if(this._mousedownHandler)document.removeEventListener('mousedown',this._mousedownHandler);
@@ -191,8 +223,312 @@ class LiveEditor{
         if(this._mouseupHandler)document.removeEventListener('mouseup',this._mouseupHandler);
     }
     
+    // Project selection and management
+    selectProject(projectEl){
+        this.deselectAll();
+        var selected=document.querySelectorAll('.ed-project-selected');
+        for(var i=0;i<selected.length;i++)selected[i].classList.remove('ed-project-selected');
+        projectEl.classList.add('ed-project-selected');
+        this.selectedEl=projectEl;
+        this.showProjectProps(projectEl);
+        this.updateHighlight(projectEl);
+    }
+    
+    showProjectProps(projectEl){
+        var panel=document.getElementById('edPanelBody');
+        var projectId=projectEl.dataset.projectId||'unknown';
+        var projectName=projectEl.querySelector('.bproject-header-text h3, .pcard h3');
+        projectName=projectName?projectName.textContent:'Project';
+        
+        var projects=document.querySelectorAll('.bproject');
+        var currentIndex=-1;
+        for(var i=0;i<projects.length;i++){
+            if(projects[i]===projectEl){currentIndex=i;break;}
+        }
+        
+        var html='<div class="ed-prop"><label>Project</label><p style="margin:0;color:#c084fc;font-size:14px">'+projectName+'</p><small style="color:#666">ID: '+projectId+'</small></div>';
+        
+        html+='<div class="ed-prop"><label>Position ('+(currentIndex+1)+' of '+projects.length+')</label><div class="ed-move-controls">'+
+            '<button class="ed-btn" id="edProjMoveUp" '+(currentIndex===0?'disabled':'')+'>⬆️ Up</button>'+
+            '<button class="ed-btn" id="edProjMoveDown" '+(currentIndex===projects.length-1?'disabled':'')+'>⬇️ Down</button>'+
+            '</div></div>';
+        
+        html+='<div class="ed-prop"><div class="ed-move-controls">'+
+            '<button class="ed-btn" id="edProjMoveTop" '+(currentIndex===0?'disabled':'')+'>⏫ First</button>'+
+            '<button class="ed-btn" id="edProjMoveLast" '+(currentIndex===projects.length-1?'disabled':'')+'>⏬ Last</button>'+
+            '</div></div>';
+        
+        html+='<div class="ed-prop"><button class="ed-btn ed-full" id="edOpenReorder">📋 Reorder All Projects</button></div>';
+        
+        panel.innerHTML=html;
+        
+        var self=this;
+        document.getElementById('edProjMoveUp').onclick=function(){self.moveProject(projectEl,'up');};
+        document.getElementById('edProjMoveDown').onclick=function(){self.moveProject(projectEl,'down');};
+        document.getElementById('edProjMoveTop').onclick=function(){self.moveProject(projectEl,'first');};
+        document.getElementById('edProjMoveLast').onclick=function(){self.moveProject(projectEl,'last');};
+        document.getElementById('edOpenReorder').onclick=function(){self.showProjectReorderPanel();};
+    }
+    
+    moveProject(projectEl,direction){
+        var container=projectEl.parentElement;
+        var projects=Array.from(container.querySelectorAll('.bproject'));
+        var currentIndex=projects.indexOf(projectEl);
+        
+        switch(direction){
+            case 'up':
+                if(currentIndex>0){
+                    container.insertBefore(projectEl,projects[currentIndex-1]);
+                }
+                break;
+            case 'down':
+                if(currentIndex<projects.length-1){
+                    container.insertBefore(projects[currentIndex+1],projectEl);
+                }
+                break;
+            case 'first':
+                container.insertBefore(projectEl,projects[0]);
+                break;
+            case 'last':
+                container.appendChild(projectEl);
+                break;
+        }
+        
+        // Sync thumbnails
+        this.syncThumbnailOrder();
+        
+        // Update panel
+        this.showProjectProps(projectEl);
+        this.updateHighlight(projectEl);
+        this.setStatus('Project moved '+direction);
+        
+        // Mark order as changed
+        this.projectOrder=this.getCurrentProjectOrder();
+    }
+    
+    showProjectReorderPanel(){
+        var panel=document.getElementById('edPanelBody');
+        var projects=document.querySelectorAll('.bproject');
+        var self=this;
+        
+        var html='<div class="ed-prop"><label>Drag to Reorder Projects</label></div>';
+        html+='<div class="ed-project-list" id="edProjectList">';
+        
+        for(var i=0;i<projects.length;i++){
+            var proj=projects[i];
+            var id=proj.dataset.projectId||'proj-'+i;
+            var name=proj.querySelector('.bproject-header-text h3, .pcard h3');
+            name=name?name.textContent:'Project '+(i+1);
+            
+            html+='<div class="ed-project-item" data-project-id="'+id+'" draggable="true">'+
+                '<span class="ed-proj-num">'+(i+1)+'</span>'+
+                '<span class="ed-proj-name">'+name+'</span>'+
+                '<span class="ed-proj-btns">'+
+                    '<button class="ed-btn" data-action="up" '+(i===0?'disabled':'')+'>↑</button>'+
+                    '<button class="ed-btn" data-action="down" '+(i===projects.length-1?'disabled':'')+'>↓</button>'+
+                '</span>'+
+            '</div>';
+        }
+        html+='</div>';
+        html+='<div class="ed-prop"><button class="ed-btn ed-full" id="edApplyOrder">✓ Apply Order</button></div>';
+        
+        panel.innerHTML=html;
+        
+        // Setup drag and drop
+        this.setupProjectListDragDrop();
+        
+        // Setup button clicks
+        var btns=panel.querySelectorAll('.ed-proj-btns button');
+        for(var i=0;i<btns.length;i++){
+            (function(btn){
+                btn.onclick=function(e){
+                    e.stopPropagation();
+                    var item=btn.closest('.ed-project-item');
+                    var action=btn.dataset.action;
+                    self.moveProjectInList(item,action);
+                };
+            })(btns[i]);
+        }
+        
+        document.getElementById('edApplyOrder').onclick=function(){
+            self.applyProjectListOrder();
+        };
+    }
+    
+    setupProjectListDragDrop(){
+        var list=document.getElementById('edProjectList');
+        if(!list)return;
+        var self=this;
+        var draggedItem=null;
+        
+        var items=list.querySelectorAll('.ed-project-item');
+        for(var i=0;i<items.length;i++){
+            (function(item){
+                item.addEventListener('dragstart',function(e){
+                    draggedItem=item;
+                    item.classList.add('dragging');
+                    e.dataTransfer.effectAllowed='move';
+                });
+                
+                item.addEventListener('dragend',function(){
+                    item.classList.remove('dragging');
+                    draggedItem=null;
+                    self.updateProjectListNumbers();
+                });
+                
+                item.addEventListener('dragover',function(e){
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect='move';
+                    
+                    if(draggedItem&&draggedItem!==item){
+                        var rect=item.getBoundingClientRect();
+                        var midY=rect.top+rect.height/2;
+                        if(e.clientY<midY){
+                            list.insertBefore(draggedItem,item);
+                        }else{
+                            list.insertBefore(draggedItem,item.nextSibling);
+                        }
+                    }
+                });
+            })(items[i]);
+        }
+    }
+    
+    moveProjectInList(item,direction){
+        var list=item.parentElement;
+        var items=Array.from(list.querySelectorAll('.ed-project-item'));
+        var index=items.indexOf(item);
+        
+        if(direction==='up'&&index>0){
+            list.insertBefore(item,items[index-1]);
+        }else if(direction==='down'&&index<items.length-1){
+            list.insertBefore(items[index+1],item);
+        }
+        
+        this.updateProjectListNumbers();
+    }
+    
+    updateProjectListNumbers(){
+        var items=document.querySelectorAll('#edProjectList .ed-project-item');
+        for(var i=0;i<items.length;i++){
+            var num=items[i].querySelector('.ed-proj-num');
+            if(num)num.textContent=i+1;
+            
+            // Update button states
+            var upBtn=items[i].querySelector('[data-action="up"]');
+            var downBtn=items[i].querySelector('[data-action="down"]');
+            if(upBtn)upBtn.disabled=i===0;
+            if(downBtn)downBtn.disabled=i===items.length-1;
+        }
+    }
+    
+    applyProjectListOrder(){
+        var listItems=document.querySelectorAll('#edProjectList .ed-project-item');
+        var projectContainer=document.querySelector('.bproject').parentElement;
+        var self=this;
+        
+        // Get new order from list
+        var newOrder=[];
+        for(var i=0;i<listItems.length;i++){
+            newOrder.push(listItems[i].dataset.projectId);
+        }
+        
+        // Reorder actual project elements
+        for(var i=0;i<newOrder.length;i++){
+            var projectEl=document.querySelector('.bproject[data-project-id="'+newOrder[i]+'"]');
+            if(projectEl){
+                projectContainer.appendChild(projectEl);
+            }
+        }
+        
+        // Sync thumbnails
+        this.syncThumbnailOrder();
+        
+        // Save order
+        this.projectOrder=newOrder;
+        
+        this.setStatus('Project order applied!');
+        this.deselectAll();
+    }
+    
+    getCurrentProjectOrder(){
+        var projects=document.querySelectorAll('.bproject');
+        var order=[];
+        for(var i=0;i<projects.length;i++){
+            var id=projects[i].dataset.projectId;
+            if(id)order.push(id);
+        }
+        return order;
+    }
+    
+    syncThumbnailOrder(){
+        // Find thumbnail container - adjust selector to match your HTML structure
+        var thumbContainer=document.querySelector('.games-grid, .project-thumbs, .pcard-container, .basement-thumbs');
+        if(!thumbContainer)return;
+        
+        var projects=document.querySelectorAll('.bproject');
+        
+        for(var i=0;i<projects.length;i++){
+            var projectId=projects[i].dataset.projectId;
+            if(!projectId)continue;
+            
+            // Find matching thumbnail
+            var thumb=thumbContainer.querySelector('[data-project-id="'+projectId+'"], [data-target="'+projectId+'"]');
+            if(thumb){
+                thumbContainer.appendChild(thumb);
+            }
+        }
+        
+        this.setStatus('Thumbnails synced');
+    }
+    
+    showProjectContext(e,projectEl){
+        var projects=document.querySelectorAll('.bproject');
+        var currentIndex=-1;
+        for(var i=0;i<projects.length;i++){
+            if(projects[i]===projectEl){currentIndex=i;break;}
+        }
+        
+        var html='<button data-action="select">✏️ Edit Project</button>'+
+            '<hr class="ed-ctx-sep">'+
+            '<button data-action="moveup" '+(currentIndex===0?'disabled':'')+'>⬆️ Move Up</button>'+
+            '<button data-action="movedown" '+(currentIndex===projects.length-1?'disabled':'')+'>⬇️ Move Down</button>'+
+            '<button data-action="movefirst" '+(currentIndex===0?'disabled':'')+'>⏫ Move First</button>'+
+            '<button data-action="movelast" '+(currentIndex===projects.length-1?'disabled':'')+'>⏬ Move Last</button>'+
+            '<hr class="ed-ctx-sep">'+
+            '<button data-action="reorder">📋 Reorder All</button>';
+        
+        this.ctx.innerHTML=html;
+        this.ctx.style.display='block';
+        this.ctx.style.left=Math.min(e.clientX,innerWidth-200)+'px';
+        this.ctx.style.top=Math.min(e.clientY,innerHeight-200)+'px';
+        
+        var self=this;
+        var btns=this.ctx.querySelectorAll('button');
+        for(var i=0;i<btns.length;i++){
+            (function(btn){
+                btn.onclick=function(){
+                    var action=btn.getAttribute('data-action');
+                    switch(action){
+                        case 'select':self.selectProject(projectEl);break;
+                        case 'moveup':self.moveProject(projectEl,'up');break;
+                        case 'movedown':self.moveProject(projectEl,'down');break;
+                        case 'movefirst':self.moveProject(projectEl,'first');break;
+                        case 'movelast':self.moveProject(projectEl,'last');break;
+                        case 'reorder':self.showProjectReorderPanel();break;
+                    }
+                    self.hideContext();
+                };
+            })(btns[i]);
+        }
+    }
+    
     selectElement(el){
-        this.deselectAll();this.selectedEl=el;el.classList.add('ed-selected');
+        this.deselectAll();
+        var selectedProjects=document.querySelectorAll('.ed-project-selected');
+        for(var i=0;i<selectedProjects.length;i++)selectedProjects[i].classList.remove('ed-project-selected');
+        
+        this.selectedEl=el;el.classList.add('ed-selected');
         if(el.classList.contains('ed-editable')){el.contentEditable='true';el.focus();this.showFormatBar(el);this.showTextProps(el);}
         else if(el.tagName==='IMG'){this.hideFormatBar();this.showImageProps(el);}
         else if(el.classList.contains('ed-sticker')){this.hideFormatBar();this.showStickerProps(el);}
@@ -210,6 +546,8 @@ class LiveEditor{
         }
         var selected=document.querySelectorAll('.ed-selected');
         for(var i=0;i<selected.length;i++)selected[i].classList.remove('ed-selected');
+        var selectedProjects=document.querySelectorAll('.ed-project-selected');
+        for(var i=0;i<selectedProjects.length;i++)selectedProjects[i].classList.remove('ed-project-selected');
         this.selectedEl=null;this.highlight.style.display='none';this.hideFormatBar();
         document.getElementById('edPanelBody').innerHTML='<p class="ed-panel-hint">Select element to edit</p>';
     }
@@ -224,7 +562,6 @@ class LiveEditor{
         var rect=el.getBoundingClientRect();this.formatBar.classList.add('ed-visible');
         this.formatBar.style.top=Math.max(70,rect.top+window.scrollY-50)+'px';
         this.formatBar.style.left=Math.max(10,rect.left)+'px';
-        // Update fancy button state
         var fancyBtn=document.getElementById('edFmtFancy');
         var isFancy=el.classList.contains('fancy')||el.classList.contains('alt-font')||el.classList.contains('font-display');
         fancyBtn.classList.toggle('ed-fancy-active',isFancy);
@@ -233,7 +570,6 @@ class LiveEditor{
     hideFormatBar(){this.formatBar.classList.remove('ed-visible');}
     hideContext(){this.ctx.style.display='none';}
     
-    // Enhanced text properties with move controls and type conversion
     showTextProps(el){
         var panel=document.getElementById('edPanelBody');
         var cs=getComputedStyle(el);
@@ -241,14 +577,10 @@ class LiveEditor{
         var isFancy=el.classList.contains('fancy')||el.classList.contains('alt-font')||el.classList.contains('font-display');
         
         var html='';
-        
-        // Move controls
         html+='<div class="ed-prop"><label>Position</label><div class="ed-move-controls">'+
             '<button class="ed-btn" id="edMoveUp">⬆️ Up</button>'+
             '<button class="ed-btn" id="edMoveDown">⬇️ Down</button>'+
             '</div></div>';
-        
-        // Type conversion buttons
         html+='<div class="ed-prop"><label>Convert To</label><div class="ed-type-select">'+
             '<button class="ed-type-btn'+(currentType==='text'?' active':'')+'" data-type="text">Text</button>'+
             '<button class="ed-type-btn'+(currentType==='heading'?' active':'')+'" data-type="heading">Heading</button>'+
@@ -257,18 +589,10 @@ class LiveEditor{
             '<button class="ed-type-btn'+(currentType==='quote'?' active':'')+'" data-type="quote">Quote</button>'+
             '<button class="ed-type-btn'+(currentType==='whisper'?' active':'')+'" data-type="whisper">Whisper</button>'+
             '</div></div>';
-        
-        // Fancy font toggle
         html+='<div class="ed-prop"><button class="ed-btn ed-full'+(isFancy?' ed-fancy-active':'')+'" id="edToggleFancy">✨ '+(isFancy?'Remove':'Apply')+' Fancy Font</button></div>';
-        
-        // Size and opacity
         html+='<div class="ed-prop"><label>Font Size</label><input type="number" class="ed-prop-input" id="edPropFS" value="'+parseInt(cs.fontSize)+'" min="8" max="120"></div>';
         html+='<div class="ed-prop"><label>Opacity</label><input type="range" class="ed-prop-range" id="edPropOp" min="0" max="1" step="0.05" value="'+(cs.opacity||1)+'"></div>';
-        
-        // Delete
         html+='<div class="ed-prop"><button class="ed-btn ed-full ed-danger" id="edDeleteText">🗑️ Delete</button></div>';
-        
-        // Shortcode hints
         html+='<div class="ed-shortcode-hint"><strong>Quick codes:</strong><br>'+
             '<code>## text</code> → Heading<br>'+
             '<code>>>> text</code> → Quote<br>'+
@@ -279,32 +603,18 @@ class LiveEditor{
         panel.innerHTML=html;
         
         var self=this;
-        
-        // Move handlers
         document.getElementById('edMoveUp').onclick=function(){self.moveElement(el,'up');};
         document.getElementById('edMoveDown').onclick=function(){self.moveElement(el,'down');};
-        
-        // Type conversion handlers
         var typeBtns=panel.querySelectorAll('.ed-type-btn');
         for(var i=0;i<typeBtns.length;i++){
-            (function(btn){
-                btn.onclick=function(){self.convertElementType(el,btn.dataset.type);};
-            })(typeBtns[i]);
+            (function(btn){btn.onclick=function(){self.convertElementType(el,btn.dataset.type);};})(typeBtns[i]);
         }
-        
-        // Fancy toggle
-        document.getElementById('edToggleFancy').onclick=function(){
-            self.toggleFancyFontOnElement(el);
-            self.showTextProps(el); // Refresh panel
-        };
-        
-        // Size/opacity handlers
+        document.getElementById('edToggleFancy').onclick=function(){self.toggleFancyFontOnElement(el);self.showTextProps(el);};
         document.getElementById('edPropFS').oninput=function(){el.style.fontSize=this.value+'px';self.updateHighlight(el);};
         document.getElementById('edPropOp').oninput=function(){el.style.opacity=this.value;};
         document.getElementById('edDeleteText').onclick=function(){self.deleteSelected();};
     }
     
-    // Detect element type
     getElementType(el){
         var tag=el.tagName.toLowerCase();
         var cls=el.className;
@@ -316,7 +626,6 @@ class LiveEditor{
         return'text';
     }
     
-    // Convert element to different type
     convertElementType(el,newType){
         var self=this;
         var content=el.innerHTML;
@@ -354,14 +663,13 @@ class LiveEditor{
                 newEl.className='whisper ed-editable ed-block';
                 newEl.innerHTML=content;
                 break;
-            default: // text
+            default:
                 newEl=document.createElement('p');
                 newEl.className='bp-text ed-editable ed-block';
                 newEl.innerHTML=content;
         }
         
         newEl.setAttribute('data-ed-original','');
-        
         if(nextSib)parent.insertBefore(newEl,nextSib);
         else parent.appendChild(newEl);
         el.remove();
@@ -370,7 +678,6 @@ class LiveEditor{
         this.setStatus('Converted to '+newType);
     }
     
-    // Process shortcodes when Enter is pressed
     processShortcodes(el){
         var text=el.textContent.trim();
         var self=this;
@@ -380,101 +687,53 @@ class LiveEditor{
             var match=text.match(sc.pattern);
             if(match){
                 switch(sc.type){
-                    case'heading':
-                        el.innerHTML=match[1];
-                        this.convertElementType(el,'heading');
-                        return true;
-                    case'quote':
-                        el.innerHTML=match[1];
-                        this.convertElementType(el,'quote');
-                        return true;
-                    case'divider':
-                        this.addDividerAfter(el);
-                        el.innerHTML='';
-                        el.remove();
-                        return true;
-                    case'fancy':
-                        el.innerHTML=match[1];
-                        this.toggleFancyFontOnElement(el);
-                        return true;
-                    case'link':
-                        el.innerHTML='<a href="'+match[2]+'" target="_blank" rel="noopener">'+match[1]+'</a>';
-                        return true;
+                    case'heading':el.innerHTML=match[1];this.convertElementType(el,'heading');return true;
+                    case'quote':el.innerHTML=match[1];this.convertElementType(el,'quote');return true;
+                    case'divider':this.addDividerAfter(el);el.innerHTML='';el.remove();return true;
+                    case'fancy':el.innerHTML=match[1];this.toggleFancyFontOnElement(el);return true;
+                    case'link':el.innerHTML='<a href="'+match[2]+'" target="_blank" rel="noopener">'+match[1]+'</a>';return true;
                 }
             }
         }
         return false;
     }
     
-    // Toggle fancy font on selected text
     toggleFancyFont(){
         var sel=window.getSelection();
         if(!sel.rangeCount)return;
-        
         var range=sel.getRangeAt(0);
         if(range.collapsed){
-            // No selection, toggle on whole element
             if(this.selectedEl)this.toggleFancyFontOnElement(this.selectedEl);
             return;
         }
-        
-        // Wrap selection in fancy span
         var span=document.createElement('span');
         span.className='fancy';
         span.style.fontFamily='var(--font-display), cursive';
-        try{
-            range.surroundContents(span);
-        }catch(e){
-            // Complex selection, apply to container
-            if(this.selectedEl)this.toggleFancyFontOnElement(this.selectedEl);
-        }
-        
+        try{range.surroundContents(span);}
+        catch(e){if(this.selectedEl)this.toggleFancyFontOnElement(this.selectedEl);}
         this.setStatus('Fancy font applied');
     }
     
-    // Toggle fancy font on element
     toggleFancyFontOnElement(el){
         var fancyClasses=['fancy','alt-font','font-display'];
         var hasFancy=false;
-        
         for(var i=0;i<fancyClasses.length;i++){
-            if(el.classList.contains(fancyClasses[i])){
-                hasFancy=true;
-                el.classList.remove(fancyClasses[i]);
-            }
+            if(el.classList.contains(fancyClasses[i])){hasFancy=true;el.classList.remove(fancyClasses[i]);}
         }
-        
-        if(!hasFancy){
-            el.classList.add('fancy');
-            el.style.fontFamily='var(--font-display), cursive';
-            this.setStatus('Fancy font applied');
-        }else{
-            el.style.fontFamily='';
-            this.setStatus('Fancy font removed');
-        }
-        
-        // Update format bar button
+        if(!hasFancy){el.classList.add('fancy');el.style.fontFamily='var(--font-display), cursive';this.setStatus('Fancy font applied');}
+        else{el.style.fontFamily='';this.setStatus('Fancy font removed');}
         var fancyBtn=document.getElementById('edFmtFancy');
         if(fancyBtn)fancyBtn.classList.toggle('ed-fancy-active',!hasFancy);
     }
     
-    // Move element up or down
     moveElement(el,dir){
         var movable=el.closest('.bp-figure,.bp-gallery-item,.bp-quote,.ed-divider,.ed-link-block')||el;
-        
-        if(dir==='up'&&movable.previousElementSibling){
-            movable.parentElement.insertBefore(movable,movable.previousElementSibling);
-            this.setStatus('Moved up');
-        }else if(dir==='down'&&movable.nextElementSibling){
-            movable.parentElement.insertBefore(movable.nextElementSibling,movable);
-            this.setStatus('Moved down');
-        }else{
-            this.setStatus('Cannot move '+dir);
-        }
+        if(dir==='up'&&movable.previousElementSibling){movable.parentElement.insertBefore(movable,movable.previousElementSibling);this.setStatus('Moved up');}
+        else if(dir==='down'&&movable.nextElementSibling){movable.parentElement.insertBefore(movable.nextElementSibling,movable);this.setStatus('Moved down');}
+        else{this.setStatus('Cannot move '+dir);}
         this.updateHighlight(el);
     }
     
-    // Add divider after element (for shortcode)
     addDividerAfter(el){
         var divider=document.createElement('div');
         divider.className='ed-divider ed-block';
@@ -577,21 +836,15 @@ class LiveEditor{
         var isEditable=el.classList.contains('ed-editable');
         
         var html='<button data-action="select">✏️ Edit</button>';
-        
-        // Move options for all elements
         html+='<hr class="ed-ctx-sep"><button data-action="moveup">⬆️ Move Up</button><button data-action="movedown">⬇️ Move Down</button>';
-        
-        // Fancy font for text
         if(isEditable){
             html+='<hr class="ed-ctx-sep"><button data-action="fancy">✨ Fancy Font</button>';
             html+='<button data-action="heading">📌 → Heading</button>';
             html+='<button data-action="quote">💬 → Quote</button>';
         }
-        
         if(isSticker){
             html+='<hr class="ed-ctx-sep"><button data-action="bringfront">⬆️ Bring Front</button><button data-action="sendback">⬇️ Send Back</button>';
         }
-        
         html+='<hr class="ed-ctx-sep"><button data-action="delete" class="ed-ctx-danger">🗑️ Delete</button>';
         
         this.ctx.innerHTML=html;this.ctx.style.display='block';
@@ -702,7 +955,15 @@ class LiveEditor{
     }
     
     exportAmendment(){
-        var amendment={_version:'1.0',_exported:new Date().toISOString(),textChanges:[],images:[],stickers:[],dividers:[],links:[]};
+        var amendment={_version:'1.1',_exported:new Date().toISOString(),projectOrder:null,textChanges:[],images:[],stickers:[],dividers:[],links:[]};
+        
+        // Export project order if changed
+        if(this.projectOrder){
+            amendment.projectOrder=this.projectOrder;
+        }else{
+            amendment.projectOrder=this.getCurrentProjectOrder();
+        }
+        
         var editables=document.querySelectorAll('[data-ed-original]');
         for(var i=0;i<editables.length;i++){var el=editables[i];var original=el.getAttribute('data-ed-original');if(original!==el.innerHTML){amendment.textChanges.push({selector:this.getUniqueSelector(el),content:el.innerHTML,styles:el.getAttribute('style')||'',classes:el.className});}}
         var images=document.querySelectorAll('img[src^="data:"]');
@@ -715,7 +976,8 @@ class LiveEditor{
         for(var i=0;i<links.length;i++){var l=links[i];var a=l.querySelector('a');amendment.links.push({parentSelector:this.getUniqueSelector(l.parentElement),text:a?a.textContent:'',href:a?a.href:'#',className:a?a.className:'btn',target:a?a.target:'_blank'});}
         var content=JSON.stringify(amendment,null,2);var blob=new Blob([content],{type:'application/json'});var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download='amendments.json';a.click();URL.revokeObjectURL(url);
         var total=amendment.textChanges.length+amendment.stickers.length+amendment.dividers.length+amendment.links.length+amendment.images.length;
-        this.setStatus('📄 Exported '+total+' changes → put in data/ folder');
+        var orderMsg=amendment.projectOrder?' + project order':'';
+        this.setStatus('📄 Exported '+total+' changes'+orderMsg+' → put in data/ folder');
     }
     
     getUniqueSelector(el){
