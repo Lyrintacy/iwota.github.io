@@ -4,6 +4,7 @@
     
     var AMENDMENTS_URL = './js/amendments/amendments.json';
     var storedAmendments = null;
+    var LOAD_DELAY = 500; // ms to wait for other scripts to populate content
     
     // Inject styles
     var style = document.createElement('style');
@@ -39,22 +40,18 @@
             });
     }
     
-    // Apply project order to both projects and thumbnails
     function applyProjectOrder(order){
         if(!order || !order.length) return;
         
-        // Find project container
         var firstProject = document.querySelector('.bproject');
         if(!firstProject) return;
         var projectContainer = firstProject.parentElement;
         
-        // Find thumbnail container (adjust selectors to match your HTML)
-        var thumbContainer = document.querySelector('.games-grid, .project-thumbs, .pcard-container, .basement-thumbs, .games-section .grid');
+        var thumbContainer = document.querySelector('.games-grid, .project-thumbs, .pcard-container, .basement-thumbs, .pgrid');
         
         var reorderedProjects = 0;
         var reorderedThumbs = 0;
         
-        // Reorder projects
         for(var i = 0; i < order.length; i++){
             var projectId = order[i];
             var project = document.querySelector('.bproject[data-project-id="' + projectId + '"]');
@@ -64,11 +61,9 @@
             }
         }
         
-        // Reorder thumbnails to match
         if(thumbContainer){
             for(var i = 0; i < order.length; i++){
                 var projectId = order[i];
-                // Try different selector patterns for thumbnails
                 var thumb = thumbContainer.querySelector(
                     '[data-project-id="' + projectId + '"],' +
                     '[data-target="' + projectId + '"],' +
@@ -97,6 +92,9 @@
                 try {
                     var el = document.querySelector(change.selector);
                     if(el){
+                        // Store original for debugging
+                        console.log('📝 Applying text change to:', change.selector);
+                        
                         if(change.newTag && el.tagName.toLowerCase() !== change.newTag.toLowerCase()){
                             el = convertElement(el, change);
                         } else {
@@ -105,8 +103,12 @@
                             if(change.classes) applyClasses(el, change.classes);
                         }
                         applied++;
+                    } else {
+                        console.warn('⚠️ Element not found:', change.selector);
                     }
-                } catch(e){ console.warn('Amendment selector failed:', change.selector, e); }
+                } catch(e){ 
+                    console.warn('Amendment selector failed:', change.selector, e); 
+                }
             });
         }
         
@@ -489,10 +491,16 @@
         }
     }
     
-    // Load when DOM is ready
+    // Initialize with delay to let other scripts populate content first
+    function initLoader(){
+        setTimeout(function(){
+            loadAmendments();
+        }, LOAD_DELAY);
+    }
+    
     if(document.readyState === 'loading'){
-        document.addEventListener('DOMContentLoaded', loadAmendments);
+        document.addEventListener('DOMContentLoaded', initLoader);
     } else {
-        loadAmendments();
+        initLoader();
     }
 })();
