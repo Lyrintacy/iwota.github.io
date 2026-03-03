@@ -2,58 +2,94 @@ class LiveEditor{
     constructor(){
         this.active=false;this.selectedEl=null;this.undoStack=[];this.stickerDragging=null;this.stickerOffset={x:0,y:0};
 
+        // Shortcode patterns
+        this.shortcodes=[
+            {pattern:/^##\s*(.+)$/,type:'heading',desc:'## text → Heading'},
+            {pattern:/^#(.+)#$/,type:'heading',desc:'#text# → Heading'},
+            {pattern:/^>>>\s*(.+)$/,type:'quote',desc:'>>> text → Quote'},
+            {pattern:/^---$/,type:'divider',desc:'--- → Divider'},
+            {pattern:/^~~~\s*(.+)$/,type:'fancy',desc:'~~~ text → Fancy Font'},
+            {pattern:/^\*\*\*\s*(.+)$/,type:'fancy',desc:'*** text → Fancy Font'},
+            {pattern:/^\[(.+)\]\((.+)\)$/,type:'link',desc:'[text](url) → Link'}
+        ];
+
         var s=document.createElement('style');
         s.textContent=
-            // Container ALWAYS allows clicks through
-            '.bproject-stickers{pointer-events:none!important;position:absolute;top:0;left:0;width:100%;height:100%;overflow:visible;z-index:50}'+
-            // Stickers non-interactive by default
+            '.bproject-stickers{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none!important;overflow:visible;z-index:50}'+
             '.ed-sticker{pointer-events:none!important}'+
             '.ed-sticker *{pointer-events:none!important}'+
             '.ed-sticker-delete{display:none}'+
-            // When editor active: ONLY the sticker element itself is clickable
             '.editor-active .ed-sticker{pointer-events:auto!important;cursor:move}'+
-            // Children stay non-interactive (clicks pass to parent sticker)
             '.editor-active .ed-sticker *{pointer-events:none!important}'+
-            // Except delete button
             '.editor-active .ed-sticker-delete{display:block!important;pointer-events:auto!important;cursor:pointer}'+
-            // Ensure editables are above sticker layer when editing
-            '.editor-active .ed-editable{position:relative;z-index:60}';
+            '.editor-active .ed-editable{position:relative;z-index:60}'+
+            // Move buttons styling
+            '.ed-move-controls{display:flex;gap:4px;margin-bottom:8px}'+
+            '.ed-move-controls .ed-btn{flex:1}'+
+            // Shortcode hint styling
+            '.ed-shortcode-hint{font-size:10px;color:#888;margin-top:8px;padding:8px;background:rgba(0,0,0,0.3);border-radius:4px}'+
+            '.ed-shortcode-hint code{background:rgba(192,132,252,0.2);padding:1px 4px;border-radius:2px;color:#c084fc}'+
+            // Fancy font indicator
+            '.ed-fancy-active{background:linear-gradient(90deg,#c084fc,#f472b6)!important;color:#000!important}'+
+            // Transform type badges
+            '.ed-type-select{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:8px}'+
+            '.ed-type-btn{padding:6px 4px;font-size:11px;border-radius:4px;border:1px solid #444;background:#1a1a2e;color:#fff;cursor:pointer;transition:all 0.2s}'+
+            '.ed-type-btn:hover{border-color:#c084fc;background:#2a2a4e}'+
+            '.ed-type-btn.active{background:#c084fc;color:#000;border-color:#c084fc}';
         document.head.appendChild(s);
 
         this.buildUI();this.bindShortcut();
     }
+    
     buildUI(){
         var toolbar=document.createElement('div');toolbar.id='editorToolbar';
         toolbar.innerHTML='<div class="ed-header"><span class="ed-title">☠ Live Editor</span><div class="ed-controls"><button class="ed-btn" id="edAddImage" title="Add Image">🖼️</button><button class="ed-btn" id="edAddText" title="Add Text">📝</button><button class="ed-btn" id="edAddHeading" title="Add Heading">📌</button><button class="ed-btn" id="edAddQuote" title="Add Quote">💬</button><button class="ed-btn" id="edAddDivider" title="Add Divider">➖</button><button class="ed-btn" id="edAddLink" title="Add Link/Button">🔗</button><button class="ed-btn" id="edAddSticker" title="Add Sticker">⭐</button><span class="ed-sep"></span><button class="ed-btn" id="edUndo" title="Undo">↩️</button><button class="ed-btn ed-amendment" id="edExportAmendment" title="Export Amendment">📄 Export</button><button class="ed-btn ed-close" id="edClose" title="Close">✕</button></div></div><div class="ed-status" id="edStatus">F2 to toggle • Click to edit • Right-click for menu</div>';
         document.body.appendChild(toolbar);
+        
         var formatBar=document.createElement('div');formatBar.id='edFormatBar';
-        formatBar.innerHTML='<button class="ed-fmt" data-cmd="bold" title="Bold"><strong>B</strong></button><button class="ed-fmt" data-cmd="italic" title="Italic"><em>I</em></button><button class="ed-fmt" data-cmd="underline" title="Underline"><u>U</u></button><span class="ed-fmt-sep">|</span><input type="color" class="ed-fmt-color" id="edFmtColor" value="#c084fc" title="Text Color"><select class="ed-fmt-select" id="edFmtSize" title="Font Size"><option value="">Size</option><option value="1">XS</option><option value="3">M</option><option value="5">L</option><option value="7">XL</option></select><button class="ed-fmt" data-cmd="createLink" title="Add Link">🔗</button><button class="ed-fmt" data-cmd="removeFormat" title="Clear">⌧</button>';
+        formatBar.innerHTML='<button class="ed-fmt" data-cmd="bold" title="Bold"><strong>B</strong></button><button class="ed-fmt" data-cmd="italic" title="Italic"><em>I</em></button><button class="ed-fmt" data-cmd="underline" title="Underline"><u>U</u></button><span class="ed-fmt-sep">|</span><input type="color" class="ed-fmt-color" id="edFmtColor" value="#c084fc" title="Text Color"><select class="ed-fmt-select" id="edFmtSize" title="Font Size"><option value="">Size</option><option value="1">XS</option><option value="3">M</option><option value="5">L</option><option value="7">XL</option></select><button class="ed-fmt" data-cmd="createLink" title="Add Link">🔗</button><button class="ed-fmt" id="edFmtFancy" title="Fancy Font">✨</button><button class="ed-fmt" data-cmd="removeFormat" title="Clear">⌧</button>';
         document.body.appendChild(formatBar);
+        
         var panel=document.createElement('div');panel.id='editorPanel';
         panel.innerHTML='<div class="ed-panel-header">Properties</div><div class="ed-panel-body" id="edPanelBody"><p class="ed-panel-hint">Select element to edit</p></div>';
         document.body.appendChild(panel);
+        
         var highlight=document.createElement('div');highlight.id='editorHighlight';document.body.appendChild(highlight);
         var ctx=document.createElement('div');ctx.id='editorContext';document.body.appendChild(ctx);
         var fileInput=document.createElement('input');fileInput.type='file';fileInput.id='edFileInput';fileInput.accept='image/*,.gif';fileInput.style.display='none';document.body.appendChild(fileInput);
+        
         this.toolbar=toolbar;this.formatBar=formatBar;this.panel=panel;this.highlight=highlight;this.ctx=ctx;this.fileInput=fileInput;
     }
+    
     bindShortcut(){
         var self=this;
         document.addEventListener('keydown',function(e){
             if(e.key==='F2'){e.preventDefault();self.toggle();return false;}
             if(self.active){
                 if(e.ctrlKey&&e.key==='z'){e.preventDefault();self.undo();}
-                if(e.key==='Delete'&&self.selectedEl)self.deleteSelected();
+                if(e.key==='Delete'&&self.selectedEl&&!self.selectedEl.isContentEditable)self.deleteSelected();
                 if(e.key==='Escape'){self.deselectAll();self.hideContext();}
+                // Arrow keys to move elements
+                if(e.altKey&&self.selectedEl){
+                    if(e.key==='ArrowUp'){e.preventDefault();self.moveElement(self.selectedEl,'up');}
+                    if(e.key==='ArrowDown'){e.preventDefault();self.moveElement(self.selectedEl,'down');}
+                }
+                // Enter to process shortcodes
+                if(e.key==='Enter'&&self.selectedEl&&self.selectedEl.isContentEditable){
+                    var processed=self.processShortcodes(self.selectedEl);
+                    if(processed){e.preventDefault();}
+                }
             }
         });
     }
+    
     toggle(){
         this.active=!this.active;document.body.classList.toggle('editor-active',this.active);
         this.toolbar.classList.toggle('ed-visible',this.active);this.panel.classList.toggle('ed-visible',this.active);
         if(this.active){this.enableEditing();this.setStatus('Editor active • F2 to close');}
         else{this.disableEditing();this.deselectAll();this.hideContext();this.hideFormatBar();}
     }
+    
     enableEditing(){
         var self=this;
         var editables=document.querySelectorAll('.hero-right h1,.hero-right h2,.hero-right p,.section-title,.section-sub,.pcard h3,.pcard-short,.bp-text,.bp-heading,.bp-caption,.bproject-header-text h3,.bproject-tagline,.bm-value,.whisper,.hero-desc,.rcard h3,.rcard-role,.rcard p,.mantras li,.about-text p');
@@ -62,10 +98,10 @@ class LiveEditor{
         for(var i=0;i<images.length;i++)images[i].classList.add('ed-interactive');
         var blocks=document.querySelectorAll('.bp-figure,.bp-gallery-item,.bp-gallery,.bp-columns,.bp-quote,.bp-text,.bp-heading,.ed-divider,.ed-link-block');
         for(var i=0;i<blocks.length;i++)blocks[i].classList.add('ed-block');
+        
         this._clickHandler=function(e){
             if(!self.active)return;
             var target=e.target;
-            // Check stickers first but only if directly clicking on one
             if(target.closest('.ed-sticker')){e.stopPropagation();self.selectElement(target.closest('.ed-sticker'));return;}
             if(target.closest('.ed-divider')){e.stopPropagation();self.selectElement(target.closest('.ed-divider'));return;}
             if(target.closest('.ed-link-block')){e.stopPropagation();e.preventDefault();self.selectElement(target.closest('.ed-link-block'));return;}
@@ -75,12 +111,14 @@ class LiveEditor{
             if(!target.closest('#editorPanel,#editorToolbar,#editorContext,#edFormatBar')){self.deselectAll();self.hideContext();}
         };
         document.addEventListener('click',this._clickHandler);
+        
         this._contextHandler=function(e){
             if(!self.active)return;
             var target=e.target.closest('.ed-block,.ed-interactive,.ed-editable,.ed-sticker,.ed-divider,.ed-link-block');
             if(target){e.preventDefault();self.showContext(e,target);}
         };
         document.addEventListener('contextmenu',this._contextHandler);
+        
         this._mousedownHandler=function(e){
             if(!self.active)return;
             var sticker=e.target.closest('.ed-sticker');
@@ -98,7 +136,10 @@ class LiveEditor{
             }
         };
         this._mouseupHandler=function(){if(self.stickerDragging){self.stickerDragging.classList.remove('ed-sticker-dragging');self.stickerDragging=null;}};
-        document.addEventListener('mousedown',this._mousedownHandler);document.addEventListener('mousemove',this._mousemoveHandler);document.addEventListener('mouseup',this._mouseupHandler);
+        document.addEventListener('mousedown',this._mousedownHandler);
+        document.addEventListener('mousemove',this._mousemoveHandler);
+        document.addEventListener('mouseup',this._mouseupHandler);
+        
         document.getElementById('edAddImage').onclick=function(){self.addImage();};
         document.getElementById('edAddText').onclick=function(){self.addTextBlock();};
         document.getElementById('edAddHeading').onclick=function(){self.addHeading();};
@@ -109,11 +150,33 @@ class LiveEditor{
         document.getElementById('edUndo').onclick=function(){self.undo();};
         document.getElementById('edExportAmendment').onclick=function(){self.exportAmendment();};
         document.getElementById('edClose').onclick=function(){self.toggle();};
-        var fmtBtns=this.formatBar.querySelectorAll('.ed-fmt');
-        for(var i=0;i<fmtBtns.length;i++){(function(btn){btn.addEventListener('mousedown',function(e){e.preventDefault();var cmd=btn.getAttribute('data-cmd');if(cmd==='createLink'){var url=prompt('Enter URL:','https://');if(url)document.execCommand(cmd,false,url);}else if(cmd){document.execCommand(cmd,false,null);}});})(fmtBtns[i]);}
+        
+        var fmtBtns=this.formatBar.querySelectorAll('.ed-fmt[data-cmd]');
+        for(var i=0;i<fmtBtns.length;i++){
+            (function(btn){
+                btn.addEventListener('mousedown',function(e){
+                    e.preventDefault();
+                    var cmd=btn.getAttribute('data-cmd');
+                    if(cmd==='createLink'){
+                        var url=prompt('Enter URL:','https://');
+                        if(url)document.execCommand(cmd,false,url);
+                    }else if(cmd){
+                        document.execCommand(cmd,false,null);
+                    }
+                });
+            })(fmtBtns[i]);
+        }
+        
+        // Fancy font button
+        document.getElementById('edFmtFancy').addEventListener('mousedown',function(e){
+            e.preventDefault();
+            self.toggleFancyFont();
+        });
+        
         document.getElementById('edFmtColor').addEventListener('input',function(){document.execCommand('foreColor',false,this.value);});
         document.getElementById('edFmtSize').addEventListener('change',function(){if(this.value)document.execCommand('fontSize',false,this.value);this.value='';});
     }
+    
     disableEditing(){
         var editables=document.querySelectorAll('.ed-editable');
         for(var i=0;i<editables.length;i++){editables[i].contentEditable='false';editables[i].classList.remove('ed-editable','ed-selected');}
@@ -127,6 +190,7 @@ class LiveEditor{
         if(this._mousemoveHandler)document.removeEventListener('mousemove',this._mousemoveHandler);
         if(this._mouseupHandler)document.removeEventListener('mouseup',this._mouseupHandler);
     }
+    
     selectElement(el){
         this.deselectAll();this.selectedEl=el;el.classList.add('ed-selected');
         if(el.classList.contains('ed-editable')){el.contentEditable='true';el.focus();this.showFormatBar(el);this.showTextProps(el);}
@@ -137,6 +201,7 @@ class LiveEditor{
         else{this.hideFormatBar();this.showBlockProps(el);}
         this.updateHighlight(el);
     }
+    
     deselectAll(){
         if(this.selectedEl&&this.selectedEl.classList.contains('ed-editable')){
             this.selectedEl.contentEditable='false';
@@ -148,42 +213,306 @@ class LiveEditor{
         this.selectedEl=null;this.highlight.style.display='none';this.hideFormatBar();
         document.getElementById('edPanelBody').innerHTML='<p class="ed-panel-hint">Select element to edit</p>';
     }
+    
     updateHighlight(el){
         var rect=el.getBoundingClientRect();this.highlight.style.display='block';
         this.highlight.style.top=(rect.top+window.scrollY-3)+'px';this.highlight.style.left=(rect.left-3)+'px';
         this.highlight.style.width=(rect.width+6)+'px';this.highlight.style.height=(rect.height+6)+'px';
     }
+    
     showFormatBar(el){
         var rect=el.getBoundingClientRect();this.formatBar.classList.add('ed-visible');
-        this.formatBar.style.top=Math.max(70,rect.top+window.scrollY-50)+'px';this.formatBar.style.left=Math.max(10,rect.left)+'px';
+        this.formatBar.style.top=Math.max(70,rect.top+window.scrollY-50)+'px';
+        this.formatBar.style.left=Math.max(10,rect.left)+'px';
+        // Update fancy button state
+        var fancyBtn=document.getElementById('edFmtFancy');
+        var isFancy=el.classList.contains('fancy')||el.classList.contains('alt-font')||el.classList.contains('font-display');
+        fancyBtn.classList.toggle('ed-fancy-active',isFancy);
     }
+    
     hideFormatBar(){this.formatBar.classList.remove('ed-visible');}
     hideContext(){this.ctx.style.display='none';}
+    
+    // Enhanced text properties with move controls and type conversion
     showTextProps(el){
-        var panel=document.getElementById('edPanelBody');var cs=getComputedStyle(el);
-        panel.innerHTML='<div class="ed-prop"><label>Font Size</label><input type="number" class="ed-prop-input" id="edPropFS" value="'+parseInt(cs.fontSize)+'" min="8" max="120"></div><div class="ed-prop"><label>Opacity</label><input type="range" class="ed-prop-range" id="edPropOp" min="0" max="1" step="0.05" value="'+(cs.opacity||1)+'"></div><div class="ed-prop"><button class="ed-btn ed-full ed-danger" id="edDeleteText">🗑️ Delete</button></div>';
+        var panel=document.getElementById('edPanelBody');
+        var cs=getComputedStyle(el);
+        var currentType=this.getElementType(el);
+        var isFancy=el.classList.contains('fancy')||el.classList.contains('alt-font')||el.classList.contains('font-display');
+        
+        var html='';
+        
+        // Move controls
+        html+='<div class="ed-prop"><label>Position</label><div class="ed-move-controls">'+
+            '<button class="ed-btn" id="edMoveUp">⬆️ Up</button>'+
+            '<button class="ed-btn" id="edMoveDown">⬇️ Down</button>'+
+            '</div></div>';
+        
+        // Type conversion buttons
+        html+='<div class="ed-prop"><label>Convert To</label><div class="ed-type-select">'+
+            '<button class="ed-type-btn'+(currentType==='text'?' active':'')+'" data-type="text">Text</button>'+
+            '<button class="ed-type-btn'+(currentType==='heading'?' active':'')+'" data-type="heading">Heading</button>'+
+            '<button class="ed-type-btn'+(currentType==='subheading'?' active':'')+'" data-type="subheading">Subhead</button>'+
+            '<button class="ed-type-btn'+(currentType==='caption'?' active':'')+'" data-type="caption">Caption</button>'+
+            '<button class="ed-type-btn'+(currentType==='quote'?' active':'')+'" data-type="quote">Quote</button>'+
+            '<button class="ed-type-btn'+(currentType==='whisper'?' active':'')+'" data-type="whisper">Whisper</button>'+
+            '</div></div>';
+        
+        // Fancy font toggle
+        html+='<div class="ed-prop"><button class="ed-btn ed-full'+(isFancy?' ed-fancy-active':'')+'" id="edToggleFancy">✨ '+(isFancy?'Remove':'Apply')+' Fancy Font</button></div>';
+        
+        // Size and opacity
+        html+='<div class="ed-prop"><label>Font Size</label><input type="number" class="ed-prop-input" id="edPropFS" value="'+parseInt(cs.fontSize)+'" min="8" max="120"></div>';
+        html+='<div class="ed-prop"><label>Opacity</label><input type="range" class="ed-prop-range" id="edPropOp" min="0" max="1" step="0.05" value="'+(cs.opacity||1)+'"></div>';
+        
+        // Delete
+        html+='<div class="ed-prop"><button class="ed-btn ed-full ed-danger" id="edDeleteText">🗑️ Delete</button></div>';
+        
+        // Shortcode hints
+        html+='<div class="ed-shortcode-hint"><strong>Quick codes:</strong><br>'+
+            '<code>## text</code> → Heading<br>'+
+            '<code>>>> text</code> → Quote<br>'+
+            '<code>~~~ text</code> → Fancy<br>'+
+            '<code>---</code> → Divider<br>'+
+            '<small>Type code + Enter</small></div>';
+        
+        panel.innerHTML=html;
+        
         var self=this;
+        
+        // Move handlers
+        document.getElementById('edMoveUp').onclick=function(){self.moveElement(el,'up');};
+        document.getElementById('edMoveDown').onclick=function(){self.moveElement(el,'down');};
+        
+        // Type conversion handlers
+        var typeBtns=panel.querySelectorAll('.ed-type-btn');
+        for(var i=0;i<typeBtns.length;i++){
+            (function(btn){
+                btn.onclick=function(){self.convertElementType(el,btn.dataset.type);};
+            })(typeBtns[i]);
+        }
+        
+        // Fancy toggle
+        document.getElementById('edToggleFancy').onclick=function(){
+            self.toggleFancyFontOnElement(el);
+            self.showTextProps(el); // Refresh panel
+        };
+        
+        // Size/opacity handlers
         document.getElementById('edPropFS').oninput=function(){el.style.fontSize=this.value+'px';self.updateHighlight(el);};
         document.getElementById('edPropOp').oninput=function(){el.style.opacity=this.value;};
         document.getElementById('edDeleteText').onclick=function(){self.deleteSelected();};
     }
+    
+    // Detect element type
+    getElementType(el){
+        var tag=el.tagName.toLowerCase();
+        var cls=el.className;
+        if(tag==='h1'||tag==='h2'||tag==='h3'||tag==='h4'||cls.includes('heading')||cls.includes('section-title'))return'heading';
+        if(cls.includes('sub')||cls.includes('tagline'))return'subheading';
+        if(cls.includes('caption'))return'caption';
+        if(tag==='blockquote'||cls.includes('quote'))return'quote';
+        if(cls.includes('whisper'))return'whisper';
+        return'text';
+    }
+    
+    // Convert element to different type
+    convertElementType(el,newType){
+        var self=this;
+        var content=el.innerHTML;
+        var parent=el.parentElement;
+        var nextSib=el.nextElementSibling;
+        var newEl;
+        
+        this.pushUndo({el:parent,type:'child',value:el.outerHTML,ref:nextSib});
+        
+        switch(newType){
+            case'heading':
+                newEl=document.createElement('h4');
+                newEl.className='bp-heading ed-editable ed-block';
+                newEl.innerHTML=content;
+                break;
+            case'subheading':
+                newEl=document.createElement('p');
+                newEl.className='bp-caption ed-editable ed-block';
+                newEl.style.cssText='font-size:1.1em;opacity:0.8;';
+                newEl.innerHTML=content;
+                break;
+            case'caption':
+                newEl=document.createElement('p');
+                newEl.className='bp-caption ed-editable ed-block';
+                newEl.style.cssText='font-size:0.85em;opacity:0.6;';
+                newEl.innerHTML=content;
+                break;
+            case'quote':
+                newEl=document.createElement('blockquote');
+                newEl.className='bp-quote ed-block';
+                newEl.innerHTML='<p class="ed-editable" data-ed-original="">'+content+'</p>';
+                break;
+            case'whisper':
+                newEl=document.createElement('p');
+                newEl.className='whisper ed-editable ed-block';
+                newEl.innerHTML=content;
+                break;
+            default: // text
+                newEl=document.createElement('p');
+                newEl.className='bp-text ed-editable ed-block';
+                newEl.innerHTML=content;
+        }
+        
+        newEl.setAttribute('data-ed-original','');
+        
+        if(nextSib)parent.insertBefore(newEl,nextSib);
+        else parent.appendChild(newEl);
+        el.remove();
+        
+        setTimeout(function(){self.selectElement(newEl);},10);
+        this.setStatus('Converted to '+newType);
+    }
+    
+    // Process shortcodes when Enter is pressed
+    processShortcodes(el){
+        var text=el.textContent.trim();
+        var self=this;
+        
+        for(var i=0;i<this.shortcodes.length;i++){
+            var sc=this.shortcodes[i];
+            var match=text.match(sc.pattern);
+            if(match){
+                switch(sc.type){
+                    case'heading':
+                        el.innerHTML=match[1];
+                        this.convertElementType(el,'heading');
+                        return true;
+                    case'quote':
+                        el.innerHTML=match[1];
+                        this.convertElementType(el,'quote');
+                        return true;
+                    case'divider':
+                        this.addDividerAfter(el);
+                        el.innerHTML='';
+                        el.remove();
+                        return true;
+                    case'fancy':
+                        el.innerHTML=match[1];
+                        this.toggleFancyFontOnElement(el);
+                        return true;
+                    case'link':
+                        el.innerHTML='<a href="'+match[2]+'" target="_blank" rel="noopener">'+match[1]+'</a>';
+                        return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    // Toggle fancy font on selected text
+    toggleFancyFont(){
+        var sel=window.getSelection();
+        if(!sel.rangeCount)return;
+        
+        var range=sel.getRangeAt(0);
+        if(range.collapsed){
+            // No selection, toggle on whole element
+            if(this.selectedEl)this.toggleFancyFontOnElement(this.selectedEl);
+            return;
+        }
+        
+        // Wrap selection in fancy span
+        var span=document.createElement('span');
+        span.className='fancy';
+        span.style.fontFamily='var(--font-display), cursive';
+        try{
+            range.surroundContents(span);
+        }catch(e){
+            // Complex selection, apply to container
+            if(this.selectedEl)this.toggleFancyFontOnElement(this.selectedEl);
+        }
+        
+        this.setStatus('Fancy font applied');
+    }
+    
+    // Toggle fancy font on element
+    toggleFancyFontOnElement(el){
+        var fancyClasses=['fancy','alt-font','font-display'];
+        var hasFancy=false;
+        
+        for(var i=0;i<fancyClasses.length;i++){
+            if(el.classList.contains(fancyClasses[i])){
+                hasFancy=true;
+                el.classList.remove(fancyClasses[i]);
+            }
+        }
+        
+        if(!hasFancy){
+            el.classList.add('fancy');
+            el.style.fontFamily='var(--font-display), cursive';
+            this.setStatus('Fancy font applied');
+        }else{
+            el.style.fontFamily='';
+            this.setStatus('Fancy font removed');
+        }
+        
+        // Update format bar button
+        var fancyBtn=document.getElementById('edFmtFancy');
+        if(fancyBtn)fancyBtn.classList.toggle('ed-fancy-active',!hasFancy);
+    }
+    
+    // Move element up or down
+    moveElement(el,dir){
+        var movable=el.closest('.bp-figure,.bp-gallery-item,.bp-quote,.ed-divider,.ed-link-block')||el;
+        
+        if(dir==='up'&&movable.previousElementSibling){
+            movable.parentElement.insertBefore(movable,movable.previousElementSibling);
+            this.setStatus('Moved up');
+        }else if(dir==='down'&&movable.nextElementSibling){
+            movable.parentElement.insertBefore(movable.nextElementSibling,movable);
+            this.setStatus('Moved down');
+        }else{
+            this.setStatus('Cannot move '+dir);
+        }
+        this.updateHighlight(el);
+    }
+    
+    // Add divider after element (for shortcode)
+    addDividerAfter(el){
+        var divider=document.createElement('div');
+        divider.className='ed-divider ed-block';
+        divider.style.cssText='width:100%;height:2px;background:linear-gradient(90deg,var(--pri),var(--gold),var(--acc));border-radius:2px;margin:24px auto;';
+        el.parentElement.insertBefore(divider,el.nextElementSibling);
+        this.setStatus('Divider added');
+    }
+    
     showImageProps(el){
         var panel=document.getElementById('edPanelBody');
-        panel.innerHTML='<div class="ed-prop"><button class="ed-btn ed-full" id="edReplaceImg">📁 Replace</button></div><div class="ed-prop"><button class="ed-btn ed-full ed-danger" id="edDeleteImg">🗑️ Delete</button></div>';
+        panel.innerHTML='<div class="ed-prop"><label>Position</label><div class="ed-move-controls">'+
+            '<button class="ed-btn" id="edMoveUp">⬆️ Up</button>'+
+            '<button class="ed-btn" id="edMoveDown">⬇️ Down</button>'+
+            '</div></div>'+
+            '<div class="ed-prop"><button class="ed-btn ed-full" id="edReplaceImg">📁 Replace</button></div>'+
+            '<div class="ed-prop"><button class="ed-btn ed-full ed-danger" id="edDeleteImg">🗑️ Delete</button></div>';
         var self=this;
+        document.getElementById('edMoveUp').onclick=function(){self.moveElement(el,'up');};
+        document.getElementById('edMoveDown').onclick=function(){self.moveElement(el,'down');};
         document.getElementById('edReplaceImg').onclick=function(){
             self.fileInput.onchange=function(){if(this.files&&this.files[0]){var reader=new FileReader();reader.onload=function(e){self.pushUndo({el:el,type:'attr',attr:'src',value:el.src});el.src=e.target.result;self.setStatus('Image replaced');};reader.readAsDataURL(this.files[0]);}};self.fileInput.click();
         };
         document.getElementById('edDeleteImg').onclick=function(){self.deleteSelected();};
     }
+    
     showBlockProps(el){
         var panel=document.getElementById('edPanelBody');
-        panel.innerHTML='<div class="ed-prop"><button class="ed-btn" id="edBlockUp">⬆️ Up</button><button class="ed-btn" id="edBlockDown">⬇️ Down</button></div><div class="ed-prop"><button class="ed-btn ed-full ed-danger" id="edBlockDelete">🗑️ Delete</button></div>';
+        panel.innerHTML='<div class="ed-prop"><label>Position</label><div class="ed-move-controls">'+
+            '<button class="ed-btn" id="edBlockUp">⬆️ Up</button>'+
+            '<button class="ed-btn" id="edBlockDown">⬇️ Down</button>'+
+            '</div></div>'+
+            '<div class="ed-prop"><button class="ed-btn ed-full ed-danger" id="edBlockDelete">🗑️ Delete</button></div>';
         var self=this;
-        document.getElementById('edBlockUp').onclick=function(){self.moveBlock(el,'up');};
-        document.getElementById('edBlockDown').onclick=function(){self.moveBlock(el,'down');};
+        document.getElementById('edBlockUp').onclick=function(){self.moveElement(el,'up');};
+        document.getElementById('edBlockDown').onclick=function(){self.moveElement(el,'down');};
         document.getElementById('edBlockDelete').onclick=function(){self.deleteSelected();};
     }
+    
     showStickerProps(el){
         var panel=document.getElementById('edPanelBody');var currentZ=el.dataset.z||'normal';
         panel.innerHTML='<div class="ed-prop"><label>Size</label><input type="number" class="ed-prop-input" id="edStickerSize" value="'+(parseInt(el.style.width)||80)+'" min="20" max="500"></div><div class="ed-prop"><label>Rotation</label><input type="range" class="ed-prop-range" id="edStickerRot" min="-180" max="180" value="'+(parseInt(el.dataset.rotation)||0)+'"></div><div class="ed-prop"><label>Opacity</label><input type="range" class="ed-prop-range" id="edStickerOp" min="0" max="1" step="0.05" value="'+(el.style.opacity||1)+'"></div><div class="ed-prop"><label>Layer</label><select class="ed-prop-select" id="edStickerZ"><option value="behind" '+(currentZ==='behind'?'selected':'')+'>Behind</option><option value="back" '+(currentZ==='back'?'selected':'')+'>Back</option><option value="normal" '+(currentZ==='normal'?'selected':'')+'>Normal</option><option value="above" '+(currentZ==='above'?'selected':'')+'>Above</option><option value="top" '+(currentZ==='top'?'selected':'')+'>Top</option></select></div><div class="ed-prop ed-layer-controls"><button class="ed-btn" id="edStickerBringFront">⬆️ Front</button><button class="ed-btn" id="edStickerSendBack">⬇️ Back</button></div><div class="ed-prop"><button class="ed-btn ed-full ed-danger" id="edStickerDelete">🗑️ Delete</button></div>';
@@ -196,100 +525,153 @@ class LiveEditor{
         document.getElementById('edStickerSendBack').onclick=function(){self.sendToBack(el);};
         document.getElementById('edStickerDelete').onclick=function(){self.deleteSelected();};
     }
+    
     showDividerProps(el){
         var panel=document.getElementById('edPanelBody');
-        panel.innerHTML='<div class="ed-prop"><label>Width %</label><input type="range" class="ed-prop-range" id="edDivWidth" min="10" max="100" value="'+(parseInt(el.style.width)||100)+'"></div><div class="ed-prop"><label>Height px</label><input type="number" class="ed-prop-input" id="edDivHeight" min="1" max="20" value="'+(parseInt(el.style.height)||2)+'"></div><div class="ed-prop"><label>Margin px</label><input type="number" class="ed-prop-input" id="edDivMargin" min="0" max="100" value="'+(parseInt(el.style.marginTop)||20)+'"></div><div class="ed-prop"><button class="ed-btn ed-full ed-danger" id="edDivDelete">🗑️ Delete</button></div>';
+        panel.innerHTML='<div class="ed-prop"><label>Position</label><div class="ed-move-controls">'+
+            '<button class="ed-btn" id="edMoveUp">⬆️ Up</button>'+
+            '<button class="ed-btn" id="edMoveDown">⬇️ Down</button>'+
+            '</div></div>'+
+            '<div class="ed-prop"><label>Width %</label><input type="range" class="ed-prop-range" id="edDivWidth" min="10" max="100" value="'+(parseInt(el.style.width)||100)+'"></div><div class="ed-prop"><label>Height px</label><input type="number" class="ed-prop-input" id="edDivHeight" min="1" max="20" value="'+(parseInt(el.style.height)||2)+'"></div><div class="ed-prop"><label>Margin px</label><input type="number" class="ed-prop-input" id="edDivMargin" min="0" max="100" value="'+(parseInt(el.style.marginTop)||20)+'"></div><div class="ed-prop"><button class="ed-btn ed-full ed-danger" id="edDivDelete">🗑️ Delete</button></div>';
         var self=this;
+        document.getElementById('edMoveUp').onclick=function(){self.moveElement(el,'up');};
+        document.getElementById('edMoveDown').onclick=function(){self.moveElement(el,'down');};
         document.getElementById('edDivWidth').oninput=function(){el.style.width=this.value+'%';};
         document.getElementById('edDivHeight').oninput=function(){el.style.height=this.value+'px';};
         document.getElementById('edDivMargin').oninput=function(){el.style.marginTop=this.value+'px';el.style.marginBottom=this.value+'px';};
         document.getElementById('edDivDelete').onclick=function(){self.deleteSelected();};
     }
+    
     showLinkProps(el){
         var panel=document.getElementById('edPanelBody');var link=el.querySelector('a');
-        panel.innerHTML='<div class="ed-prop"><label>Text</label><input type="text" class="ed-prop-input" id="edLinkText" value="'+(link?link.textContent:'Link')+'"></div><div class="ed-prop"><label>URL</label><input type="text" class="ed-prop-input" id="edLinkUrl" value="'+(link?link.href:'#')+'"></div><div class="ed-prop"><label>Style</label><select class="ed-prop-select" id="edLinkStyle"><option value="btn">Button</option><option value="btn-outline">Outline</option><option value="text">Text</option></select></div><div class="ed-prop"><button class="ed-btn ed-full ed-danger" id="edLinkDelete">🗑️ Delete</button></div>';
+        panel.innerHTML='<div class="ed-prop"><label>Position</label><div class="ed-move-controls">'+
+            '<button class="ed-btn" id="edMoveUp">⬆️ Up</button>'+
+            '<button class="ed-btn" id="edMoveDown">⬇️ Down</button>'+
+            '</div></div>'+
+            '<div class="ed-prop"><label>Text</label><input type="text" class="ed-prop-input" id="edLinkText" value="'+(link?link.textContent:'Link')+'"></div><div class="ed-prop"><label>URL</label><input type="text" class="ed-prop-input" id="edLinkUrl" value="'+(link?link.href:'#')+'"></div><div class="ed-prop"><label>Style</label><select class="ed-prop-select" id="edLinkStyle"><option value="btn">Button</option><option value="btn-outline">Outline</option><option value="text">Text</option></select></div><div class="ed-prop"><button class="ed-btn ed-full ed-danger" id="edLinkDelete">🗑️ Delete</button></div>';
         var self=this;
+        document.getElementById('edMoveUp').onclick=function(){self.moveElement(el,'up');};
+        document.getElementById('edMoveDown').onclick=function(){self.moveElement(el,'down');};
         document.getElementById('edLinkText').oninput=function(){if(link)link.textContent=this.value;};
         document.getElementById('edLinkUrl').oninput=function(){if(link)link.href=this.value;};
         document.getElementById('edLinkStyle').onchange=function(){if(link)link.className=this.value;};
         document.getElementById('edLinkDelete').onclick=function(){self.deleteSelected();};
     }
+    
     applyStickerZ(el,level){var z={behind:-1,back:1,normal:10,above:100,top:1000};el.style.zIndex=z[level]||10;}
+    
     bringToFront(el){
         var stickers=el.parentElement.querySelectorAll('.ed-sticker');var maxZ=0;
         for(var i=0;i<stickers.length;i++){var z=parseInt(stickers[i].style.zIndex)||0;if(z>maxZ)maxZ=z;}
         el.style.zIndex=maxZ+1;this.setStatus('Brought to front');
     }
+    
     sendToBack(el){
         var stickers=el.parentElement.querySelectorAll('.ed-sticker');var minZ=9999;
         for(var i=0;i<stickers.length;i++){var z=parseInt(stickers[i].style.zIndex)||0;if(z<minZ)minZ=z;}
         el.style.zIndex=minZ-1;this.setStatus('Sent to back');
     }
+    
     showContext(e,el){
         var isSticker=el.classList.contains('ed-sticker');
+        var isEditable=el.classList.contains('ed-editable');
+        
         var html='<button data-action="select">✏️ Edit</button>';
-        if(isSticker)html+='<hr class="ed-ctx-sep"><button data-action="bringfront">⬆️ Bring Front</button><button data-action="sendback">⬇️ Send Back</button>';
+        
+        // Move options for all elements
+        html+='<hr class="ed-ctx-sep"><button data-action="moveup">⬆️ Move Up</button><button data-action="movedown">⬇️ Move Down</button>';
+        
+        // Fancy font for text
+        if(isEditable){
+            html+='<hr class="ed-ctx-sep"><button data-action="fancy">✨ Fancy Font</button>';
+            html+='<button data-action="heading">📌 → Heading</button>';
+            html+='<button data-action="quote">💬 → Quote</button>';
+        }
+        
+        if(isSticker){
+            html+='<hr class="ed-ctx-sep"><button data-action="bringfront">⬆️ Bring Front</button><button data-action="sendback">⬇️ Send Back</button>';
+        }
+        
         html+='<hr class="ed-ctx-sep"><button data-action="delete" class="ed-ctx-danger">🗑️ Delete</button>';
+        
         this.ctx.innerHTML=html;this.ctx.style.display='block';
-        this.ctx.style.left=Math.min(e.clientX,innerWidth-200)+'px';this.ctx.style.top=Math.min(e.clientY,innerHeight-200)+'px';
-        var self=this;var btns=this.ctx.querySelectorAll('button');
-        for(var i=0;i<btns.length;i++){(function(btn){btn.onclick=function(){var action=btn.getAttribute('data-action');if(action==='select')self.selectElement(el);else if(action==='delete'){self.selectedEl=el;self.deleteSelected();}else if(action==='bringfront')self.bringToFront(el);else if(action==='sendback')self.sendToBack(el);self.hideContext();};})(btns[i]);}
+        this.ctx.style.left=Math.min(e.clientX,innerWidth-200)+'px';
+        this.ctx.style.top=Math.min(e.clientY,innerHeight-200)+'px';
+        
+        var self=this;
+        var btns=this.ctx.querySelectorAll('button');
+        for(var i=0;i<btns.length;i++){
+            (function(btn){
+                btn.onclick=function(){
+                    var action=btn.getAttribute('data-action');
+                    switch(action){
+                        case'select':self.selectElement(el);break;
+                        case'delete':self.selectedEl=el;self.deleteSelected();break;
+                        case'moveup':self.moveElement(el,'up');break;
+                        case'movedown':self.moveElement(el,'down');break;
+                        case'bringfront':self.bringToFront(el);break;
+                        case'sendback':self.sendToBack(el);break;
+                        case'fancy':self.toggleFancyFontOnElement(el);break;
+                        case'heading':self.convertElementType(el,'heading');break;
+                        case'quote':self.convertElementType(el,'quote');break;
+                    }
+                    self.hideContext();
+                };
+            })(btns[i]);
+        }
     }
-    moveBlock(el,dir){
-        if(dir==='up'&&el.previousElementSibling)el.parentElement.insertBefore(el,el.previousElementSibling);
-        else if(dir==='down'&&el.nextElementSibling)el.parentElement.insertBefore(el.nextElementSibling,el);
-        this.updateHighlight(el);this.setStatus('Moved '+dir);
-    }
+    
     deleteSelected(){
         if(!this.selectedEl)return;
         var block=this.selectedEl.closest('.bp-figure,.bp-gallery-item,.bp-gallery,.bp-columns,.bp-quote,.ed-sticker,.ed-divider,.ed-link-block')||this.selectedEl;
         this.pushUndo({el:block.parentElement,type:'child',value:block.outerHTML,ref:block.nextElementSibling});
         block.remove();this.selectedEl=null;this.highlight.style.display='none';this.hideFormatBar();this.setStatus('Deleted');
     }
+    
     findInsertTarget(){
         var expanded=document.querySelector('.bproject.expanded .bproject-content');
         if(!expanded){this.setStatus('⚠️ Expand a project first');return null;}
         return expanded;
     }
+    
     addImage(){
         var self=this,target=this.findInsertTarget();if(!target)return;
         this.fileInput.onchange=function(){if(!this.files||!this.files.length)return;var reader=new FileReader();reader.onload=function(e){var figure=document.createElement('figure');figure.className='bp-figure bp-img-full ed-block';figure.innerHTML='<img src="'+e.target.result+'" alt="" class="bp-img ed-interactive">';target.appendChild(figure);self.setStatus('Image added');};reader.readAsDataURL(this.files[0]);};this.fileInput.click();
     }
+    
     addTextBlock(){
         var target=this.findInsertTarget();if(!target)return;
         var p=document.createElement('p');p.className='bp-text ed-editable ed-block';p.textContent='Click to edit...';p.setAttribute('data-ed-original','');target.appendChild(p);this.selectElement(p);this.setStatus('Text added');
     }
+    
     addHeading(){
         var target=this.findInsertTarget();if(!target)return;
         var h=document.createElement('h4');h.className='bp-heading ed-editable ed-block';h.textContent='New Heading';h.setAttribute('data-ed-original','');target.appendChild(h);this.selectElement(h);this.setStatus('Heading added');
     }
+    
     addQuoteBlock(){
         var target=this.findInsertTarget();if(!target)return;
         var quote=document.createElement('blockquote');quote.className='bp-quote ed-block';quote.innerHTML='<p class="ed-editable" data-ed-original="">Quote...</p><cite class="ed-editable" data-ed-original="">— Author</cite>';target.appendChild(quote);this.setStatus('Quote added');
     }
+    
     addDivider(){
         var target=this.findInsertTarget();if(!target)return;
         var divider=document.createElement('div');divider.className='ed-divider ed-block';divider.style.cssText='width:100%;height:2px;background:linear-gradient(90deg,var(--pri),var(--gold),var(--acc));border-radius:2px;margin:24px auto;';target.appendChild(divider);this.selectElement(divider);this.setStatus('Divider added');
     }
+    
     addLinkBlock(){
         var target=this.findInsertTarget();if(!target)return;
         var url=prompt('Enter URL:','https://');if(!url)return;var text=prompt('Button text:','Click Here');if(!text)return;
         var wrapper=document.createElement('div');wrapper.className='ed-link-block ed-block';wrapper.style.cssText='margin:16px 0;';wrapper.innerHTML='<a href="'+url+'" target="_blank" rel="noopener" class="btn">'+text+'</a>';target.appendChild(wrapper);this.selectElement(wrapper);this.setStatus('Link added');
     }
+    
     addSticker(){
         var self=this;
         var expanded=document.querySelector('.bproject.expanded');
         if(!expanded){this.setStatus('⚠️ Expand a project first');return;}
         var stickerLayer=expanded.querySelector('.bproject-stickers');
-        if(!stickerLayer){
-            stickerLayer=document.createElement('div');
-            stickerLayer.className='bproject-stickers';
-            // Styles now handled by injected CSS
-            expanded.appendChild(stickerLayer);
-        }
-        // Ensure parent has relative positioning
+        if(!stickerLayer){stickerLayer=document.createElement('div');stickerLayer.className='bproject-stickers';expanded.appendChild(stickerLayer);}
         expanded.style.position='relative';
-        
         this.fileInput.onchange=function(){
             if(this.files&&this.files[0]){
                 var reader=new FileReader();
@@ -307,7 +689,9 @@ class LiveEditor{
         };
         this.fileInput.click();
     }
+    
     pushUndo(item){this.undoStack.push(item);if(this.undoStack.length>50)this.undoStack.shift();}
+    
     undo(){
         if(!this.undoStack.length){this.setStatus('Nothing to undo');return;}
         var item=this.undoStack.pop();
@@ -316,10 +700,11 @@ class LiveEditor{
         else if(item.type==='child'){var temp=document.createElement('div');temp.innerHTML=item.value;var restored=temp.firstChild;if(item.ref)item.el.insertBefore(restored,item.ref);else item.el.appendChild(restored);}
         this.setStatus('Undone');
     }
+    
     exportAmendment(){
         var amendment={_version:'1.0',_exported:new Date().toISOString(),textChanges:[],images:[],stickers:[],dividers:[],links:[]};
         var editables=document.querySelectorAll('[data-ed-original]');
-        for(var i=0;i<editables.length;i++){var el=editables[i];var original=el.getAttribute('data-ed-original');if(original!==el.innerHTML){amendment.textChanges.push({selector:this.getUniqueSelector(el),content:el.innerHTML,styles:el.getAttribute('style')||''});}}
+        for(var i=0;i<editables.length;i++){var el=editables[i];var original=el.getAttribute('data-ed-original');if(original!==el.innerHTML){amendment.textChanges.push({selector:this.getUniqueSelector(el),content:el.innerHTML,styles:el.getAttribute('style')||'',classes:el.className});}}
         var images=document.querySelectorAll('img[src^="data:"]');
         for(var i=0;i<images.length;i++){var img=images[i];amendment.images.push({selector:this.getUniqueSelector(img),src:img.src,alt:img.alt||''});}
         var stickers=document.querySelectorAll('.ed-sticker');
@@ -332,6 +717,7 @@ class LiveEditor{
         var total=amendment.textChanges.length+amendment.stickers.length+amendment.dividers.length+amendment.links.length+amendment.images.length;
         this.setStatus('📄 Exported '+total+' changes → put in data/ folder');
     }
+    
     getUniqueSelector(el){
         if(!el||el===document.body)return'body';if(el.id)return'#'+el.id;
         if(el.dataset.projectId)return'[data-project-id="'+el.dataset.projectId+'"]';
@@ -346,6 +732,8 @@ class LiveEditor{
         }
         return path.join(' > ');
     }
+    
     setStatus(msg){var s=document.getElementById('edStatus');if(s){s.textContent=msg;s.classList.add('ed-flash');setTimeout(function(){s.classList.remove('ed-flash');},300);}}
 }
+
 document.addEventListener('DOMContentLoaded',function(){window.liveEditor=new LiveEditor();});

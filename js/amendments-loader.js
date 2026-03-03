@@ -5,12 +5,19 @@
     var AMENDMENTS_URL = './data/amendments.json';
     var storedAmendments = null;
     
-    // Inject styles for loaded amendments (matches editor styles)
+    // Inject styles for loaded amendments
     var style = document.createElement('style');
     style.textContent = 
+        // Sticker styles
         '.bproject-stickers{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none!important;overflow:visible;z-index:50}' +
         '.bproject-stickers .ed-sticker,.bproject-stickers .amendment-sticker{pointer-events:none!important}' +
-        '.amendment-sticker img{pointer-events:none!important}';
+        '.amendment-sticker img{pointer-events:none!important}' +
+        // Fancy font support
+        '.fancy,.alt-font,.font-display{font-family:var(--font-display),cursive}' +
+        // Divider styles
+        '.amendment-divider{pointer-events:none}' +
+        // Whisper style (if not defined)
+        '.whisper{font-size:0.85em;opacity:0.6;font-style:italic}';
     document.head.appendChild(style);
     
     function loadAmendments(){
@@ -33,17 +40,23 @@
     function applyAmendments(data){
         var applied = 0;
         
-        // Apply text changes
+        // Apply text changes (with class/type support)
         if(data.textChanges && data.textChanges.length){
             data.textChanges.forEach(function(change){
                 try {
                     var el = document.querySelector(change.selector);
                     if(el){
-                        el.innerHTML = change.content;
-                        if(change.styles) el.setAttribute('style', change.styles);
+                        // Check if element type changed (tag conversion)
+                        if(change.newTag && el.tagName.toLowerCase() !== change.newTag.toLowerCase()){
+                            el = convertElement(el, change);
+                        } else {
+                            el.innerHTML = change.content;
+                            if(change.styles) el.setAttribute('style', change.styles);
+                            if(change.classes) applyClasses(el, change.classes);
+                        }
                         applied++;
                     }
-                } catch(e){ console.warn('Amendment selector failed:', change.selector); }
+                } catch(e){ console.warn('Amendment selector failed:', change.selector, e); }
             });
         }
         
@@ -74,13 +87,30 @@
                 try {
                     var parent = document.querySelector(divider.parentSelector);
                     if(parent){
-                        var div = document.createElement('div');
-                        div.className = 'ed-divider amendment-divider';
-                        div.setAttribute('style', divider.styles);
-                        parent.appendChild(div);
-                        applied++;
+                        // Check for duplicate
+                        var existingDividers = parent.querySelectorAll('.amendment-divider');
+                        var isDupe = false;
+                        for(var i = 0; i < existingDividers.length; i++){
+                            if(existingDividers[i].getAttribute('style') === divider.styles){
+                                isDupe = true;
+                                break;
+                            }
+                        }
+                        if(!isDupe){
+                            var div = document.createElement('div');
+                            div.className = 'ed-divider amendment-divider';
+                            div.setAttribute('style', divider.styles);
+                            
+                            // Insert at position if specified
+                            if(divider.position !== undefined && parent.children[divider.position]){
+                                parent.insertBefore(div, parent.children[divider.position]);
+                            } else {
+                                parent.appendChild(div);
+                            }
+                            applied++;
+                        }
                     }
-                } catch(e){}
+                } catch(e){ console.warn('Divider failed:', e); }
             });
         }
         
@@ -90,22 +120,39 @@
                 try {
                     var parent = document.querySelector(link.parentSelector);
                     if(parent){
-                        var wrapper = document.createElement('div');
-                        wrapper.className = 'ed-link-block amendment-link';
-                        wrapper.style.cssText = 'margin:16px 0;';
-                        
-                        var a = document.createElement('a');
-                        a.href = link.href;
-                        a.textContent = link.text;
-                        a.className = link.className || 'btn';
-                        a.target = link.target || '_blank';
-                        a.rel = 'noopener noreferrer';
-                        
-                        wrapper.appendChild(a);
-                        parent.appendChild(wrapper);
-                        applied++;
+                        // Check for duplicate
+                        var existingLinks = parent.querySelectorAll('.amendment-link a');
+                        var isDupe = false;
+                        for(var i = 0; i < existingLinks.length; i++){
+                            if(existingLinks[i].href === link.href && existingLinks[i].textContent === link.text){
+                                isDupe = true;
+                                break;
+                            }
+                        }
+                        if(!isDupe){
+                            var wrapper = document.createElement('div');
+                            wrapper.className = 'ed-link-block amendment-link';
+                            wrapper.style.cssText = 'margin:16px 0;';
+                            
+                            var a = document.createElement('a');
+                            a.href = link.href;
+                            a.textContent = link.text;
+                            a.className = link.className || 'btn';
+                            a.target = link.target || '_blank';
+                            a.rel = 'noopener noreferrer';
+                            
+                            wrapper.appendChild(a);
+                            
+                            // Insert at position if specified
+                            if(link.position !== undefined && parent.children[link.position]){
+                                parent.insertBefore(wrapper, parent.children[link.position]);
+                            } else {
+                                parent.appendChild(wrapper);
+                            }
+                            applied++;
+                        }
                     }
-                } catch(e){}
+                } catch(e){ console.warn('Link failed:', e); }
             });
         }
         
@@ -118,7 +165,11 @@
                         var temp = document.createElement('div');
                         temp.innerHTML = block.html;
                         while(temp.firstChild){
-                            parent.appendChild(temp.firstChild);
+                            if(block.position !== undefined && parent.children[block.position]){
+                                parent.insertBefore(temp.firstChild, parent.children[block.position]);
+                            } else {
+                                parent.appendChild(temp.firstChild);
+                            }
                         }
                         applied++;
                     }
@@ -126,9 +177,80 @@
             });
         }
         
+        // Apply element conversions (type changes)
+        if(data.conversions && data.conversions.length){
+            data.conversions.forEach(function(conv){
+                try {
+                    var el = document.querySelector(conv.selector);
+                    if(el){
+                        convertElement(el, conv);
+                        applied++;
+                    }
+                } catch(e){ console.warn('Conversion failed:', e); }
+            });
+        }
+        
         if(applied > 0){
             console.log('📝 Applied ' + applied + ' amendments');
         }
+    }
+    
+    // Apply classes while preserving important ones
+    function applyClasses(el, classString){
+        // Parse class string
+        var newClasses = classString.split(' ').filter(function(c){
+            return c && !c.startsWith('ed-') && c !== 'expanded';
+        });
+        
+        // Get existing important classes to preserve
+        var preserve = ['bproject', 'bproject-content', 'bp-figure', 'bp-gallery'];
+        var existing = Array.from(el.classList).filter(function(c){
+            return preserve.indexOf(c) !== -1;
+        });
+        
+        // Build final class list
+        var finalClasses = existing.concat(newClasses.filter(function(c){
+            return existing.indexOf(c) === -1;
+        }));
+        
+        el.className = finalClasses.join(' ');
+    }
+    
+    // Convert element to new tag type
+    function convertElement(el, conversion){
+        var newTag = conversion.newTag || guessTagFromClasses(conversion.classes);
+        if(!newTag) return el;
+        
+        var parent = el.parentElement;
+        var nextSib = el.nextElementSibling;
+        
+        var newEl = document.createElement(newTag);
+        newEl.innerHTML = conversion.content || el.innerHTML;
+        
+        if(conversion.styles) newEl.setAttribute('style', conversion.styles);
+        if(conversion.classes) applyClasses(newEl, conversion.classes);
+        
+        // Copy data attributes
+        for(var key in el.dataset){
+            newEl.dataset[key] = el.dataset[key];
+        }
+        
+        if(nextSib){
+            parent.insertBefore(newEl, nextSib);
+        } else {
+            parent.appendChild(newEl);
+        }
+        el.remove();
+        
+        return newEl;
+    }
+    
+    // Guess tag from class names
+    function guessTagFromClasses(classes){
+        if(!classes) return null;
+        if(classes.includes('bp-heading') || classes.includes('section-title')) return 'h4';
+        if(classes.includes('bp-quote')) return 'blockquote';
+        return 'p';
     }
     
     function applySticker(sticker){
@@ -157,13 +279,10 @@
                 if(!stickerLayer){
                     stickerLayer = document.createElement('div');
                     stickerLayer.className = 'bproject-stickers';
-                    // Styles handled by injected CSS above
                     projectCard.appendChild(stickerLayer);
                 }
-                // Ensure project card has relative positioning
                 projectCard.style.position = 'relative';
             } 
-            // Final fallback
             else if(sticker.parentSelector){
                 stickerLayer = document.querySelector(sticker.parentSelector);
                 if(stickerLayer){
@@ -184,7 +303,7 @@
                 if(existing.style.left === sticker.position.left && 
                    existing.style.top === sticker.position.top &&
                    existingImg && existingImg.src === sticker.src){
-                    return false; // Already exists
+                    return false;
                 }
             }
             
@@ -195,7 +314,6 @@
             div.dataset.z = sticker.layer || 'normal';
             if(sticker.projectId) div.dataset.projectId = sticker.projectId;
             
-            // Build style string - pointer-events:none is critical!
             var styles = [
                 'position:absolute',
                 'left:' + (sticker.position.left || '50px'),
@@ -205,11 +323,10 @@
                 'z-index:' + (sticker.zIndex || '10'),
                 'opacity:' + (sticker.opacity || '1'),
                 'transform:rotate(' + (sticker.rotation || '0') + 'deg)',
-                'pointer-events:none'  // Important: don't block content!
+                'pointer-events:none'
             ];
             div.style.cssText = styles.join(';');
             
-            // Create image
             var img = document.createElement('img');
             img.src = sticker.src;
             img.alt = '';
@@ -226,9 +343,16 @@
         }
     }
     
-    // Watch for project expansions to re-apply stickers
+    // Watch for project expansions
     function setupProjectObserver(){
-        if(!storedAmendments || !storedAmendments.stickers || !storedAmendments.stickers.length) return;
+        if(!storedAmendments) return;
+        
+        var hasStickers = storedAmendments.stickers && storedAmendments.stickers.length;
+        var hasDividers = storedAmendments.dividers && storedAmendments.dividers.length;
+        var hasLinks = storedAmendments.links && storedAmendments.links.length;
+        var hasText = storedAmendments.textChanges && storedAmendments.textChanges.length;
+        
+        if(!hasStickers && !hasDividers && !hasLinks && !hasText) return;
         
         var projects = document.querySelectorAll('.bproject');
         if(!projects.length) return;
@@ -238,13 +362,12 @@
                 if(mutation.type === 'attributes' && mutation.attributeName === 'class'){
                     var target = mutation.target;
                     if(target.classList.contains('bproject') && target.classList.contains('expanded')){
-                        // Small delay to ensure DOM is ready
                         setTimeout(function(){
                             var projectId = target.dataset.projectId;
                             if(projectId){
-                                reapplyStickersForProject(projectId, target);
+                                reapplyAmendmentsForProject(projectId, target);
                             }
-                        }, 50);
+                        }, 100);
                     }
                 }
             });
@@ -255,23 +378,94 @@
         });
     }
     
-    // Re-apply stickers for a specific project
-    function reapplyStickersForProject(projectId, projectEl){
-        if(!storedAmendments || !storedAmendments.stickers) return;
-        
-        // Check if stickers already exist for this project
-        var existing = projectEl.querySelectorAll('.amendment-sticker');
-        if(existing.length > 0) return; // Already applied
-        
+    // Re-apply amendments for a specific project
+    function reapplyAmendmentsForProject(projectId, projectEl){
+        if(!storedAmendments) return;
         var applied = 0;
-        storedAmendments.stickers.forEach(function(sticker){
-            if(sticker.projectId === projectId){
-                if(applySticker(sticker)) applied++;
+        
+        // Re-apply stickers
+        if(storedAmendments.stickers){
+            var existingStickers = projectEl.querySelectorAll('.amendment-sticker');
+            if(existingStickers.length === 0){
+                storedAmendments.stickers.forEach(function(sticker){
+                    if(sticker.projectId === projectId){
+                        if(applySticker(sticker)) applied++;
+                    }
+                });
             }
-        });
+        }
+        
+        // Re-apply text changes within this project
+        if(storedAmendments.textChanges){
+            storedAmendments.textChanges.forEach(function(change){
+                if(change.selector.includes(projectId)){
+                    try {
+                        var el = projectEl.querySelector(change.selector) || 
+                                 document.querySelector(change.selector);
+                        if(el){
+                            el.innerHTML = change.content;
+                            if(change.styles) el.setAttribute('style', change.styles);
+                            if(change.classes) applyClasses(el, change.classes);
+                            applied++;
+                        }
+                    } catch(e){}
+                }
+            });
+        }
+        
+        // Re-apply dividers within this project
+        if(storedAmendments.dividers){
+            var existingDividers = projectEl.querySelectorAll('.amendment-divider');
+            if(existingDividers.length === 0){
+                storedAmendments.dividers.forEach(function(divider){
+                    if(divider.parentSelector.includes(projectId)){
+                        try {
+                            var parent = document.querySelector(divider.parentSelector);
+                            if(parent){
+                                var div = document.createElement('div');
+                                div.className = 'ed-divider amendment-divider';
+                                div.setAttribute('style', divider.styles);
+                                parent.appendChild(div);
+                                applied++;
+                            }
+                        } catch(e){}
+                    }
+                });
+            }
+        }
+        
+        // Re-apply links within this project
+        if(storedAmendments.links){
+            var existingLinks = projectEl.querySelectorAll('.amendment-link');
+            if(existingLinks.length === 0){
+                storedAmendments.links.forEach(function(link){
+                    if(link.parentSelector.includes(projectId)){
+                        try {
+                            var parent = document.querySelector(link.parentSelector);
+                            if(parent){
+                                var wrapper = document.createElement('div');
+                                wrapper.className = 'ed-link-block amendment-link';
+                                wrapper.style.cssText = 'margin:16px 0;';
+                                
+                                var a = document.createElement('a');
+                                a.href = link.href;
+                                a.textContent = link.text;
+                                a.className = link.className || 'btn';
+                                a.target = link.target || '_blank';
+                                a.rel = 'noopener noreferrer';
+                                
+                                wrapper.appendChild(a);
+                                parent.appendChild(wrapper);
+                                applied++;
+                            }
+                        } catch(e){}
+                    }
+                });
+            }
+        }
         
         if(applied > 0){
-            console.log('📌 Applied ' + applied + ' stickers to project:', projectId);
+            console.log('📌 Re-applied ' + applied + ' amendments to project:', projectId);
         }
     }
     

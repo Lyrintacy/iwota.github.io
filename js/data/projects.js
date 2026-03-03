@@ -13,10 +13,7 @@ var PROJECTS = [
         // Thumbnail - supports PNG, JPG, GIF
         thumbnail: 'assets/project1-thumb.gif',
         // Links
-        links: [
-            { label: 'Play on itch.io', url: 'https://lyrintacy.itch.io/', icon: 'itch' },
-            { label: 'Source Code', url: '#', icon: 'github' }
-        ],
+
         // Content blocks - fully customizable order and layout
         // Types: 'text', 'image', 'gallery', 'video', 'quote', 'heading', 'columns'
         content: [
@@ -85,9 +82,6 @@ var PROJECTS = [
         timeframe: '4 weeks',
         tags: ['absurd', 'banana', 'action'],
         thumbnail: 'assets/nana-thumb.gif',
-        links: [
-            { label: 'Play on itch.io', url: 'https://lyrintacy.itch.io/', icon: 'itch' }
-        ],
         content: [
             {
                 type: 'text',
