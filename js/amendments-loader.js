@@ -2,7 +2,7 @@
 (function(){
     'use strict';
     
-    var AMENDMENTS_URL = './data/amendments.json';
+    var AMENDMENTS_URL = './js/amendments/amendments.json';
     var storedAmendments = null;
     
     // Inject styles

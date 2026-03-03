@@ -9,7 +9,7 @@ var PROJECTS = [
         team: 'Solo + 1 Artist',
         engine: 'Unity',
         timeframe: '2 weeks',
-        tags: ['Procedural', 'Genetics', 'Roguelike'],
+        tags: ['Procedural', 'Arcade'],
         // Thumbnail - supports PNG, JPG, GIF
         thumbnail: 'assets/project1-thumb.gif',
         // Links

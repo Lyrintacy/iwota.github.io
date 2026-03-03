@@ -1,5 +1,5 @@
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--pri:#c084fc;--pri-rgb:192,132,252;--acc:#f472b6;--acc-rgb:244,114,182;--gold:#d4a843;--gold-rgb:212,168,67;--tl:#ede9f6;--ml:rgba(237,233,246,0.55);--card:rgba(14,8,32,0.88);--cbord:rgba(192,132,252,0.1);--dark:#08030f}
+:root{--pri:#c084fc;--pri-rgb:192,132,252;--acc:#f472b6;--acc-rgb:244,114,182;--gold:#d4a843;--gold-rgb:212,168,67;--tl:#ede9f6;--ml:rgba(237, 233, 246, 0.856);--card:rgba(14,8,32,0.88);--cbord:rgba(192,132,252,0.1);--dark:#08030f}
 html{scroll-behavior:smooth}
 body{font-family:'Inter',-apple-system,sans-serif;background:var(--dark);color:var(--tl);line-height:1.6;overflow-x:hidden}
 .handwritten{font-family:'Caveat',cursive;font-weight:600}
