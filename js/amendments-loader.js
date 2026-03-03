@@ -1,10 +1,9 @@
-/* ═══════ AMENDMENTS LOADER — Auto-applies changes from amendments.json ═══════ */
+/* ═══════ AMENDMENTS LOADER — Patches source data + applies visual changes ═══════ */
 (function(){
     'use strict';
     
     var AMENDMENTS_URL = './js/amendments/amendments.json';
     var storedAmendments = null;
-    var LOAD_DELAY = 500; // ms to wait for other scripts to populate content
     
     // Inject styles
     var style = document.createElement('style');
@@ -17,109 +16,153 @@
         '.whisper{font-size:0.85em;opacity:0.6;font-style:italic}';
     document.head.appendChild(style);
     
-    function loadAmendments(){
-        fetch(AMENDMENTS_URL)
-            .then(function(response){
-                if(!response.ok) throw new Error('No amendments file');
-                return response.json();
-            })
-            .then(function(data){
+    // ══════════════════════════════════════════════════════════════
+    // SYNCHRONOUS LOAD - Patches data BEFORE app.js runs
+    // ══════════════════════════════════════════════════════════════
+    
+    function loadAmendmentsSync(){
+        try {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', AMENDMENTS_URL, false); // SYNCHRONOUS
+            xhr.send(null);
+            
+            if(xhr.status === 200){
+                var data = JSON.parse(xhr.responseText);
                 storedAmendments = data;
                 
-                // Apply project order FIRST
-                if(data.projectOrder && data.projectOrder.length){
-                    applyProjectOrder(data.projectOrder);
-                }
+                // Patch source data immediately
+                patchSourceData(data);
                 
-                applyAmendments(data);
-                setupProjectObserver();
-                console.log('✅ Amendments loaded:', data._exported || 'unknown date');
-            })
-            .catch(function(err){
-                console.log('ℹ️ No amendments to load');
+                console.log('✅ Amendments loaded & data patched:', data._exported || 'unknown');
+                
+                // Schedule visual changes for after DOM is built
+                scheduleVisualChanges(data);
+            }
+        } catch(e){
+            console.log('ℹ️ No amendments to load');
+        }
+    }
+    
+    // ══════════════════════════════════════════════════════════════
+    // PATCH SOURCE DATA - Modifies PROJECTS/BASEMENT_PROJECTS arrays
+    // ══════════════════════════════════════════════════════════════
+    
+    function patchSourceData(data){
+        // Patch TEXTS if exists
+        if(data.textPatches && typeof TEXTS !== 'undefined'){
+            data.textPatches.forEach(function(patch){
+                try {
+                    setNestedValue(TEXTS, patch.path, patch.value);
+                    console.log('📝 Patched TEXTS:', patch.path);
+                } catch(e){}
             });
-    }
-    
-    function applyProjectOrder(order){
-        if(!order || !order.length) return;
-        
-        var firstProject = document.querySelector('.bproject');
-        if(!firstProject) return;
-        var projectContainer = firstProject.parentElement;
-        
-        var thumbContainer = document.querySelector('.games-grid, .project-thumbs, .pcard-container, .basement-thumbs, .pgrid');
-        
-        var reorderedProjects = 0;
-        var reorderedThumbs = 0;
-        
-        for(var i = 0; i < order.length; i++){
-            var projectId = order[i];
-            var project = document.querySelector('.bproject[data-project-id="' + projectId + '"]');
-            if(project){
-                projectContainer.appendChild(project);
-                reorderedProjects++;
-            }
         }
         
-        if(thumbContainer){
-            for(var i = 0; i < order.length; i++){
-                var projectId = order[i];
-                var thumb = thumbContainer.querySelector(
-                    '[data-project-id="' + projectId + '"],' +
-                    '[data-target="' + projectId + '"],' +
-                    '[href="#' + projectId + '"],' +
-                    '.pcard[data-project="' + projectId + '"]'
-                );
-                if(thumb){
-                    thumbContainer.appendChild(thumb);
-                    reorderedThumbs++;
+        // Patch PROJECTS if exists
+        if(data.projectPatches && typeof PROJECTS !== 'undefined'){
+            data.projectPatches.forEach(function(patch){
+                var project = PROJECTS.find(function(p){ return p.id === patch.projectId; });
+                if(project){
+                    for(var key in patch.changes){
+                        setNestedValue(project, key, patch.changes[key]);
+                    }
+                    console.log('📝 Patched project:', patch.projectId);
                 }
-            }
+            });
         }
         
-        if(reorderedProjects > 0){
-            console.log('📋 Reordered ' + reorderedProjects + ' projects' + 
-                       (reorderedThumbs > 0 ? ' and ' + reorderedThumbs + ' thumbnails' : ''));
+        // Patch BASEMENT_PROJECTS if exists
+        if(data.basementPatches && typeof BASEMENT_PROJECTS !== 'undefined'){
+            data.basementPatches.forEach(function(patch){
+                var project = BASEMENT_PROJECTS.find(function(p){ return p.id === patch.projectId; });
+                if(project){
+                    for(var key in patch.changes){
+                        setNestedValue(project, key, patch.changes[key]);
+                    }
+                    console.log('📝 Patched basement project:', patch.projectId);
+                }
+            });
+        }
+        
+        // Patch REFERENCES if exists
+        if(data.referencePatches && typeof REFERENCES !== 'undefined'){
+            data.referencePatches.forEach(function(patch){
+                var ref = REFERENCES.find(function(r){ return r.name === patch.name; });
+                if(ref){
+                    for(var key in patch.changes){
+                        ref[key] = patch.changes[key];
+                    }
+                    console.log('📝 Patched reference:', patch.name);
+                }
+            });
+        }
+        
+        // Reorder projects if specified
+        if(data.projectOrder && typeof PROJECTS !== 'undefined'){
+            reorderArray(PROJECTS, data.projectOrder);
+            console.log('📋 Reordered PROJECTS');
+        }
+        
+        if(data.basementOrder && typeof BASEMENT_PROJECTS !== 'undefined'){
+            reorderArray(BASEMENT_PROJECTS, data.basementOrder);
+            console.log('📋 Reordered BASEMENT_PROJECTS');
         }
     }
     
-    function applyAmendments(data){
+    function setNestedValue(obj, path, value){
+        var keys = path.split('.');
+        var current = obj;
+        for(var i = 0; i < keys.length - 1; i++){
+            var key = keys[i];
+            // Handle array index like "content.0.text"
+            if(!isNaN(key)) key = parseInt(key);
+            if(current[key] === undefined) current[key] = {};
+            current = current[key];
+        }
+        var lastKey = keys[keys.length - 1];
+        if(!isNaN(lastKey)) lastKey = parseInt(lastKey);
+        current[lastKey] = value;
+    }
+    
+    function reorderArray(arr, orderIds){
+        var orderMap = {};
+        orderIds.forEach(function(id, index){
+            orderMap[id] = index;
+        });
+        arr.sort(function(a, b){
+            var aOrder = orderMap[a.id] !== undefined ? orderMap[a.id] : 999;
+            var bOrder = orderMap[b.id] !== undefined ? orderMap[b.id] : 999;
+            return aOrder - bOrder;
+        });
+    }
+    
+    // ══════════════════════════════════════════════════════════════
+    // VISUAL CHANGES - Applied after DOM is built
+    // ══════════════════════════════════════════════════════════════
+    
+    function scheduleVisualChanges(data){
+        // Wait for DOM and app.js to finish
+        if(document.readyState === 'loading'){
+            document.addEventListener('DOMContentLoaded', function(){
+                setTimeout(function(){ applyVisualChanges(data); }, 300);
+            });
+        } else {
+            setTimeout(function(){ applyVisualChanges(data); }, 300);
+        }
+    }
+    
+    function applyVisualChanges(data){
         var applied = 0;
         
-        // Apply text changes
+        // Apply direct DOM text changes (for elements not built from data)
         if(data.textChanges && data.textChanges.length){
             data.textChanges.forEach(function(change){
                 try {
                     var el = document.querySelector(change.selector);
                     if(el){
-                        // Store original for debugging
-                        console.log('📝 Applying text change to:', change.selector);
-                        
-                        if(change.newTag && el.tagName.toLowerCase() !== change.newTag.toLowerCase()){
-                            el = convertElement(el, change);
-                        } else {
-                            el.innerHTML = change.content;
-                            if(change.styles) el.setAttribute('style', change.styles);
-                            if(change.classes) applyClasses(el, change.classes);
-                        }
-                        applied++;
-                    } else {
-                        console.warn('⚠️ Element not found:', change.selector);
-                    }
-                } catch(e){ 
-                    console.warn('Amendment selector failed:', change.selector, e); 
-                }
-            });
-        }
-        
-        // Apply image changes
-        if(data.images && data.images.length){
-            data.images.forEach(function(img){
-                try {
-                    var el = document.querySelector(img.selector);
-                    if(el && el.tagName === 'IMG'){
-                        el.src = img.src;
-                        if(img.alt) el.alt = img.alt;
+                        el.innerHTML = change.content;
+                        if(change.styles) el.setAttribute('style', change.styles);
+                        if(change.classes) applyClasses(el, change.classes);
                         applied++;
                     }
                 } catch(e){}
@@ -136,108 +179,36 @@
         // Apply dividers
         if(data.dividers && data.dividers.length){
             data.dividers.forEach(function(divider){
-                try {
-                    var parent = document.querySelector(divider.parentSelector);
-                    if(parent){
-                        var existingDividers = parent.querySelectorAll('.amendment-divider');
-                        var isDupe = false;
-                        for(var i = 0; i < existingDividers.length; i++){
-                            if(existingDividers[i].getAttribute('style') === divider.styles){
-                                isDupe = true;
-                                break;
-                            }
-                        }
-                        if(!isDupe){
-                            var div = document.createElement('div');
-                            div.className = 'ed-divider amendment-divider';
-                            div.setAttribute('style', divider.styles);
-                            if(divider.position !== undefined && parent.children[divider.position]){
-                                parent.insertBefore(div, parent.children[divider.position]);
-                            } else {
-                                parent.appendChild(div);
-                            }
-                            applied++;
-                        }
-                    }
-                } catch(e){ console.warn('Divider failed:', e); }
+                if(applyDivider(divider)) applied++;
             });
         }
         
-        // Apply link blocks
+        // Apply links
         if(data.links && data.links.length){
             data.links.forEach(function(link){
-                try {
-                    var parent = document.querySelector(link.parentSelector);
-                    if(parent){
-                        var existingLinks = parent.querySelectorAll('.amendment-link a');
-                        var isDupe = false;
-                        for(var i = 0; i < existingLinks.length; i++){
-                            if(existingLinks[i].href === link.href && existingLinks[i].textContent === link.text){
-                                isDupe = true;
-                                break;
-                            }
-                        }
-                        if(!isDupe){
-                            var wrapper = document.createElement('div');
-                            wrapper.className = 'ed-link-block amendment-link';
-                            wrapper.style.cssText = 'margin:16px 0;';
-                            
-                            var a = document.createElement('a');
-                            a.href = link.href;
-                            a.textContent = link.text;
-                            a.className = link.className || 'btn';
-                            a.target = link.target || '_blank';
-                            a.rel = 'noopener noreferrer';
-                            
-                            wrapper.appendChild(a);
-                            if(link.position !== undefined && parent.children[link.position]){
-                                parent.insertBefore(wrapper, parent.children[link.position]);
-                            } else {
-                                parent.appendChild(wrapper);
-                            }
-                            applied++;
-                        }
-                    }
-                } catch(e){ console.warn('Link failed:', e); }
+                if(applyLink(link)) applied++;
             });
         }
         
-        // Apply new blocks
-        if(data.newBlocks && data.newBlocks.length){
-            data.newBlocks.forEach(function(block){
+        // Apply images
+        if(data.images && data.images.length){
+            data.images.forEach(function(img){
                 try {
-                    var parent = document.querySelector(block.parentSelector);
-                    if(parent){
-                        var temp = document.createElement('div');
-                        temp.innerHTML = block.html;
-                        while(temp.firstChild){
-                            if(block.position !== undefined && parent.children[block.position]){
-                                parent.insertBefore(temp.firstChild, parent.children[block.position]);
-                            } else {
-                                parent.appendChild(temp.firstChild);
-                            }
-                        }
+                    var el = document.querySelector(img.selector);
+                    if(el && el.tagName === 'IMG'){
+                        el.src = img.src;
+                        if(img.alt) el.alt = img.alt;
                         applied++;
                     }
                 } catch(e){}
             });
         }
         
-        // Apply element conversions
-        if(data.conversions && data.conversions.length){
-            data.conversions.forEach(function(conv){
-                try {
-                    var el = document.querySelector(conv.selector);
-                    if(el){
-                        convertElement(el, conv);
-                        applied++;
-                    }
-                } catch(e){ console.warn('Conversion failed:', e); }
-            });
-        }
+        // Setup observer for project expansions
+        setupProjectObserver();
         
         if(applied > 0){
-            console.log('📝 Applied ' + applied + ' amendments');
+            console.log('🎨 Applied ' + applied + ' visual changes');
         }
     }
     
@@ -249,44 +220,7 @@
         var existing = Array.from(el.classList).filter(function(c){
             return preserve.indexOf(c) !== -1;
         });
-        var finalClasses = existing.concat(newClasses.filter(function(c){
-            return existing.indexOf(c) === -1;
-        }));
-        el.className = finalClasses.join(' ');
-    }
-    
-    function convertElement(el, conversion){
-        var newTag = conversion.newTag || guessTagFromClasses(conversion.classes);
-        if(!newTag) return el;
-        
-        var parent = el.parentElement;
-        var nextSib = el.nextElementSibling;
-        
-        var newEl = document.createElement(newTag);
-        newEl.innerHTML = conversion.content || el.innerHTML;
-        
-        if(conversion.styles) newEl.setAttribute('style', conversion.styles);
-        if(conversion.classes) applyClasses(newEl, conversion.classes);
-        
-        for(var key in el.dataset){
-            newEl.dataset[key] = el.dataset[key];
-        }
-        
-        if(nextSib){
-            parent.insertBefore(newEl, nextSib);
-        } else {
-            parent.appendChild(newEl);
-        }
-        el.remove();
-        
-        return newEl;
-    }
-    
-    function guessTagFromClasses(classes){
-        if(!classes) return null;
-        if(classes.includes('bp-heading') || classes.includes('section-title')) return 'h4';
-        if(classes.includes('bp-quote')) return 'blockquote';
-        return 'p';
+        el.className = existing.concat(newClasses).join(' ');
     }
     
     function applySticker(sticker){
@@ -300,9 +234,7 @@
             
             if(!projectCard && sticker.parentSelector){
                 stickerLayer = document.querySelector(sticker.parentSelector);
-                if(stickerLayer){
-                    projectCard = stickerLayer.closest('.bproject');
-                }
+                if(stickerLayer) projectCard = stickerLayer.closest('.bproject');
             }
             
             if(projectCard){
@@ -315,23 +247,18 @@
                 projectCard.style.position = 'relative';
             } else if(sticker.parentSelector){
                 stickerLayer = document.querySelector(sticker.parentSelector);
-                if(stickerLayer){
-                    stickerLayer.style.position = 'relative';
-                }
+                if(stickerLayer) stickerLayer.style.position = 'relative';
             }
             
-            if(!stickerLayer){
-                console.warn('Sticker: Could not find parent for', sticker.projectId || sticker.parentSelector);
-                return false;
-            }
+            if(!stickerLayer) return false;
             
-            var existingStickers = stickerLayer.querySelectorAll('.ed-sticker, .amendment-sticker');
-            for(var i = 0; i < existingStickers.length; i++){
-                var existing = existingStickers[i];
-                var existingImg = existing.querySelector('img');
-                if(existing.style.left === sticker.position.left && 
-                   existing.style.top === sticker.position.top &&
-                   existingImg && existingImg.src === sticker.src){
+            // Check duplicates
+            var existing = stickerLayer.querySelectorAll('.amendment-sticker');
+            for(var i = 0; i < existing.length; i++){
+                var img = existing[i].querySelector('img');
+                if(existing[i].style.left === sticker.position.left && 
+                   existing[i].style.top === sticker.position.top &&
+                   img && img.src === sticker.src){
                     return false;
                 }
             }
@@ -342,7 +269,7 @@
             div.dataset.z = sticker.layer || 'normal';
             if(sticker.projectId) div.dataset.projectId = sticker.projectId;
             
-            var styles = [
+            div.style.cssText = [
                 'position:absolute',
                 'left:' + (sticker.position.left || '50px'),
                 'top:' + (sticker.position.top || '150px'),
@@ -352,8 +279,7 @@
                 'opacity:' + (sticker.opacity || '1'),
                 'transform:rotate(' + (sticker.rotation || '0') + 'deg)',
                 'pointer-events:none'
-            ];
-            div.style.cssText = styles.join(';');
+            ].join(';');
             
             var img = document.createElement('img');
             img.src = sticker.src;
@@ -364,22 +290,62 @@
             
             stickerLayer.appendChild(div);
             return true;
-            
         } catch(e){ 
-            console.warn('Sticker failed:', e); 
             return false;
         }
     }
     
+    function applyDivider(divider){
+        try {
+            var parent = document.querySelector(divider.parentSelector);
+            if(!parent) return false;
+            
+            var existing = parent.querySelectorAll('.amendment-divider');
+            for(var i = 0; i < existing.length; i++){
+                if(existing[i].getAttribute('style') === divider.styles) return false;
+            }
+            
+            var div = document.createElement('div');
+            div.className = 'ed-divider amendment-divider';
+            div.setAttribute('style', divider.styles);
+            parent.appendChild(div);
+            return true;
+        } catch(e){ return false; }
+    }
+    
+    function applyLink(link){
+        try {
+            var parent = document.querySelector(link.parentSelector);
+            if(!parent) return false;
+            
+            var existing = parent.querySelectorAll('.amendment-link a');
+            for(var i = 0; i < existing.length; i++){
+                if(existing[i].href === link.href) return false;
+            }
+            
+            var wrapper = document.createElement('div');
+            wrapper.className = 'ed-link-block amendment-link';
+            wrapper.style.cssText = 'margin:16px 0;';
+            
+            var a = document.createElement('a');
+            a.href = link.href;
+            a.textContent = link.text;
+            a.className = link.className || 'btn';
+            a.target = link.target || '_blank';
+            a.rel = 'noopener noreferrer';
+            
+            wrapper.appendChild(a);
+            parent.appendChild(wrapper);
+            return true;
+        } catch(e){ return false; }
+    }
+    
+    // ══════════════════════════════════════════════════════════════
+    // PROJECT OBSERVER - Re-applies when projects expand
+    // ══════════════════════════════════════════════════════════════
+    
     function setupProjectObserver(){
         if(!storedAmendments) return;
-        
-        var hasContent = (storedAmendments.stickers && storedAmendments.stickers.length) ||
-                        (storedAmendments.dividers && storedAmendments.dividers.length) ||
-                        (storedAmendments.links && storedAmendments.links.length) ||
-                        (storedAmendments.textChanges && storedAmendments.textChanges.length);
-        
-        if(!hasContent) return;
         
         var projects = document.querySelectorAll('.bproject');
         if(!projects.length) return;
@@ -390,11 +356,8 @@
                     var target = mutation.target;
                     if(target.classList.contains('bproject') && target.classList.contains('expanded')){
                         setTimeout(function(){
-                            var projectId = target.dataset.projectId;
-                            if(projectId){
-                                reapplyAmendmentsForProject(projectId, target);
-                            }
-                        }, 100);
+                            reapplyForProject(target);
+                        }, 150);
                     }
                 }
             });
@@ -405,10 +368,14 @@
         });
     }
     
-    function reapplyAmendmentsForProject(projectId, projectEl){
+    function reapplyForProject(projectEl){
         if(!storedAmendments) return;
+        var projectId = projectEl.dataset.projectId;
+        if(!projectId) return;
+        
         var applied = 0;
         
+        // Re-apply stickers
         if(storedAmendments.stickers){
             var existingStickers = projectEl.querySelectorAll('.amendment-sticker');
             if(existingStickers.length === 0){
@@ -420,87 +387,33 @@
             }
         }
         
-        if(storedAmendments.textChanges){
-            storedAmendments.textChanges.forEach(function(change){
-                if(change.selector.includes(projectId)){
-                    try {
-                        var el = projectEl.querySelector(change.selector) || 
-                                 document.querySelector(change.selector);
-                        if(el){
-                            el.innerHTML = change.content;
-                            if(change.styles) el.setAttribute('style', change.styles);
-                            if(change.classes) applyClasses(el, change.classes);
-                            applied++;
-                        }
-                    } catch(e){}
+        // Re-apply dividers
+        if(storedAmendments.dividers){
+            storedAmendments.dividers.forEach(function(divider){
+                if(divider.parentSelector.includes(projectId)){
+                    if(applyDivider(divider)) applied++;
                 }
             });
         }
         
-        if(storedAmendments.dividers){
-            var existingDividers = projectEl.querySelectorAll('.amendment-divider');
-            if(existingDividers.length === 0){
-                storedAmendments.dividers.forEach(function(divider){
-                    if(divider.parentSelector.includes(projectId)){
-                        try {
-                            var parent = document.querySelector(divider.parentSelector);
-                            if(parent){
-                                var div = document.createElement('div');
-                                div.className = 'ed-divider amendment-divider';
-                                div.setAttribute('style', divider.styles);
-                                parent.appendChild(div);
-                                applied++;
-                            }
-                        } catch(e){}
-                    }
-                });
-            }
-        }
-        
+        // Re-apply links
         if(storedAmendments.links){
-            var existingLinks = projectEl.querySelectorAll('.amendment-link');
-            if(existingLinks.length === 0){
-                storedAmendments.links.forEach(function(link){
-                    if(link.parentSelector.includes(projectId)){
-                        try {
-                            var parent = document.querySelector(link.parentSelector);
-                            if(parent){
-                                var wrapper = document.createElement('div');
-                                wrapper.className = 'ed-link-block amendment-link';
-                                wrapper.style.cssText = 'margin:16px 0;';
-                                
-                                var a = document.createElement('a');
-                                a.href = link.href;
-                                a.textContent = link.text;
-                                a.className = link.className || 'btn';
-                                a.target = link.target || '_blank';
-                                a.rel = 'noopener noreferrer';
-                                
-                                wrapper.appendChild(a);
-                                parent.appendChild(wrapper);
-                                applied++;
-                            }
-                        } catch(e){}
-                    }
-                });
-            }
+            storedAmendments.links.forEach(function(link){
+                if(link.parentSelector.includes(projectId)){
+                    if(applyLink(link)) applied++;
+                }
+            });
         }
         
         if(applied > 0){
-            console.log('📌 Re-applied ' + applied + ' amendments to project:', projectId);
+            console.log('📌 Re-applied ' + applied + ' items to:', projectId);
         }
     }
     
-    // Initialize with delay to let other scripts populate content first
-    function initLoader(){
-        setTimeout(function(){
-            loadAmendments();
-        }, LOAD_DELAY);
-    }
+    // ══════════════════════════════════════════════════════════════
+    // RUN IMMEDIATELY (synchronous)
+    // ══════════════════════════════════════════════════════════════
     
-    if(document.readyState === 'loading'){
-        document.addEventListener('DOMContentLoaded', initLoader);
-    } else {
-        initLoader();
-    }
+    loadAmendmentsSync();
+    
 })();

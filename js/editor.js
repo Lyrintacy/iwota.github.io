@@ -955,30 +955,146 @@ class LiveEditor{
     }
     
     exportAmendment(){
-        var amendment={_version:'1.1',_exported:new Date().toISOString(),projectOrder:null,textChanges:[],images:[],stickers:[],dividers:[],links:[]};
+    var amendment = {
+        _version: '2.0',
+        _exported: new Date().toISOString(),
         
-        // Export project order if changed
-        if(this.projectOrder){
-            amendment.projectOrder=this.projectOrder;
-        }else{
-            amendment.projectOrder=this.getCurrentProjectOrder();
-        }
+        // Source data patches (for content that gets rebuilt)
+        projectPatches: [],
+        basementPatches: [],
+        textPatches: [],
+        referencePatches: [],
         
-        var editables=document.querySelectorAll('[data-ed-original]');
-        for(var i=0;i<editables.length;i++){var el=editables[i];var original=el.getAttribute('data-ed-original');if(original!==el.innerHTML){amendment.textChanges.push({selector:this.getUniqueSelector(el),content:el.innerHTML,styles:el.getAttribute('style')||'',classes:el.className});}}
-        var images=document.querySelectorAll('img[src^="data:"]');
-        for(var i=0;i<images.length;i++){var img=images[i];amendment.images.push({selector:this.getUniqueSelector(img),src:img.src,alt:img.alt||''});}
-        var stickers=document.querySelectorAll('.ed-sticker');
-        for(var i=0;i<stickers.length;i++){var s=stickers[i];var sImg=s.querySelector('img');var stickerLayer=s.closest('.bproject-stickers');var projectCard=stickerLayer?stickerLayer.closest('.bproject'):null;amendment.stickers.push({projectId:projectCard?projectCard.dataset.projectId:'',parentSelector:this.getUniqueSelector(s.parentElement),src:sImg?sImg.src:'',position:{left:s.style.left,top:s.style.top},size:{width:s.style.width,height:s.style.height},rotation:s.dataset.rotation||'0',zIndex:s.style.zIndex||'10',opacity:s.style.opacity||'1',layer:s.dataset.z||'normal'});}
-        var dividers=document.querySelectorAll('.ed-divider');
-        for(var i=0;i<dividers.length;i++){var d=dividers[i];amendment.dividers.push({parentSelector:this.getUniqueSelector(d.parentElement),styles:d.getAttribute('style')||''});}
-        var links=document.querySelectorAll('.ed-link-block');
-        for(var i=0;i<links.length;i++){var l=links[i];var a=l.querySelector('a');amendment.links.push({parentSelector:this.getUniqueSelector(l.parentElement),text:a?a.textContent:'',href:a?a.href:'#',className:a?a.className:'btn',target:a?a.target:'_blank'});}
-        var content=JSON.stringify(amendment,null,2);var blob=new Blob([content],{type:'application/json'});var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download='amendments.json';a.click();URL.revokeObjectURL(url);
-        var total=amendment.textChanges.length+amendment.stickers.length+amendment.dividers.length+amendment.links.length+amendment.images.length;
-        var orderMsg=amendment.projectOrder?' + project order':'';
-        this.setStatus('📄 Exported '+total+' changes'+orderMsg+' → put in data/ folder');
+        // Order changes
+        projectOrder: null,
+        basementOrder: null,
+        
+        // Visual/DOM changes (for static content)
+        textChanges: [],
+        images: [],
+        stickers: [],
+        dividers: [],
+        links: []
+    };
+    
+    // Get project order
+    var projects = document.querySelectorAll('#projectGrid .pcard, .pgrid .pcard');
+    if(projects.length){
+        amendment.projectOrder = [];
+        projects.forEach(function(p){
+            var id = p.dataset.projectId || p.dataset.target;
+            if(id) amendment.projectOrder.push(id);
+        });
     }
+    
+    // Get basement project order
+    var basementProjects = document.querySelectorAll('.basement-projects .bproject');
+    if(basementProjects.length){
+        amendment.basementOrder = [];
+        basementProjects.forEach(function(p){
+            if(p.dataset.projectId) amendment.basementOrder.push(p.dataset.projectId);
+        });
+    }
+    
+    // Collect text changes
+    var editables = document.querySelectorAll('[data-ed-original]');
+    for(var i = 0; i < editables.length; i++){
+        var el = editables[i];
+        var original = el.getAttribute('data-ed-original');
+        if(original !== el.innerHTML){
+            // Check if inside a project (needs data patch) or static (DOM change)
+            var projectEl = el.closest('.bproject');
+            if(projectEl && projectEl.dataset.projectId){
+                // This is project content - needs to patch source data
+                // For now, still use textChanges but with project context
+                amendment.textChanges.push({
+                    selector: this.getUniqueSelector(el),
+                    content: el.innerHTML,
+                    styles: el.getAttribute('style') || '',
+                    classes: el.className,
+                    projectId: projectEl.dataset.projectId
+                });
+            } else {
+                // Static content
+                amendment.textChanges.push({
+                    selector: this.getUniqueSelector(el),
+                    content: el.innerHTML,
+                    styles: el.getAttribute('style') || '',
+                    classes: el.className
+                });
+            }
+        }
+    }
+    
+    // Collect images
+    var images = document.querySelectorAll('img[src^="data:"]');
+    for(var i = 0; i < images.length; i++){
+        var img = images[i];
+        amendment.images.push({
+            selector: this.getUniqueSelector(img),
+            src: img.src,
+            alt: img.alt || ''
+        });
+    }
+    
+    // Collect stickers
+    var stickers = document.querySelectorAll('.ed-sticker');
+    for(var i = 0; i < stickers.length; i++){
+        var s = stickers[i];
+        var sImg = s.querySelector('img');
+        var stickerLayer = s.closest('.bproject-stickers');
+        var projectCard = stickerLayer ? stickerLayer.closest('.bproject') : null;
+        amendment.stickers.push({
+            projectId: projectCard ? projectCard.dataset.projectId : '',
+            parentSelector: this.getUniqueSelector(s.parentElement),
+            src: sImg ? sImg.src : '',
+            position: { left: s.style.left, top: s.style.top },
+            size: { width: s.style.width, height: s.style.height },
+            rotation: s.dataset.rotation || '0',
+            zIndex: s.style.zIndex || '10',
+            opacity: s.style.opacity || '1',
+            layer: s.dataset.z || 'normal'
+        });
+    }
+    
+    // Collect dividers
+    var dividers = document.querySelectorAll('.ed-divider');
+    for(var i = 0; i < dividers.length; i++){
+        var d = dividers[i];
+        amendment.dividers.push({
+            parentSelector: this.getUniqueSelector(d.parentElement),
+            styles: d.getAttribute('style') || ''
+        });
+    }
+    
+    // Collect links
+    var links = document.querySelectorAll('.ed-link-block');
+    for(var i = 0; i < links.length; i++){
+        var l = links[i];
+        var a = l.querySelector('a');
+        amendment.links.push({
+            parentSelector: this.getUniqueSelector(l.parentElement),
+            text: a ? a.textContent : '',
+            href: a ? a.href : '#',
+            className: a ? a.className : 'btn',
+            target: a ? a.target : '_blank'
+        });
+    }
+    
+    // Download
+    var content = JSON.stringify(amendment, null, 2);
+    var blob = new Blob([content], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'amendments.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    var total = amendment.textChanges.length + amendment.stickers.length + 
+                amendment.dividers.length + amendment.links.length + amendment.images.length;
+    this.setStatus('📄 Exported ' + total + ' changes → put in js/amendments/ folder');
+}
     
     getUniqueSelector(el){
         if(!el||el===document.body)return'body';if(el.id)return'#'+el.id;
