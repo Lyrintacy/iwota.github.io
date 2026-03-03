@@ -3,7 +3,15 @@
     'use strict';
     
     var AMENDMENTS_URL = './data/amendments.json';
-    var storedAmendments = null; // Store for re-application on project expand
+    var storedAmendments = null;
+    
+    // Inject styles for loaded amendments (matches editor styles)
+    var style = document.createElement('style');
+    style.textContent = 
+        '.bproject-stickers{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none!important;overflow:visible;z-index:50}' +
+        '.bproject-stickers .ed-sticker,.bproject-stickers .amendment-sticker{pointer-events:none!important}' +
+        '.amendment-sticker img{pointer-events:none!important}';
+    document.head.appendChild(style);
     
     function loadAmendments(){
         fetch(AMENDMENTS_URL)
@@ -23,6 +31,8 @@
     }
     
     function applyAmendments(data){
+        var applied = 0;
+        
         // Apply text changes
         if(data.textChanges && data.textChanges.length){
             data.textChanges.forEach(function(change){
@@ -31,6 +41,7 @@
                     if(el){
                         el.innerHTML = change.content;
                         if(change.styles) el.setAttribute('style', change.styles);
+                        applied++;
                     }
                 } catch(e){ console.warn('Amendment selector failed:', change.selector); }
             });
@@ -44,15 +55,16 @@
                     if(el && el.tagName === 'IMG'){
                         el.src = img.src;
                         if(img.alt) el.alt = img.alt;
+                        applied++;
                     }
                 } catch(e){}
             });
         }
         
-        // Apply stickers (UPDATED FOR PROJECT-LINKED SYSTEM)
+        // Apply stickers
         if(data.stickers && data.stickers.length){
             data.stickers.forEach(function(sticker){
-                applySticker(sticker);
+                if(applySticker(sticker)) applied++;
             });
         }
         
@@ -66,6 +78,7 @@
                         div.className = 'ed-divider amendment-divider';
                         div.setAttribute('style', divider.styles);
                         parent.appendChild(div);
+                        applied++;
                     }
                 } catch(e){}
             });
@@ -90,6 +103,7 @@
                         
                         wrapper.appendChild(a);
                         parent.appendChild(wrapper);
+                        applied++;
                     }
                 } catch(e){}
             });
@@ -106,13 +120,17 @@
                         while(temp.firstChild){
                             parent.appendChild(temp.firstChild);
                         }
+                        applied++;
                     }
                 } catch(e){}
             });
         }
+        
+        if(applied > 0){
+            console.log('📝 Applied ' + applied + ' amendments');
+        }
     }
     
-    // NEW: Apply individual sticker with project-linked support
     function applySticker(sticker){
         try {
             var projectCard = null;
@@ -125,7 +143,7 @@
                 );
             }
             
-            // Method 2: Fallback to parentSelector (backwards compatibility)
+            // Method 2: Fallback to parentSelector
             if(!projectCard && sticker.parentSelector){
                 stickerLayer = document.querySelector(sticker.parentSelector);
                 if(stickerLayer){
@@ -133,19 +151,19 @@
                 }
             }
             
-            // If we found a project card, find/create sticker layer
+            // Find or create sticker layer
             if(projectCard){
                 stickerLayer = projectCard.querySelector('.bproject-stickers');
                 if(!stickerLayer){
                     stickerLayer = document.createElement('div');
                     stickerLayer.className = 'bproject-stickers';
-                    stickerLayer.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:visible;z-index:50;';
+                    // Styles handled by injected CSS above
                     projectCard.appendChild(stickerLayer);
                 }
                 // Ensure project card has relative positioning
                 projectCard.style.position = 'relative';
             } 
-            // Final fallback: use parentSelector directly
+            // Final fallback
             else if(sticker.parentSelector){
                 stickerLayer = document.querySelector(sticker.parentSelector);
                 if(stickerLayer){
@@ -155,18 +173,18 @@
             
             if(!stickerLayer){
                 console.warn('Sticker: Could not find parent for', sticker.projectId || sticker.parentSelector);
-                return;
+                return false;
             }
             
-            // Check if sticker already exists (prevent duplicates)
-            var existingStickers = stickerLayer.querySelectorAll('.ed-sticker');
+            // Check for duplicates
+            var existingStickers = stickerLayer.querySelectorAll('.ed-sticker, .amendment-sticker');
             for(var i = 0; i < existingStickers.length; i++){
                 var existing = existingStickers[i];
+                var existingImg = existing.querySelector('img');
                 if(existing.style.left === sticker.position.left && 
                    existing.style.top === sticker.position.top &&
-                   existing.querySelector('img') &&
-                   existing.querySelector('img').src === sticker.src){
-                    return; // Already exists
+                   existingImg && existingImg.src === sticker.src){
+                    return false; // Already exists
                 }
             }
             
@@ -177,30 +195,38 @@
             div.dataset.z = sticker.layer || 'normal';
             if(sticker.projectId) div.dataset.projectId = sticker.projectId;
             
-            div.style.cssText = 'position:absolute;' +
-                'left:' + (sticker.position.left || '50px') + ';' +
-                'top:' + (sticker.position.top || '150px') + ';' +
-                'width:' + (sticker.size.width || '80px') + ';' +
-                'height:' + (sticker.size.height || '80px') + ';' +
-                'z-index:' + (sticker.zIndex || '10') + ';' +
-                'opacity:' + (sticker.opacity || '1') + ';' +
-                'transform:rotate(' + (sticker.rotation || '0') + 'deg);' +
-                'pointer-events:none;';
+            // Build style string - pointer-events:none is critical!
+            var styles = [
+                'position:absolute',
+                'left:' + (sticker.position.left || '50px'),
+                'top:' + (sticker.position.top || '150px'),
+                'width:' + (sticker.size.width || '80px'),
+                'height:' + (sticker.size.height || '80px'),
+                'z-index:' + (sticker.zIndex || '10'),
+                'opacity:' + (sticker.opacity || '1'),
+                'transform:rotate(' + (sticker.rotation || '0') + 'deg)',
+                'pointer-events:none'  // Important: don't block content!
+            ];
+            div.style.cssText = styles.join(';');
             
+            // Create image
             var img = document.createElement('img');
             img.src = sticker.src;
             img.alt = '';
             img.style.cssText = 'width:100%;height:100%;object-fit:contain;pointer-events:none;';
+            img.draggable = false;
             div.appendChild(img);
             
             stickerLayer.appendChild(div);
+            return true;
             
         } catch(e){ 
             console.warn('Sticker failed:', e); 
+            return false;
         }
     }
     
-    // NEW: Watch for project expansions to re-apply stickers
+    // Watch for project expansions to re-apply stickers
     function setupProjectObserver(){
         if(!storedAmendments || !storedAmendments.stickers || !storedAmendments.stickers.length) return;
         
@@ -212,11 +238,13 @@
                 if(mutation.type === 'attributes' && mutation.attributeName === 'class'){
                     var target = mutation.target;
                     if(target.classList.contains('bproject') && target.classList.contains('expanded')){
-                        // Project just expanded - apply its stickers
-                        var projectId = target.dataset.projectId;
-                        if(projectId){
-                            reapplyStickersForProject(projectId);
-                        }
+                        // Small delay to ensure DOM is ready
+                        setTimeout(function(){
+                            var projectId = target.dataset.projectId;
+                            if(projectId){
+                                reapplyStickersForProject(projectId, target);
+                            }
+                        }, 50);
                     }
                 }
             });
@@ -227,15 +255,24 @@
         });
     }
     
-    // NEW: Re-apply stickers for a specific project
-    function reapplyStickersForProject(projectId){
+    // Re-apply stickers for a specific project
+    function reapplyStickersForProject(projectId, projectEl){
         if(!storedAmendments || !storedAmendments.stickers) return;
         
+        // Check if stickers already exist for this project
+        var existing = projectEl.querySelectorAll('.amendment-sticker');
+        if(existing.length > 0) return; // Already applied
+        
+        var applied = 0;
         storedAmendments.stickers.forEach(function(sticker){
             if(sticker.projectId === projectId){
-                applySticker(sticker);
+                if(applySticker(sticker)) applied++;
             }
         });
+        
+        if(applied > 0){
+            console.log('📌 Applied ' + applied + ' stickers to project:', projectId);
+        }
     }
     
     // Load when DOM is ready

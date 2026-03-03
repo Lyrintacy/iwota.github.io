@@ -1,17 +1,27 @@
 class LiveEditor{
     constructor(){
-    this.active=false;this.selectedEl=null;this.undoStack=[];this.stickerDragging=null;this.stickerOffset={x:0,y:0};
+        this.active=false;this.selectedEl=null;this.undoStack=[];this.stickerDragging=null;this.stickerOffset={x:0,y:0};
 
-    var s=document.createElement('style');
-    s.textContent=
-        '.bproject-stickers,.ed-sticker,.ed-sticker *{pointer-events:none!important}'+
-        '.ed-sticker-delete{display:none}'+
-        '.editor-active .bproject-stickers,.editor-active .ed-sticker,.editor-active .ed-sticker *{pointer-events:auto!important}'+
-        '.editor-active .ed-sticker-delete{display:block}';
-    document.head.appendChild(s);
+        var s=document.createElement('style');
+        s.textContent=
+            // Container ALWAYS allows clicks through
+            '.bproject-stickers{pointer-events:none!important;position:absolute;top:0;left:0;width:100%;height:100%;overflow:visible;z-index:50}'+
+            // Stickers non-interactive by default
+            '.ed-sticker{pointer-events:none!important}'+
+            '.ed-sticker *{pointer-events:none!important}'+
+            '.ed-sticker-delete{display:none}'+
+            // When editor active: ONLY the sticker element itself is clickable
+            '.editor-active .ed-sticker{pointer-events:auto!important;cursor:move}'+
+            // Children stay non-interactive (clicks pass to parent sticker)
+            '.editor-active .ed-sticker *{pointer-events:none!important}'+
+            // Except delete button
+            '.editor-active .ed-sticker-delete{display:block!important;pointer-events:auto!important;cursor:pointer}'+
+            // Ensure editables are above sticker layer when editing
+            '.editor-active .ed-editable{position:relative;z-index:60}';
+        document.head.appendChild(s);
 
-    this.buildUI();this.bindShortcut();
-}
+        this.buildUI();this.bindShortcut();
+    }
     buildUI(){
         var toolbar=document.createElement('div');toolbar.id='editorToolbar';
         toolbar.innerHTML='<div class="ed-header"><span class="ed-title">☠ Live Editor</span><div class="ed-controls"><button class="ed-btn" id="edAddImage" title="Add Image">🖼️</button><button class="ed-btn" id="edAddText" title="Add Text">📝</button><button class="ed-btn" id="edAddHeading" title="Add Heading">📌</button><button class="ed-btn" id="edAddQuote" title="Add Quote">💬</button><button class="ed-btn" id="edAddDivider" title="Add Divider">➖</button><button class="ed-btn" id="edAddLink" title="Add Link/Button">🔗</button><button class="ed-btn" id="edAddSticker" title="Add Sticker">⭐</button><span class="ed-sep"></span><button class="ed-btn" id="edUndo" title="Undo">↩️</button><button class="ed-btn ed-amendment" id="edExportAmendment" title="Export Amendment">📄 Export</button><button class="ed-btn ed-close" id="edClose" title="Close">✕</button></div></div><div class="ed-status" id="edStatus">F2 to toggle • Click to edit • Right-click for menu</div>';
@@ -55,6 +65,7 @@ class LiveEditor{
         this._clickHandler=function(e){
             if(!self.active)return;
             var target=e.target;
+            // Check stickers first but only if directly clicking on one
             if(target.closest('.ed-sticker')){e.stopPropagation();self.selectElement(target.closest('.ed-sticker'));return;}
             if(target.closest('.ed-divider')){e.stopPropagation();self.selectElement(target.closest('.ed-divider'));return;}
             if(target.closest('.ed-link-block')){e.stopPropagation();e.preventDefault();self.selectElement(target.closest('.ed-link-block'));return;}
@@ -270,7 +281,15 @@ class LiveEditor{
         var expanded=document.querySelector('.bproject.expanded');
         if(!expanded){this.setStatus('⚠️ Expand a project first');return;}
         var stickerLayer=expanded.querySelector('.bproject-stickers');
-        if(!stickerLayer){stickerLayer=document.createElement('div');stickerLayer.className='bproject-stickers';expanded.appendChild(stickerLayer);}
+        if(!stickerLayer){
+            stickerLayer=document.createElement('div');
+            stickerLayer.className='bproject-stickers';
+            // Styles now handled by injected CSS
+            expanded.appendChild(stickerLayer);
+        }
+        // Ensure parent has relative positioning
+        expanded.style.position='relative';
+        
         this.fileInput.onchange=function(){
             if(this.files&&this.files[0]){
                 var reader=new FileReader();
@@ -278,7 +297,7 @@ class LiveEditor{
                     var sticker=document.createElement('div');sticker.className='ed-sticker';sticker.dataset.rotation='0';sticker.dataset.z='normal';
                     sticker.dataset.projectId=expanded.dataset.projectId||'';
                     sticker.style.cssText='position:absolute;left:50px;top:150px;width:80px;height:80px;z-index:10;';
-                    sticker.innerHTML='<img src="'+e.target.result+'" style="width:100%;height:100%;object-fit:contain;pointer-events:none;"><button class="ed-sticker-delete">✕</button>';
+                    sticker.innerHTML='<img src="'+e.target.result+'" style="width:100%;height:100%;object-fit:contain;"><button class="ed-sticker-delete">✕</button>';
                     stickerLayer.appendChild(sticker);
                     sticker.querySelector('.ed-sticker-delete').onclick=function(ev){ev.stopPropagation();sticker.remove();self.setStatus('Sticker removed');};
                     self.selectElement(sticker);self.setStatus('Sticker added');
@@ -311,7 +330,7 @@ class LiveEditor{
         for(var i=0;i<links.length;i++){var l=links[i];var a=l.querySelector('a');amendment.links.push({parentSelector:this.getUniqueSelector(l.parentElement),text:a?a.textContent:'',href:a?a.href:'#',className:a?a.className:'btn',target:a?a.target:'_blank'});}
         var content=JSON.stringify(amendment,null,2);var blob=new Blob([content],{type:'application/json'});var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download='amendments.json';a.click();URL.revokeObjectURL(url);
         var total=amendment.textChanges.length+amendment.stickers.length+amendment.dividers.length+amendment.links.length+amendment.images.length;
-        this.setStatus('📄 Exported '+total+' changes → put in amendments/ folder');
+        this.setStatus('📄 Exported '+total+' changes → put in data/ folder');
     }
     getUniqueSelector(el){
         if(!el||el===document.body)return'body';if(el.id)return'#'+el.id;
