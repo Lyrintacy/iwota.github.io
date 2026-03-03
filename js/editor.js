@@ -955,21 +955,24 @@ class LiveEditor{
     }
     
     exportAmendment(){
+    var self = this;
+    var loaded = window.LOADED_AMENDMENTS || { stickers: {}, textChanges: {}, dividers: {}, links: {}, images: {} };
+    
+    // Helper hash function
+    function hashString(str){
+        var hash = 0;
+        for(var i = 0; i < str.length; i++){
+            hash = ((hash << 5) - hash) + str.charCodeAt(i);
+            hash = hash & hash;
+        }
+        return hash.toString(36);
+    }
+    
     var amendment = {
-        _version: '2.0',
+        _version: '3.0',
         _exported: new Date().toISOString(),
-        
-        // Source data patches (for content that gets rebuilt)
-        projectPatches: [],
-        basementPatches: [],
-        textPatches: [],
-        referencePatches: [],
-        
-        // Order changes
         projectOrder: null,
         basementOrder: null,
-        
-        // Visual/DOM changes (for static content)
         textChanges: [],
         images: [],
         stickers: [],
@@ -977,109 +980,149 @@ class LiveEditor{
         links: []
     };
     
-    // Get project order
-    var projects = document.querySelectorAll('#projectGrid .pcard, .pgrid .pcard');
-    if(projects.length){
-        amendment.projectOrder = [];
-        projects.forEach(function(p){
-            var id = p.dataset.projectId || p.dataset.target;
-            if(id) amendment.projectOrder.push(id);
-        });
+    // Get current project order
+    var currentProjectOrder = [];
+    document.querySelectorAll('.basement-projects .bproject').forEach(function(p){
+        if(p.dataset.projectId) currentProjectOrder.push(p.dataset.projectId);
+    });
+    
+    // Only export order if different from loaded
+    if(loaded.projectOrder){
+        if(JSON.stringify(currentProjectOrder) !== JSON.stringify(loaded.projectOrder)){
+            amendment.projectOrder = currentProjectOrder;
+        }
+    } else if(currentProjectOrder.length){
+        amendment.projectOrder = currentProjectOrder;
     }
     
-    // Get basement project order
-    var basementProjects = document.querySelectorAll('.basement-projects .bproject');
-    if(basementProjects.length){
-        amendment.basementOrder = [];
-        basementProjects.forEach(function(p){
-            if(p.dataset.projectId) amendment.basementOrder.push(p.dataset.projectId);
-        });
-    }
+    // Thumbnail order
+    var currentThumbOrder = [];
+    document.querySelectorAll('.pgrid .pcard, #projectGrid .pcard').forEach(function(p){
+        var id = p.dataset.projectId || p.dataset.target;
+        if(id) currentThumbOrder.push(id);
+    });
     
-    // Collect text changes
+    // Text changes - only export if different from loaded
     var editables = document.querySelectorAll('[data-ed-original]');
-    for(var i = 0; i < editables.length; i++){
-        var el = editables[i];
+    editables.forEach(function(el){
         var original = el.getAttribute('data-ed-original');
-        if(original !== el.innerHTML){
-            // Check if inside a project (needs data patch) or static (DOM change)
-            var projectEl = el.closest('.bproject');
-            if(projectEl && projectEl.dataset.projectId){
-                // This is project content - needs to patch source data
-                // For now, still use textChanges but with project context
+        var current = el.innerHTML;
+        var selector = self.getUniqueSelector(el);
+        
+        // Check if this was in loaded amendments
+        var loadedChange = loaded.textChanges ? loaded.textChanges[selector] : null;
+        
+        // Only export if changed from original AND different from loaded
+        if(original !== current){
+            if(!loadedChange || loadedChange.content !== current){
+                var projectEl = el.closest('.bproject');
                 amendment.textChanges.push({
-                    selector: this.getUniqueSelector(el),
-                    content: el.innerHTML,
+                    selector: selector,
+                    content: current,
                     styles: el.getAttribute('style') || '',
                     classes: el.className,
-                    projectId: projectEl.dataset.projectId
-                });
-            } else {
-                // Static content
-                amendment.textChanges.push({
-                    selector: this.getUniqueSelector(el),
-                    content: el.innerHTML,
-                    styles: el.getAttribute('style') || '',
-                    classes: el.className
+                    projectId: projectEl ? projectEl.dataset.projectId : null
                 });
             }
         }
-    }
+    });
     
-    // Collect images
-    var images = document.querySelectorAll('img[src^="data:"]');
-    for(var i = 0; i < images.length; i++){
-        var img = images[i];
-        amendment.images.push({
-            selector: this.getUniqueSelector(img),
-            src: img.src,
-            alt: img.alt || ''
-        });
-    }
+    // Images - only new/changed
+    document.querySelectorAll('img[src^="data:"]').forEach(function(img){
+        var selector = self.getUniqueSelector(img);
+        var loadedImg = loaded.images ? loaded.images[selector] : null;
+        
+        if(!loadedImg || loadedImg.src !== img.src){
+            amendment.images.push({
+                selector: selector,
+                src: img.src,
+                alt: img.alt || ''
+            });
+        }
+    });
     
-    // Collect stickers
-    var stickers = document.querySelectorAll('.ed-sticker');
-    for(var i = 0; i < stickers.length; i++){
-        var s = stickers[i];
+    // Stickers - only NEW ones (not loaded from amendments)
+    document.querySelectorAll('.ed-sticker').forEach(function(s){
+        // Skip if loaded from amendments
+        if(s.dataset.amendmentLoaded === 'true') return;
+        
         var sImg = s.querySelector('img');
         var stickerLayer = s.closest('.bproject-stickers');
         var projectCard = stickerLayer ? stickerLayer.closest('.bproject') : null;
-        amendment.stickers.push({
-            projectId: projectCard ? projectCard.dataset.projectId : '',
-            parentSelector: this.getUniqueSelector(s.parentElement),
-            src: sImg ? sImg.src : '',
-            position: { left: s.style.left, top: s.style.top },
-            size: { width: s.style.width, height: s.style.height },
-            rotation: s.dataset.rotation || '0',
-            zIndex: s.style.zIndex || '10',
-            opacity: s.style.opacity || '1',
-            layer: s.dataset.z || 'normal'
-        });
-    }
+        var projectId = projectCard ? projectCard.dataset.projectId : '';
+        
+        // Create key to check against loaded
+        var key = (projectId || 'global') + '|' + (s.style.left || '0') + '|' + (s.style.top || '0');
+        
+        // Only export if not in loaded
+        if(!loaded.stickers || !loaded.stickers[key]){
+            amendment.stickers.push({
+                projectId: projectId,
+                parentSelector: self.getUniqueSelector(s.parentElement),
+                src: sImg ? sImg.src : '',
+                position: { left: s.style.left, top: s.style.top },
+                size: { width: s.style.width, height: s.style.height },
+                rotation: s.dataset.rotation || '0',
+                zIndex: s.style.zIndex || '10',
+                opacity: s.style.opacity || '1',
+                layer: s.dataset.z || 'normal'
+            });
+        }
+    });
     
-    // Collect dividers
-    var dividers = document.querySelectorAll('.ed-divider');
-    for(var i = 0; i < dividers.length; i++){
-        var d = dividers[i];
-        amendment.dividers.push({
-            parentSelector: this.getUniqueSelector(d.parentElement),
-            styles: d.getAttribute('style') || ''
-        });
-    }
+    // Dividers - only NEW ones
+    document.querySelectorAll('.ed-divider').forEach(function(d){
+        if(d.dataset.amendmentLoaded === 'true') return;
+        
+        var parentSelector = self.getUniqueSelector(d.parentElement);
+        var styles = d.getAttribute('style') || '';
+        var key = parentSelector + '|' + hashString(styles);
+        
+        if(!loaded.dividers || !loaded.dividers[key]){
+            amendment.dividers.push({
+                parentSelector: parentSelector,
+                styles: styles
+            });
+        }
+    });
     
-    // Collect links
-    var links = document.querySelectorAll('.ed-link-block');
-    for(var i = 0; i < links.length; i++){
-        var l = links[i];
+    // Links - only NEW ones
+    document.querySelectorAll('.ed-link-block').forEach(function(l){
+        if(l.dataset.amendmentLoaded === 'true') return;
+        
         var a = l.querySelector('a');
-        amendment.links.push({
-            parentSelector: this.getUniqueSelector(l.parentElement),
-            text: a ? a.textContent : '',
-            href: a ? a.href : '#',
-            className: a ? a.className : 'btn',
-            target: a ? a.target : '_blank'
-        });
+        var parentSelector = self.getUniqueSelector(l.parentElement);
+        var key = parentSelector + '|' + (a ? a.href : '');
+        
+        if(!loaded.links || !loaded.links[key]){
+            amendment.links.push({
+                parentSelector: parentSelector,
+                text: a ? a.textContent : '',
+                href: a ? a.href : '#',
+                className: a ? a.className : 'btn',
+                target: a ? a.target : '_blank'
+            });
+        }
+    });
+    
+    // Count actual changes
+    var total = amendment.textChanges.length + 
+                amendment.stickers.length + 
+                amendment.dividers.length + 
+                amendment.links.length + 
+                amendment.images.length +
+                (amendment.projectOrder ? 1 : 0);
+    
+    if(total === 0){
+        this.setStatus('📭 No new changes to export');
+        return;
     }
+    
+    // Generate filename with timestamp
+    var now = new Date();
+    var timestamp = now.toISOString().slice(0,10).replace(/-/g, '') + '-' + 
+                    now.toISOString().slice(11,16).replace(':', '');
+    var filename = 'amendments-' + timestamp + '.json';
     
     // Download
     var content = JSON.stringify(amendment, null, 2);
@@ -1087,13 +1130,11 @@ class LiveEditor{
     var url = URL.createObjectURL(blob);
     var a = document.createElement('a');
     a.href = url;
-    a.download = 'amendments.json';
+    a.download = filename;
     a.click();
     URL.revokeObjectURL(url);
     
-    var total = amendment.textChanges.length + amendment.stickers.length + 
-                amendment.dividers.length + amendment.links.length + amendment.images.length;
-    this.setStatus('📄 Exported ' + total + ' changes → put in js/amendments/ folder');
+    this.setStatus('📄 Exported ' + total + ' NEW changes → ' + filename);
 }
     
     getUniqueSelector(el){

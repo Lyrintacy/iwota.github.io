@@ -1,9 +1,45 @@
-/* ═══════ AMENDMENTS LOADER — Patches source data + applies visual changes ═══════ */
+/* ═══════ AMENDMENTS LOADER v3 — Smart Merge + Exposes Data for Editor ═══════ */
 (function(){
     'use strict';
     
-    var AMENDMENTS_URL = './js/amendments/amendments.json';
+    var AMENDMENTS_FOLDER = './js/amendments/';
+    var AMENDMENTS_FILES = [
+        'amendments.json',
+        'amendments-001.json',
+        'amendments-002.json',
+        'amendments-003.json',
+        'amendments-004.json',
+        'amendments-005.json',
+        'amendments-006.json',
+        'amendments-007.json',
+        'amendments-008.json',
+        'amendments-009.json'
+    ];
+    
+    // EXPOSED GLOBALLY so editor can access
+    window.LOADED_AMENDMENTS = {
+        stickers: {},
+        textChanges: {},
+        dividers: {},
+        links: {},
+        images: {},
+        projectOrder: null,
+        basementOrder: null,
+        _loaded: false
+    };
+    
     var storedAmendments = null;
+    var mergedAmendments = {
+        _version: '3.0',
+        _sources: [],
+        textChanges: {},
+        stickers: {},
+        dividers: {},
+        links: {},
+        images: {},
+        projectOrder: null,
+        basementOrder: null
+    };
     
     // Inject styles
     var style = document.createElement('style');
@@ -16,119 +52,122 @@
         '.whisper{font-size:0.85em;opacity:0.6;font-style:italic}';
     document.head.appendChild(style);
     
-    // ══════════════════════════════════════════════════════════════
-    // SYNCHRONOUS LOAD - Patches data BEFORE app.js runs
-    // ══════════════════════════════════════════════════════════════
-    
-    function loadAmendmentsSync(){
-        try {
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', AMENDMENTS_URL, false); // SYNCHRONOUS
-            xhr.send(null);
+    function loadAllAmendments(){
+        var loadedCount = 0;
+        
+        AMENDMENTS_FILES.forEach(function(filename){
+            try {
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', AMENDMENTS_FOLDER + filename, false);
+                xhr.send(null);
+                
+                if(xhr.status === 200){
+                    var data = JSON.parse(xhr.responseText);
+                    smartMerge(data, filename);
+                    loadedCount++;
+                    console.log('✅ Loaded:', filename);
+                }
+            } catch(e){}
+        });
+        
+        if(loadedCount > 0){
+            storedAmendments = finalizeAmendments();
             
-            if(xhr.status === 200){
-                var data = JSON.parse(xhr.responseText);
-                storedAmendments = data;
-                
-                // Patch source data immediately
-                patchSourceData(data);
-                
-                console.log('✅ Amendments loaded & data patched:', data._exported || 'unknown');
-                
-                // Schedule visual changes for after DOM is built
-                scheduleVisualChanges(data);
+            // EXPOSE for editor
+            window.LOADED_AMENDMENTS = {
+                stickers: Object.assign({}, mergedAmendments.stickers),
+                textChanges: Object.assign({}, mergedAmendments.textChanges),
+                dividers: Object.assign({}, mergedAmendments.dividers),
+                links: Object.assign({}, mergedAmendments.links),
+                images: Object.assign({}, mergedAmendments.images),
+                projectOrder: mergedAmendments.projectOrder ? mergedAmendments.projectOrder.slice() : null,
+                basementOrder: mergedAmendments.basementOrder ? mergedAmendments.basementOrder.slice() : null,
+                _loaded: true
+            };
+            
+            if(storedAmendments.projectOrder && typeof PROJECTS !== 'undefined'){
+                reorderArray(PROJECTS, storedAmendments.projectOrder);
             }
-        } catch(e){
+            if(storedAmendments.basementOrder && typeof BASEMENT_PROJECTS !== 'undefined'){
+                reorderArray(BASEMENT_PROJECTS, storedAmendments.basementOrder);
+            }
+            
+            console.log('📦 Merged ' + loadedCount + ' amendment file(s)');
+            scheduleVisualChanges(storedAmendments);
+        } else {
+            window.LOADED_AMENDMENTS._loaded = true;
             console.log('ℹ️ No amendments to load');
         }
     }
     
-    // ══════════════════════════════════════════════════════════════
-    // PATCH SOURCE DATA - Modifies PROJECTS/BASEMENT_PROJECTS arrays
-    // ══════════════════════════════════════════════════════════════
-    
-    function patchSourceData(data){
-        // Patch TEXTS if exists
-        if(data.textPatches && typeof TEXTS !== 'undefined'){
-            data.textPatches.forEach(function(patch){
-                try {
-                    setNestedValue(TEXTS, patch.path, patch.value);
-                    console.log('📝 Patched TEXTS:', patch.path);
-                } catch(e){}
+    function smartMerge(data, filename){
+        mergedAmendments._sources.push(filename);
+        
+        if(data.textChanges){
+            data.textChanges.forEach(function(change){
+                mergedAmendments.textChanges[change.selector] = change;
             });
         }
         
-        // Patch PROJECTS if exists
-        if(data.projectPatches && typeof PROJECTS !== 'undefined'){
-            data.projectPatches.forEach(function(patch){
-                var project = PROJECTS.find(function(p){ return p.id === patch.projectId; });
-                if(project){
-                    for(var key in patch.changes){
-                        setNestedValue(project, key, patch.changes[key]);
-                    }
-                    console.log('📝 Patched project:', patch.projectId);
-                }
+        if(data.stickers){
+            data.stickers.forEach(function(sticker){
+                var key = (sticker.projectId || 'global') + '|' + 
+                          (sticker.position.left || '0') + '|' + 
+                          (sticker.position.top || '0');
+                mergedAmendments.stickers[key] = sticker;
             });
         }
         
-        // Patch BASEMENT_PROJECTS if exists
-        if(data.basementPatches && typeof BASEMENT_PROJECTS !== 'undefined'){
-            data.basementPatches.forEach(function(patch){
-                var project = BASEMENT_PROJECTS.find(function(p){ return p.id === patch.projectId; });
-                if(project){
-                    for(var key in patch.changes){
-                        setNestedValue(project, key, patch.changes[key]);
-                    }
-                    console.log('📝 Patched basement project:', patch.projectId);
-                }
+        if(data.dividers){
+            data.dividers.forEach(function(divider){
+                var key = divider.parentSelector + '|' + hashString(divider.styles || '');
+                mergedAmendments.dividers[key] = divider;
             });
         }
         
-        // Patch REFERENCES if exists
-        if(data.referencePatches && typeof REFERENCES !== 'undefined'){
-            data.referencePatches.forEach(function(patch){
-                var ref = REFERENCES.find(function(r){ return r.name === patch.name; });
-                if(ref){
-                    for(var key in patch.changes){
-                        ref[key] = patch.changes[key];
-                    }
-                    console.log('📝 Patched reference:', patch.name);
-                }
+        if(data.links){
+            data.links.forEach(function(link){
+                var key = link.parentSelector + '|' + link.href;
+                mergedAmendments.links[key] = link;
             });
         }
         
-        // Reorder projects if specified
-        if(data.projectOrder && typeof PROJECTS !== 'undefined'){
-            reorderArray(PROJECTS, data.projectOrder);
-            console.log('📋 Reordered PROJECTS');
+        if(data.images){
+            data.images.forEach(function(img){
+                mergedAmendments.images[img.selector] = img;
+            });
         }
         
-        if(data.basementOrder && typeof BASEMENT_PROJECTS !== 'undefined'){
-            reorderArray(BASEMENT_PROJECTS, data.basementOrder);
-            console.log('📋 Reordered BASEMENT_PROJECTS');
-        }
+        if(data.projectOrder) mergedAmendments.projectOrder = data.projectOrder;
+        if(data.basementOrder) mergedAmendments.basementOrder = data.basementOrder;
     }
     
-    function setNestedValue(obj, path, value){
-        var keys = path.split('.');
-        var current = obj;
-        for(var i = 0; i < keys.length - 1; i++){
-            var key = keys[i];
-            // Handle array index like "content.0.text"
-            if(!isNaN(key)) key = parseInt(key);
-            if(current[key] === undefined) current[key] = {};
-            current = current[key];
+    function hashString(str){
+        var hash = 0;
+        for(var i = 0; i < str.length; i++){
+            hash = ((hash << 5) - hash) + str.charCodeAt(i);
+            hash = hash & hash;
         }
-        var lastKey = keys[keys.length - 1];
-        if(!isNaN(lastKey)) lastKey = parseInt(lastKey);
-        current[lastKey] = value;
+        return hash.toString(36);
+    }
+    
+    function finalizeAmendments(){
+        return {
+            _version: mergedAmendments._version,
+            _sources: mergedAmendments._sources,
+            textChanges: Object.values(mergedAmendments.textChanges),
+            stickers: Object.values(mergedAmendments.stickers),
+            dividers: Object.values(mergedAmendments.dividers),
+            links: Object.values(mergedAmendments.links),
+            images: Object.values(mergedAmendments.images),
+            projectOrder: mergedAmendments.projectOrder,
+            basementOrder: mergedAmendments.basementOrder
+        };
     }
     
     function reorderArray(arr, orderIds){
         var orderMap = {};
-        orderIds.forEach(function(id, index){
-            orderMap[id] = index;
-        });
+        orderIds.forEach(function(id, index){ orderMap[id] = index; });
         arr.sort(function(a, b){
             var aOrder = orderMap[a.id] !== undefined ? orderMap[a.id] : 999;
             var bOrder = orderMap[b.id] !== undefined ? orderMap[b.id] : 999;
@@ -136,26 +175,19 @@
         });
     }
     
-    // ══════════════════════════════════════════════════════════════
-    // VISUAL CHANGES - Applied after DOM is built
-    // ══════════════════════════════════════════════════════════════
-    
     function scheduleVisualChanges(data){
-        // Wait for DOM and app.js to finish
+        var apply = function(){ applyVisualChanges(data); };
         if(document.readyState === 'loading'){
-            document.addEventListener('DOMContentLoaded', function(){
-                setTimeout(function(){ applyVisualChanges(data); }, 300);
-            });
+            document.addEventListener('DOMContentLoaded', function(){ setTimeout(apply, 300); });
         } else {
-            setTimeout(function(){ applyVisualChanges(data); }, 300);
+            setTimeout(apply, 300);
         }
     }
     
     function applyVisualChanges(data){
         var applied = 0;
         
-        // Apply direct DOM text changes (for elements not built from data)
-        if(data.textChanges && data.textChanges.length){
+        if(data.textChanges){
             data.textChanges.forEach(function(change){
                 try {
                     var el = document.querySelector(change.selector);
@@ -169,29 +201,7 @@
             });
         }
         
-        // Apply stickers
-        if(data.stickers && data.stickers.length){
-            data.stickers.forEach(function(sticker){
-                if(applySticker(sticker)) applied++;
-            });
-        }
-        
-        // Apply dividers
-        if(data.dividers && data.dividers.length){
-            data.dividers.forEach(function(divider){
-                if(applyDivider(divider)) applied++;
-            });
-        }
-        
-        // Apply links
-        if(data.links && data.links.length){
-            data.links.forEach(function(link){
-                if(applyLink(link)) applied++;
-            });
-        }
-        
-        // Apply images
-        if(data.images && data.images.length){
+        if(data.images){
             data.images.forEach(function(img){
                 try {
                     var el = document.querySelector(img.selector);
@@ -204,39 +214,64 @@
             });
         }
         
-        // Setup observer for project expansions
+        if(data.stickers){
+            data.stickers.forEach(function(sticker){
+                if(applySticker(sticker)) applied++;
+            });
+        }
+        
+        if(data.dividers){
+            data.dividers.forEach(function(divider){
+                if(applyDivider(divider)) applied++;
+            });
+        }
+        
+        if(data.links){
+            data.links.forEach(function(link){
+                if(applyLink(link)) applied++;
+            });
+        }
+        
+        if(data.projectOrder) reorderDOMProjects(data.projectOrder);
+        
         setupProjectObserver();
         
-        if(applied > 0){
-            console.log('🎨 Applied ' + applied + ' visual changes');
+        if(applied > 0) console.log('🎨 Applied ' + applied + ' visual changes');
+    }
+    
+    function reorderDOMProjects(order){
+        var container = document.querySelector('.basement-projects');
+        if(container){
+            order.forEach(function(id){
+                var el = container.querySelector('[data-project-id="' + id + '"]');
+                if(el) container.appendChild(el);
+            });
+        }
+        var grid = document.querySelector('.pgrid, #projectGrid');
+        if(grid){
+            order.forEach(function(id){
+                var el = grid.querySelector('[data-project-id="' + id + '"], [data-target="' + id + '"]');
+                if(el) grid.appendChild(el);
+            });
         }
     }
     
     function applyClasses(el, classString){
-        var newClasses = classString.split(' ').filter(function(c){
-            return c && !c.startsWith('ed-') && c !== 'expanded';
-        });
-        var preserve = ['bproject', 'bproject-content', 'bp-figure', 'bp-gallery'];
-        var existing = Array.from(el.classList).filter(function(c){
-            return preserve.indexOf(c) !== -1;
-        });
+        if(!classString) return;
+        var newClasses = classString.split(' ').filter(function(c){ return c && !c.startsWith('ed-') && c !== 'expanded'; });
+        var preserve = ['bproject', 'bproject-content', 'bp-figure', 'bp-gallery', 'pcard'];
+        var existing = Array.from(el.classList).filter(function(c){ return preserve.indexOf(c) !== -1; });
         el.className = existing.concat(newClasses).join(' ');
     }
     
     function applySticker(sticker){
         try {
-            var projectCard = null;
-            var stickerLayer = null;
-            
-            if(sticker.projectId){
-                projectCard = document.querySelector('.bproject[data-project-id="' + sticker.projectId + '"]');
-            }
-            
+            var projectCard = null, stickerLayer = null;
+            if(sticker.projectId) projectCard = document.querySelector('.bproject[data-project-id="' + sticker.projectId + '"]');
             if(!projectCard && sticker.parentSelector){
                 stickerLayer = document.querySelector(sticker.parentSelector);
                 if(stickerLayer) projectCard = stickerLayer.closest('.bproject');
             }
-            
             if(projectCard){
                 stickerLayer = projectCard.querySelector('.bproject-stickers');
                 if(!stickerLayer){
@@ -249,17 +284,13 @@
                 stickerLayer = document.querySelector(sticker.parentSelector);
                 if(stickerLayer) stickerLayer.style.position = 'relative';
             }
-            
             if(!stickerLayer) return false;
             
-            // Check duplicates
             var existing = stickerLayer.querySelectorAll('.amendment-sticker');
             for(var i = 0; i < existing.length; i++){
-                var img = existing[i].querySelector('img');
-                if(existing[i].style.left === sticker.position.left && 
-                   existing[i].style.top === sticker.position.top &&
-                   img && img.src === sticker.src){
-                    return false;
+                if(existing[i].style.left === sticker.position.left && existing[i].style.top === sticker.position.top){
+                    existing[i].remove();
+                    break;
                 }
             }
             
@@ -267,19 +298,9 @@
             div.className = 'ed-sticker amendment-sticker';
             div.dataset.rotation = sticker.rotation || '0';
             div.dataset.z = sticker.layer || 'normal';
+            div.dataset.amendmentLoaded = 'true'; // Mark as loaded from file
             if(sticker.projectId) div.dataset.projectId = sticker.projectId;
-            
-            div.style.cssText = [
-                'position:absolute',
-                'left:' + (sticker.position.left || '50px'),
-                'top:' + (sticker.position.top || '150px'),
-                'width:' + (sticker.size.width || '80px'),
-                'height:' + (sticker.size.height || '80px'),
-                'z-index:' + (sticker.zIndex || '10'),
-                'opacity:' + (sticker.opacity || '1'),
-                'transform:rotate(' + (sticker.rotation || '0') + 'deg)',
-                'pointer-events:none'
-            ].join(';');
+            div.style.cssText = 'position:absolute;left:' + (sticker.position.left || '50px') + ';top:' + (sticker.position.top || '150px') + ';width:' + (sticker.size.width || '80px') + ';height:' + (sticker.size.height || '80px') + ';z-index:' + (sticker.zIndex || '10') + ';opacity:' + (sticker.opacity || '1') + ';transform:rotate(' + (sticker.rotation || '0') + 'deg);pointer-events:none;';
             
             var img = document.createElement('img');
             img.src = sticker.src;
@@ -287,26 +308,22 @@
             img.style.cssText = 'width:100%;height:100%;object-fit:contain;pointer-events:none;';
             img.draggable = false;
             div.appendChild(img);
-            
             stickerLayer.appendChild(div);
             return true;
-        } catch(e){ 
-            return false;
-        }
+        } catch(e){ return false; }
     }
     
     function applyDivider(divider){
         try {
             var parent = document.querySelector(divider.parentSelector);
             if(!parent) return false;
-            
             var existing = parent.querySelectorAll('.amendment-divider');
             for(var i = 0; i < existing.length; i++){
                 if(existing[i].getAttribute('style') === divider.styles) return false;
             }
-            
             var div = document.createElement('div');
             div.className = 'ed-divider amendment-divider';
+            div.dataset.amendmentLoaded = 'true';
             div.setAttribute('style', divider.styles);
             parent.appendChild(div);
             return true;
@@ -317,103 +334,94 @@
         try {
             var parent = document.querySelector(link.parentSelector);
             if(!parent) return false;
-            
             var existing = parent.querySelectorAll('.amendment-link a');
             for(var i = 0; i < existing.length; i++){
-                if(existing[i].href === link.href) return false;
+                if(existing[i].href === link.href){
+                    existing[i].textContent = link.text;
+                    existing[i].className = link.className || 'btn';
+                    return false;
+                }
             }
-            
             var wrapper = document.createElement('div');
             wrapper.className = 'ed-link-block amendment-link';
+            wrapper.dataset.amendmentLoaded = 'true';
             wrapper.style.cssText = 'margin:16px 0;';
-            
             var a = document.createElement('a');
             a.href = link.href;
             a.textContent = link.text;
             a.className = link.className || 'btn';
             a.target = link.target || '_blank';
             a.rel = 'noopener noreferrer';
-            
             wrapper.appendChild(a);
             parent.appendChild(wrapper);
             return true;
         } catch(e){ return false; }
     }
     
-    // ══════════════════════════════════════════════════════════════
-    // PROJECT OBSERVER - Re-applies when projects expand
-    // ══════════════════════════════════════════════════════════════
-    
     function setupProjectObserver(){
         if(!storedAmendments) return;
-        
         var projects = document.querySelectorAll('.bproject');
         if(!projects.length) return;
-        
         var observer = new MutationObserver(function(mutations){
             mutations.forEach(function(mutation){
                 if(mutation.type === 'attributes' && mutation.attributeName === 'class'){
                     var target = mutation.target;
                     if(target.classList.contains('bproject') && target.classList.contains('expanded')){
-                        setTimeout(function(){
-                            reapplyForProject(target);
-                        }, 150);
+                        setTimeout(function(){ reapplyForProject(target); }, 150);
                     }
                 }
             });
         });
-        
-        projects.forEach(function(project){
-            observer.observe(project, { attributes: true, attributeFilter: ['class'] });
-        });
+        projects.forEach(function(project){ observer.observe(project, { attributes: true, attributeFilter: ['class'] }); });
     }
     
     function reapplyForProject(projectEl){
         if(!storedAmendments) return;
         var projectId = projectEl.dataset.projectId;
         if(!projectId) return;
-        
         var applied = 0;
         
-        // Re-apply stickers
         if(storedAmendments.stickers){
             var existingStickers = projectEl.querySelectorAll('.amendment-sticker');
             if(existingStickers.length === 0){
                 storedAmendments.stickers.forEach(function(sticker){
-                    if(sticker.projectId === projectId){
-                        if(applySticker(sticker)) applied++;
-                    }
+                    if(sticker.projectId === projectId) if(applySticker(sticker)) applied++;
                 });
             }
         }
-        
-        // Re-apply dividers
+        if(storedAmendments.textChanges){
+            storedAmendments.textChanges.forEach(function(change){
+                if(change.selector.includes(projectId) || change.projectId === projectId){
+                    try {
+                        var el = document.querySelector(change.selector);
+                        if(el){
+                            el.innerHTML = change.content;
+                            if(change.styles) el.setAttribute('style', change.styles);
+                            if(change.classes) applyClasses(el, change.classes);
+                            applied++;
+                        }
+                    } catch(e){}
+                }
+            });
+        }
         if(storedAmendments.dividers){
-            storedAmendments.dividers.forEach(function(divider){
-                if(divider.parentSelector.includes(projectId)){
-                    if(applyDivider(divider)) applied++;
-                }
-            });
+            var existingDividers = projectEl.querySelectorAll('.amendment-divider');
+            if(existingDividers.length === 0){
+                storedAmendments.dividers.forEach(function(divider){
+                    if(divider.parentSelector.includes(projectId)) if(applyDivider(divider)) applied++;
+                });
+            }
         }
-        
-        // Re-apply links
         if(storedAmendments.links){
-            storedAmendments.links.forEach(function(link){
-                if(link.parentSelector.includes(projectId)){
-                    if(applyLink(link)) applied++;
-                }
-            });
+            var existingLinks = projectEl.querySelectorAll('.amendment-link');
+            if(existingLinks.length === 0){
+                storedAmendments.links.forEach(function(link){
+                    if(link.parentSelector.includes(projectId)) if(applyLink(link)) applied++;
+                });
+            }
         }
-        
-        if(applied > 0){
-            console.log('📌 Re-applied ' + applied + ' items to:', projectId);
-        }
+        if(applied > 0) console.log('📌 Re-applied ' + applied + ' items to:', projectId);
     }
     
-    // ══════════════════════════════════════════════════════════════
-    // RUN IMMEDIATELY (synchronous)
-    // ══════════════════════════════════════════════════════════════
-    
-    loadAmendmentsSync();
-    
+    loadAllAmendments();
 })();

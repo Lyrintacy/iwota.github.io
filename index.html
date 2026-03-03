@@ -10,7 +10,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
-<script src="js/editor.js"></script>
 <body>
 
 <!-- SKY & WHITE CLOUDS -->
@@ -135,20 +134,27 @@
 <div class="mnav" id="mobileNav"></div>
 <div class="scroll-progress" id="scrollProgress"></div>
 
-<!-- DATA -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SCRIPTS - ORDER IS CRITICAL! -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<!-- 1. DATA FILES (load first) -->
 <script src="js/data/config.js"></script>
 <script src="js/data/projects.js"></script>
 <script src="js/data/references.js"></script>
 <script src="js/data/texts.js"></script>
 
-<!-- CORE -->
+<!-- 2. AMENDMENTS LOADER (patches data BEFORE app.js uses it) -->
+<script src="js/amendments-loader.js"></script>
+
+<!-- 3. CORE APP (uses patched data) -->
 <script src="js/utils.js"></script>
 <script src="js/landscape.js"></script>
 <script src="js/ribbons.js"></script>
 <script src="js/floating.js"></script>
 <script src="js/app.js"></script>
 
-<!-- POPULATE TEXT -->
+<!-- 4. POPULATE TEXT -->
 <script>
 (function(){
     var T=TEXTS,h=document.getElementById('heroRight');
@@ -189,9 +195,9 @@
     document.getElementById('siteFooter').innerHTML=ft;
 })();
 </script>
-<!-- At the bottom of your HTML, before closing </body> -->
-<script src="js/amendments-loader.js"></script>
 
-</button>
+<!-- 5. EDITOR (at very end, uses loader's exported data for smart export) -->
+<script src="js/editor.js"></script>
+
 </body>
 </html>
