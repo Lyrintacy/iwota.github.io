@@ -1192,19 +1192,75 @@ markEditables(container){
 }
     
     getUniqueSelector(el){
-        if(!el||el===document.body)return'body';if(el.id)return'#'+el.id;
-        if(el.dataset.projectId)return'[data-project-id="'+el.dataset.projectId+'"]';
-        var path=[];var current=el;
-        while(current&&current!==document.body&&current.nodeType===1){
-            var selector=current.tagName.toLowerCase();if(current.id){path.unshift('#'+current.id);break;}
-            var classes=Array.from(current.classList).filter(function(c){return!c.startsWith('ed-')&&c!=='expanded';});
-            if(classes.length)selector+='.'+classes.join('.');
-            var parent=current.parentElement;
-            if(parent){var siblings=parent.querySelectorAll(':scope > '+current.tagName.toLowerCase());if(siblings.length>1){var index=Array.prototype.indexOf.call(siblings,current)+1;selector+=':nth-child('+index+')';}}
-            path.unshift(selector);current=parent;
+    if(!el || el === document.body) return 'body';
+    if(el.id) return '#' + el.id;
+    
+    // For project elements, use data-project-id
+    var project = el.closest('.bproject');
+    if(project && project.dataset.projectId){
+        var projectId = project.dataset.projectId;
+        var projectSelector = '[data-project-id="' + projectId + '"]';
+        
+        // Find element's position within the project
+        var tag = el.tagName.toLowerCase();
+        var classes = Array.from(el.classList).filter(function(c){
+            return !c.startsWith('ed-') && c !== 'expanded';
+        });
+        
+        var baseSelector = tag;
+        if(classes.length) baseSelector += '.' + classes[0]; // Use first class only
+        
+        // Find index among siblings with same tag+class
+        var container = el.closest('.bproject-content, .bproject-header, .bproject-meta');
+        if(container){
+            var containerClass = container.classList[0];
+            var siblings = container.querySelectorAll(':scope > ' + baseSelector);
+            var index = Array.prototype.indexOf.call(siblings, el);
+            
+            if(siblings.length > 1){
+                return projectSelector + ' .' + containerClass + ' > ' + baseSelector + ':nth-of-type(' + (index + 1) + ')';
+            } else {
+                return projectSelector + ' .' + containerClass + ' > ' + baseSelector;
+            }
         }
-        return path.join(' > ');
+        
+        // Fallback for project elements
+        return projectSelector + ' ' + baseSelector;
     }
+    
+    // For non-project elements
+    var path = [];
+    var current = el;
+    
+    while(current && current !== document.body && current.nodeType === 1){
+        var selector = current.tagName.toLowerCase();
+        
+        if(current.id){
+            path.unshift('#' + current.id);
+            break;
+        }
+        
+        var classes = Array.from(current.classList).filter(function(c){
+            return !c.startsWith('ed-') && c !== 'expanded';
+        });
+        
+        if(classes.length) selector += '.' + classes[0];
+        
+        var parent = current.parentElement;
+        if(parent){
+            var siblings = parent.querySelectorAll(':scope > ' + current.tagName.toLowerCase());
+            if(siblings.length > 1){
+                var index = Array.prototype.indexOf.call(siblings, current) + 1;
+                selector += ':nth-of-type(' + index + ')';
+            }
+        }
+        
+        path.unshift(selector);
+        current = parent;
+    }
+    
+    return path.join(' > ');
+}
     
     setStatus(msg){var s=document.getElementById('edStatus');if(s){s.textContent=msg;s.classList.add('ed-flash');setTimeout(function(){s.classList.remove('ed-flash');},300);}}
 
