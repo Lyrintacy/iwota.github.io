@@ -103,125 +103,179 @@ class LiveEditor{
     }
     
     enableEditing(){
-        var self=this;
-        var editables=document.querySelectorAll('.hero-right h1,.hero-right h2,.hero-right p,.section-title,.section-sub,.pcard h3,.pcard-short,.bp-text,.bp-heading,.bp-caption,.bproject-header-text h3,.bproject-tagline,.bm-value,.whisper,.hero-desc,.rcard h3,.rcard-role,.rcard p,.mantras li,.about-text p');
-        for(var i=0;i<editables.length;i++){editables[i].setAttribute('data-ed-original',editables[i].innerHTML);editables[i].classList.add('ed-editable');}
-        var images=document.querySelectorAll('.bp-img,.bp-gallery-img,.bproject-thumb-img,.pcard-thumb-img,.hero-photo,.rcard img');
-        for(var i=0;i<images.length;i++)images[i].classList.add('ed-interactive');
-        var blocks=document.querySelectorAll('.bp-figure,.bp-gallery-item,.bp-gallery,.bp-columns,.bp-quote,.bp-text,.bp-heading,.ed-divider,.ed-link-block');
-        for(var i=0;i<blocks.length;i++)blocks[i].classList.add('ed-block');
-        
-        this._clickHandler=function(e){
-            if(!self.active)return;
-            var target=e.target;
-            
-            // Check for project card click (not expanded, not on editable content)
-            var projectCard=target.closest('.bproject');
-            if(projectCard&&!projectCard.classList.contains('expanded')&&!target.closest('.ed-editable,.ed-interactive,.ed-sticker')){
-                e.stopPropagation();
-                self.selectProject(projectCard);
-                return;
+    var self=this;
+    
+    // Mark all current editables
+    this.markEditables();
+    
+    var images=document.querySelectorAll('.bp-img,.bp-gallery-img,.bproject-thumb-img,.pcard-thumb-img,.hero-photo,.rcard img');
+    for(var i=0;i<images.length;i++)images[i].classList.add('ed-interactive');
+    
+    var blocks=document.querySelectorAll('.bp-figure,.bp-gallery-item,.bp-gallery,.bp-columns,.bp-quote,.bp-text,.bp-heading,.ed-divider,.ed-link-block');
+    for(var i=0;i<blocks.length;i++)blocks[i].classList.add('ed-block');
+    
+    // Watch for project expansions to mark new editables
+    this._projectExpandObserver = new MutationObserver(function(mutations){
+        mutations.forEach(function(mutation){
+            if(mutation.type === 'attributes' && mutation.attributeName === 'class'){
+                var target = mutation.target;
+                if(target.classList.contains('bproject') && target.classList.contains('expanded')){
+                    setTimeout(function(){
+                        self.markEditables(target);
+                        console.log('📝 Marked editables in expanded project:', target.dataset.projectId);
+                    }, 100);
+                }
             }
-            
-            if(target.closest('.ed-sticker')){e.stopPropagation();self.selectElement(target.closest('.ed-sticker'));return;}
-            if(target.closest('.ed-divider')){e.stopPropagation();self.selectElement(target.closest('.ed-divider'));return;}
-            if(target.closest('.ed-link-block')){e.stopPropagation();e.preventDefault();self.selectElement(target.closest('.ed-link-block'));return;}
-            if(target.closest('.ed-editable')){e.stopPropagation();self.selectElement(target.closest('.ed-editable'));return;}
-            if(target.closest('.ed-interactive')){e.stopPropagation();self.selectElement(target.closest('.ed-interactive'));return;}
-            if(target.closest('.ed-block')){e.stopPropagation();self.selectElement(target.closest('.ed-block'));return;}
-            if(!target.closest('#editorPanel,#editorToolbar,#editorContext,#edFormatBar')){self.deselectAll();self.hideContext();}
-        };
-        document.addEventListener('click',this._clickHandler);
+        });
+    });
+    
+    document.querySelectorAll('.bproject').forEach(function(project){
+        self._projectExpandObserver.observe(project, { attributes: true, attributeFilter: ['class'] });
+    });
+    
+    this._clickHandler=function(e){
+        if(!self.active)return;
+        var target=e.target;
         
-        this._contextHandler=function(e){
-            if(!self.active)return;
-            
-            // Project card context menu
-            var projectCard=e.target.closest('.bproject');
-            if(projectCard&&!projectCard.classList.contains('expanded')){
-                e.preventDefault();
-                self.showProjectContext(e,projectCard);
-                return;
-            }
-            
-            var target=e.target.closest('.ed-block,.ed-interactive,.ed-editable,.ed-sticker,.ed-divider,.ed-link-block');
-            if(target){e.preventDefault();self.showContext(e,target);}
-        };
-        document.addEventListener('contextmenu',this._contextHandler);
-        
-        this._mousedownHandler=function(e){
-            if(!self.active)return;
-            var sticker=e.target.closest('.ed-sticker');
-            if(sticker&&!e.target.closest('.ed-sticker-delete')){
-                self.stickerDragging=sticker;var rect=sticker.getBoundingClientRect();
-                self.stickerOffset.x=e.clientX-rect.left;self.stickerOffset.y=e.clientY-rect.top;
-                sticker.classList.add('ed-sticker-dragging');e.preventDefault();
-            }
-        };
-        this._mousemoveHandler=function(e){
-            if(self.stickerDragging){
-                var parent=self.stickerDragging.parentElement;var parentRect=parent.getBoundingClientRect();
-                self.stickerDragging.style.left=(e.clientX-parentRect.left-self.stickerOffset.x)+'px';
-                self.stickerDragging.style.top=(e.clientY-parentRect.top-self.stickerOffset.y)+'px';
-            }
-        };
-        this._mouseupHandler=function(){if(self.stickerDragging){self.stickerDragging.classList.remove('ed-sticker-dragging');self.stickerDragging=null;}};
-        document.addEventListener('mousedown',this._mousedownHandler);
-        document.addEventListener('mousemove',this._mousemoveHandler);
-        document.addEventListener('mouseup',this._mouseupHandler);
-        
-        document.getElementById('edAddImage').onclick=function(){self.addImage();};
-        document.getElementById('edAddText').onclick=function(){self.addTextBlock();};
-        document.getElementById('edAddHeading').onclick=function(){self.addHeading();};
-        document.getElementById('edAddQuote').onclick=function(){self.addQuoteBlock();};
-        document.getElementById('edAddDivider').onclick=function(){self.addDivider();};
-        document.getElementById('edAddLink').onclick=function(){self.addLinkBlock();};
-        document.getElementById('edAddSticker').onclick=function(){self.addSticker();};
-        document.getElementById('edReorderProjects').onclick=function(){self.showProjectReorderPanel();};
-        document.getElementById('edUndo').onclick=function(){self.undo();};
-        document.getElementById('edExportAmendment').onclick=function(){self.exportAmendment();};
-        document.getElementById('edClose').onclick=function(){self.toggle();};
-        
-        var fmtBtns=this.formatBar.querySelectorAll('.ed-fmt[data-cmd]');
-        for(var i=0;i<fmtBtns.length;i++){
-            (function(btn){
-                btn.addEventListener('mousedown',function(e){
-                    e.preventDefault();
-                    var cmd=btn.getAttribute('data-cmd');
-                    if(cmd==='createLink'){
-                        var url=prompt('Enter URL:','https://');
-                        if(url)document.execCommand(cmd,false,url);
-                    }else if(cmd){
-                        document.execCommand(cmd,false,null);
-                    }
-                });
-            })(fmtBtns[i]);
+        var projectCard=target.closest('.bproject');
+        if(projectCard&&!projectCard.classList.contains('expanded')&&!target.closest('.ed-editable,.ed-interactive,.ed-sticker')){
+            e.stopPropagation();
+            self.selectProject(projectCard);
+            return;
         }
         
-        document.getElementById('edFmtFancy').addEventListener('mousedown',function(e){
-            e.preventDefault();
-            self.toggleFancyFont();
-        });
+        if(target.closest('.ed-sticker')){e.stopPropagation();self.selectElement(target.closest('.ed-sticker'));return;}
+        if(target.closest('.ed-divider')){e.stopPropagation();self.selectElement(target.closest('.ed-divider'));return;}
+        if(target.closest('.ed-link-block')){e.stopPropagation();e.preventDefault();self.selectElement(target.closest('.ed-link-block'));return;}
+        if(target.closest('.ed-editable')){e.stopPropagation();self.selectElement(target.closest('.ed-editable'));return;}
+        if(target.closest('.ed-interactive')){e.stopPropagation();self.selectElement(target.closest('.ed-interactive'));return;}
+        if(target.closest('.ed-block')){e.stopPropagation();self.selectElement(target.closest('.ed-block'));return;}
+        if(!target.closest('#editorPanel,#editorToolbar,#editorContext,#edFormatBar')){self.deselectAll();self.hideContext();}
+    };
+    document.addEventListener('click',this._clickHandler);
+    
+    this._contextHandler=function(e){
+        if(!self.active)return;
         
-        document.getElementById('edFmtColor').addEventListener('input',function(){document.execCommand('foreColor',false,this.value);});
-        document.getElementById('edFmtSize').addEventListener('change',function(){if(this.value)document.execCommand('fontSize',false,this.value);this.value='';});
+        var projectCard=e.target.closest('.bproject');
+        if(projectCard&&!projectCard.classList.contains('expanded')){
+            e.preventDefault();
+            self.showProjectContext(e,projectCard);
+            return;
+        }
+        
+        var target=e.target.closest('.ed-block,.ed-interactive,.ed-editable,.ed-sticker,.ed-divider,.ed-link-block');
+        if(target){e.preventDefault();self.showContext(e,target);}
+    };
+    document.addEventListener('contextmenu',this._contextHandler);
+    
+    this._mousedownHandler=function(e){
+        if(!self.active)return;
+        var sticker=e.target.closest('.ed-sticker');
+        if(sticker&&!e.target.closest('.ed-sticker-delete')){
+            self.stickerDragging=sticker;var rect=sticker.getBoundingClientRect();
+            self.stickerOffset.x=e.clientX-rect.left;self.stickerOffset.y=e.clientY-rect.top;
+            sticker.classList.add('ed-sticker-dragging');e.preventDefault();
+        }
+    };
+    this._mousemoveHandler=function(e){
+        if(self.stickerDragging){
+            var parent=self.stickerDragging.parentElement;var parentRect=parent.getBoundingClientRect();
+            self.stickerDragging.style.left=(e.clientX-parentRect.left-self.stickerOffset.x)+'px';
+            self.stickerDragging.style.top=(e.clientY-parentRect.top-self.stickerOffset.y)+'px';
+        }
+    };
+    this._mouseupHandler=function(){if(self.stickerDragging){self.stickerDragging.classList.remove('ed-sticker-dragging');self.stickerDragging=null;}};
+    document.addEventListener('mousedown',this._mousedownHandler);
+    document.addEventListener('mousemove',this._mousemoveHandler);
+    document.addEventListener('mouseup',this._mouseupHandler);
+    
+    document.getElementById('edAddImage').onclick=function(){self.addImage();};
+    document.getElementById('edAddText').onclick=function(){self.addTextBlock();};
+    document.getElementById('edAddHeading').onclick=function(){self.addHeading();};
+    document.getElementById('edAddQuote').onclick=function(){self.addQuoteBlock();};
+    document.getElementById('edAddDivider').onclick=function(){self.addDivider();};
+    document.getElementById('edAddLink').onclick=function(){self.addLinkBlock();};
+    document.getElementById('edAddSticker').onclick=function(){self.addSticker();};
+    document.getElementById('edReorderProjects').onclick=function(){self.showProjectReorderPanel();};
+    document.getElementById('edUndo').onclick=function(){self.undo();};
+    document.getElementById('edExportAmendment').onclick=function(){self.exportAmendment();};
+    document.getElementById('edClose').onclick=function(){self.toggle();};
+    
+    var fmtBtns=this.formatBar.querySelectorAll('.ed-fmt[data-cmd]');
+    for(var i=0;i<fmtBtns.length;i++){
+        (function(btn){
+            btn.addEventListener('mousedown',function(e){
+                e.preventDefault();
+                var cmd=btn.getAttribute('data-cmd');
+                if(cmd==='createLink'){
+                    var url=prompt('Enter URL:','https://');
+                    if(url)document.execCommand(cmd,false,url);
+                }else if(cmd){
+                    document.execCommand(cmd,false,null);
+                }
+            });
+        })(fmtBtns[i]);
     }
     
-    disableEditing(){
-        var editables=document.querySelectorAll('.ed-editable');
-        for(var i=0;i<editables.length;i++){editables[i].contentEditable='false';editables[i].classList.remove('ed-editable','ed-selected');}
-        var interactives=document.querySelectorAll('.ed-interactive');
-        for(var i=0;i<interactives.length;i++)interactives[i].classList.remove('ed-interactive','ed-selected');
-        var blocks=document.querySelectorAll('.ed-block');
-        for(var i=0;i<blocks.length;i++)blocks[i].classList.remove('ed-block','ed-selected');
-        var selectedProjects=document.querySelectorAll('.ed-project-selected');
-        for(var i=0;i<selectedProjects.length;i++)selectedProjects[i].classList.remove('ed-project-selected');
-        if(this._clickHandler)document.removeEventListener('click',this._clickHandler);
-        if(this._contextHandler)document.removeEventListener('contextmenu',this._contextHandler);
-        if(this._mousedownHandler)document.removeEventListener('mousedown',this._mousedownHandler);
-        if(this._mousemoveHandler)document.removeEventListener('mousemove',this._mousemoveHandler);
-        if(this._mouseupHandler)document.removeEventListener('mouseup',this._mouseupHandler);
+    document.getElementById('edFmtFancy').addEventListener('mousedown',function(e){
+        e.preventDefault();
+        self.toggleFancyFont();
+    });
+    
+    document.getElementById('edFmtColor').addEventListener('input',function(){document.execCommand('foreColor',false,this.value);});
+    document.getElementById('edFmtSize').addEventListener('change',function(){if(this.value)document.execCommand('fontSize',false,this.value);this.value='';});
+}
+
+// ADD THIS NEW METHOD to your class
+markEditables(container){
+    var scope = container || document;
+    var selector = '.hero-right h1,.hero-right h2,.hero-right p,.section-title,.section-sub,.pcard h3,.pcard-short,.bp-text,.bp-heading,.bp-caption,.bproject-header-text h3,.bproject-tagline,.bm-value,.whisper,.hero-desc,.rcard h3,.rcard-role,.rcard p,.mantras li,.about-text p';
+    
+    var editables = scope.querySelectorAll(selector);
+    for(var i = 0; i < editables.length; i++){
+        var el = editables[i];
+        if(!el.hasAttribute('data-ed-original')){
+            el.setAttribute('data-ed-original', el.innerHTML);
+            el.classList.add('ed-editable');
+        }
     }
+    
+    if(container){
+        var images = container.querySelectorAll('.bp-img,.bp-gallery-img,.bproject-thumb-img');
+        for(var i = 0; i < images.length; i++){
+            images[i].classList.add('ed-interactive');
+        }
+        
+        var blocks = container.querySelectorAll('.bp-figure,.bp-gallery-item,.bp-quote,.bp-text,.bp-heading');
+        for(var i = 0; i < blocks.length; i++){
+            blocks[i].classList.add('ed-block');
+        }
+    }
+}
+    
+    disableEditing(){
+    var editables=document.querySelectorAll('.ed-editable');
+    for(var i=0;i<editables.length;i++){editables[i].contentEditable='false';editables[i].classList.remove('ed-editable','ed-selected');}
+    var interactives=document.querySelectorAll('.ed-interactive');
+    for(var i=0;i<interactives.length;i++)interactives[i].classList.remove('ed-interactive','ed-selected');
+    var blocks=document.querySelectorAll('.ed-block');  
+    for(var i=0;i<blocks.length;i++)blocks[i].classList.remove('ed-block','ed-selected');
+    var selectedProjects=document.querySelectorAll('.ed-project-selected');
+    for(var i=0;i<selectedProjects.length;i++)selectedProjects[i].classList.remove('ed-project-selected');
+    
+    if(this._clickHandler)document.removeEventListener('click',this._clickHandler);
+    if(this._contextHandler)document.removeEventListener('contextmenu',this._contextHandler);
+    if(this._mousedownHandler)document.removeEventListener('mousedown',this._mousedownHandler);
+    if(this._mousemoveHandler)document.removeEventListener('mousemove',this._mousemoveHandler);
+    if(this._mouseupHandler)document.removeEventListener('mouseup',this._mouseupHandler);
+    
+    // ADD THIS: Disconnect project expand observer
+    if(this._projectExpandObserver){
+        this._projectExpandObserver.disconnect();
+        this._projectExpandObserver = null;
+    }
+}
     
     // Project selection and management
     selectProject(projectEl){
@@ -1153,6 +1207,34 @@ class LiveEditor{
     }
     
     setStatus(msg){var s=document.getElementById('edStatus');if(s){s.textContent=msg;s.classList.add('ed-flash');setTimeout(function(){s.classList.remove('ed-flash');},300);}}
+
+markEditables(container){
+    var scope = container || document;
+    var selector = '.hero-right h1,.hero-right h2,.hero-right p,.section-title,.section-sub,.pcard h3,.pcard-short,.bp-text,.bp-heading,.bp-caption,.bproject-header-text h3,.bproject-tagline,.bm-value,.whisper,.hero-desc,.rcard h3,.rcard-role,.rcard p,.mantras li,.about-text p';
+    
+    var editables = scope.querySelectorAll(selector);
+    for(var i = 0; i < editables.length; i++){
+        var el = editables[i];
+        // Only mark if not already marked
+        if(!el.hasAttribute('data-ed-original')){
+            el.setAttribute('data-ed-original', el.innerHTML);
+            el.classList.add('ed-editable');
+        }
+    }
+    
+    // Also mark images and blocks
+    var images = scope.querySelectorAll('.bp-img,.bp-gallery-img,.bproject-thumb-img');
+    for(var i = 0; i < images.length; i++){
+        images[i].classList.add('ed-interactive');
+    }
+    
+    var blocks = scope.querySelectorAll('.bp-figure,.bp-gallery-item,.bp-quote,.bp-text,.bp-heading');
+    for(var i = 0; i < blocks.length; i++){
+        blocks[i].classList.add('ed-block');
+    }
+}
+
 }
 
 document.addEventListener('DOMContentLoaded',function(){window.liveEditor=new LiveEditor();});
+

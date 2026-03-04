@@ -1,4 +1,4 @@
-/* ═══════ AMENDMENTS LOADER v3 — Smart Merge + Exposes Data for Editor ═══════ */
+/* ═══════ AMENDMENTS LOADER v4 — Patches PROJECTS + Smart Merge ═══════ */
 (function(){
     'use strict';
     
@@ -16,7 +16,7 @@
         'amendments-009.json'
     ];
     
-    // EXPOSED GLOBALLY so editor can access
+    // Exposed globally for editor
     window.LOADED_AMENDMENTS = {
         stickers: {},
         textChanges: {},
@@ -30,7 +30,7 @@
     
     var storedAmendments = null;
     var mergedAmendments = {
-        _version: '3.0',
+        _version: '4.0',
         _sources: [],
         textChanges: {},
         stickers: {},
@@ -52,13 +52,17 @@
         '.whisper{font-size:0.85em;opacity:0.6;font-style:italic}';
     document.head.appendChild(style);
     
+    // ══════════════════════════════════════════════════════════════
+    // LOAD ALL AMENDMENTS
+    // ══════════════════════════════════════════════════════════════
+    
     function loadAllAmendments(){
         var loadedCount = 0;
         
         AMENDMENTS_FILES.forEach(function(filename){
             try {
                 var xhr = new XMLHttpRequest();
-                xhr.open('GET', AMENDMENTS_FOLDER + filename, false);
+                xhr.open('GET', AMENDMENTS_FOLDER + filename, false); // Synchronous!
                 xhr.send(null);
                 
                 if(xhr.status === 200){
@@ -73,7 +77,7 @@
         if(loadedCount > 0){
             storedAmendments = finalizeAmendments();
             
-            // EXPOSE for editor
+            // Expose for editor's smart export
             window.LOADED_AMENDMENTS = {
                 stickers: Object.assign({}, mergedAmendments.stickers),
                 textChanges: Object.assign({}, mergedAmendments.textChanges),
@@ -85,20 +89,137 @@
                 _loaded: true
             };
             
+            // ═══════════════════════════════════════════════════════
+            // PATCH PROJECTS ARRAY (before app.js builds DOM)
+            // ═══════════════════════════════════════════════════════
+            patchProjectsData(storedAmendments);
+            
+            // Reorder arrays
             if(storedAmendments.projectOrder && typeof PROJECTS !== 'undefined'){
                 reorderArray(PROJECTS, storedAmendments.projectOrder);
-            }
-            if(storedAmendments.basementOrder && typeof BASEMENT_PROJECTS !== 'undefined'){
-                reorderArray(BASEMENT_PROJECTS, storedAmendments.basementOrder);
+                console.log('📋 Reordered PROJECTS');
             }
             
             console.log('📦 Merged ' + loadedCount + ' amendment file(s)');
+            
+            // Schedule visual changes (stickers, dividers, etc.) for after DOM is built
             scheduleVisualChanges(storedAmendments);
         } else {
             window.LOADED_AMENDMENTS._loaded = true;
             console.log('ℹ️ No amendments to load');
         }
     }
+    
+    // ══════════════════════════════════════════════════════════════
+    // PATCH PROJECTS DATA - Modify PROJECTS array before app.js uses it
+    // ══════════════════════════════════════════════════════════════
+    
+    function patchProjectsData(data){
+        if(!data.textChanges || !data.textChanges.length) return;
+        if(typeof PROJECTS === 'undefined') return;
+        
+        var patched = 0;
+        
+        data.textChanges.forEach(function(change){
+            var selector = change.selector;
+            var projectId = change.projectId || extractProjectId(selector);
+            
+            if(!projectId) return;
+            
+            // Find project in array
+            var project = null;
+            for(var i = 0; i < PROJECTS.length; i++){
+                if(PROJECTS[i].id === projectId){
+                    project = PROJECTS[i];
+                    break;
+                }
+            }
+            
+            if(!project) return;
+            
+            // Determine what field to patch based on selector
+            var content = change.content;
+            
+            // Title: .bproject-header-text h3
+            if(selector.includes('bproject-header-text') && selector.includes('h3')){
+                project.title = stripTags(content);
+                patched++;
+                console.log('📝 Patched title for:', projectId);
+            }
+            // Tagline: .bproject-tagline
+            else if(selector.includes('bproject-tagline')){
+                project.tagline = stripTags(content);
+                patched++;
+                console.log('📝 Patched tagline for:', projectId);
+            }
+            // Role: .bm-value (first one)
+            else if(selector.includes('bm-value') && change._field === 'role'){
+                project.role = stripTags(content);
+                patched++;
+            }
+            // Team
+            else if(selector.includes('bm-value') && change._field === 'team'){
+                project.team = stripTags(content);
+                patched++;
+            }
+            // Content paragraphs: .bp-text
+            else if(selector.includes('bp-text')){
+                // Find which paragraph
+                var match = selector.match(/:nth-child\((\d+)\)/);
+                var index = match ? parseInt(match[1]) - 1 : 0;
+                
+                // Patch content array or paragraphs
+                if(project.content && project.content[index]){
+                    if(project.content[index].type === 'text'){
+                        project.content[index].value = content;
+                        patched++;
+                        console.log('📝 Patched content[' + index + '] for:', projectId);
+                    }
+                } else if(project.paragraphs && project.paragraphs[index] !== undefined){
+                    project.paragraphs[index] = content;
+                    patched++;
+                    console.log('📝 Patched paragraph[' + index + '] for:', projectId);
+                }
+            }
+            // Heading: .bp-heading
+            else if(selector.includes('bp-heading')){
+                var match = selector.match(/:nth-child\((\d+)\)/);
+                var index = match ? parseInt(match[1]) - 1 : 0;
+                
+                if(project.content && project.content[index] && project.content[index].type === 'heading'){
+                    project.content[index].value = stripTags(content);
+                    patched++;
+                    console.log('📝 Patched heading for:', projectId);
+                }
+            }
+        });
+        
+        if(patched > 0){
+            console.log('🔧 Patched ' + patched + ' project fields');
+        }
+    }
+    
+    function extractProjectId(selector){
+        // Extract from [data-project-id="xxx"]
+        var match = selector.match(/\[data-project-id="([^"]+)"\]/);
+        if(match) return match[1];
+        
+        // Extract from #bp-xxx
+        match = selector.match(/#bp-([^\s\.\[]+)/);
+        if(match) return match[1];
+        
+        return null;
+    }
+    
+    function stripTags(html){
+        var tmp = document.createElement('div');
+        tmp.innerHTML = html;
+        return tmp.textContent || tmp.innerText || '';
+    }
+    
+    // ══════════════════════════════════════════════════════════════
+    // SMART MERGE
+    // ══════════════════════════════════════════════════════════════
     
     function smartMerge(data, filename){
         mergedAmendments._sources.push(filename);
@@ -175,6 +296,10 @@
         });
     }
     
+    // ══════════════════════════════════════════════════════════════
+    // VISUAL CHANGES (after DOM is built)
+    // ══════════════════════════════════════════════════════════════
+    
     function scheduleVisualChanges(data){
         var apply = function(){ applyVisualChanges(data); };
         if(document.readyState === 'loading'){
@@ -187,25 +312,30 @@
     function applyVisualChanges(data){
         var applied = 0;
         
+        // Apply text changes to DOM (backup for anything not patched in data)
         if(data.textChanges){
             data.textChanges.forEach(function(change){
                 try {
                     var el = document.querySelector(change.selector);
                     if(el){
-                        el.innerHTML = change.content;
-                        if(change.styles) el.setAttribute('style', change.styles);
-                        if(change.classes) applyClasses(el, change.classes);
-                        applied++;
+                        // Check if content differs (might already be correct from data patch)
+                        if(el.innerHTML !== change.content){
+                            el.innerHTML = change.content;
+                            if(change.styles) el.setAttribute('style', change.styles);
+                            if(change.classes) applyClasses(el, change.classes);
+                            applied++;
+                        }
                     }
                 } catch(e){}
             });
         }
         
+        // Images
         if(data.images){
             data.images.forEach(function(img){
                 try {
                     var el = document.querySelector(img.selector);
-                    if(el && el.tagName === 'IMG'){
+                    if(el && el.tagName === 'IMG' && el.src !== img.src){
                         el.src = img.src;
                         if(img.alt) el.alt = img.alt;
                         applied++;
@@ -214,24 +344,28 @@
             });
         }
         
+        // Stickers
         if(data.stickers){
             data.stickers.forEach(function(sticker){
                 if(applySticker(sticker)) applied++;
             });
         }
         
+        // Dividers
         if(data.dividers){
             data.dividers.forEach(function(divider){
                 if(applyDivider(divider)) applied++;
             });
         }
         
+        // Links
         if(data.links){
             data.links.forEach(function(link){
                 if(applyLink(link)) applied++;
             });
         }
         
+        // Reorder DOM (backup)
         if(data.projectOrder) reorderDOMProjects(data.projectOrder);
         
         setupProjectObserver();
@@ -240,7 +374,7 @@
     }
     
     function reorderDOMProjects(order){
-        var container = document.querySelector('.basement-projects');
+        var container = document.querySelector('.basement-projects, #basementProjects');
         if(container){
             order.forEach(function(id){
                 var el = container.querySelector('[data-project-id="' + id + '"]');
@@ -258,20 +392,28 @@
     
     function applyClasses(el, classString){
         if(!classString) return;
-        var newClasses = classString.split(' ').filter(function(c){ return c && !c.startsWith('ed-') && c !== 'expanded'; });
-        var preserve = ['bproject', 'bproject-content', 'bp-figure', 'bp-gallery', 'pcard'];
-        var existing = Array.from(el.classList).filter(function(c){ return preserve.indexOf(c) !== -1; });
+        var newClasses = classString.split(' ').filter(function(c){ 
+            return c && !c.startsWith('ed-') && c !== 'expanded'; 
+        });
+        var preserve = ['bproject', 'bproject-content', 'bp-figure', 'bp-gallery', 'pcard', 'bp-text', 'bp-heading'];
+        var existing = Array.from(el.classList).filter(function(c){ 
+            return preserve.indexOf(c) !== -1; 
+        });
         el.className = existing.concat(newClasses).join(' ');
     }
     
     function applySticker(sticker){
         try {
             var projectCard = null, stickerLayer = null;
-            if(sticker.projectId) projectCard = document.querySelector('.bproject[data-project-id="' + sticker.projectId + '"]');
+            
+            if(sticker.projectId){
+                projectCard = document.querySelector('.bproject[data-project-id="' + sticker.projectId + '"]');
+            }
             if(!projectCard && sticker.parentSelector){
                 stickerLayer = document.querySelector(sticker.parentSelector);
                 if(stickerLayer) projectCard = stickerLayer.closest('.bproject');
             }
+            
             if(projectCard){
                 stickerLayer = projectCard.querySelector('.bproject-stickers');
                 if(!stickerLayer){
@@ -284,11 +426,14 @@
                 stickerLayer = document.querySelector(sticker.parentSelector);
                 if(stickerLayer) stickerLayer.style.position = 'relative';
             }
+            
             if(!stickerLayer) return false;
             
+            // Check duplicates
             var existing = stickerLayer.querySelectorAll('.amendment-sticker');
             for(var i = 0; i < existing.length; i++){
-                if(existing[i].style.left === sticker.position.left && existing[i].style.top === sticker.position.top){
+                if(existing[i].style.left === sticker.position.left && 
+                   existing[i].style.top === sticker.position.top){
                     existing[i].remove();
                     break;
                 }
@@ -298,9 +443,18 @@
             div.className = 'ed-sticker amendment-sticker';
             div.dataset.rotation = sticker.rotation || '0';
             div.dataset.z = sticker.layer || 'normal';
-            div.dataset.amendmentLoaded = 'true'; // Mark as loaded from file
+            div.dataset.amendmentLoaded = 'true';
             if(sticker.projectId) div.dataset.projectId = sticker.projectId;
-            div.style.cssText = 'position:absolute;left:' + (sticker.position.left || '50px') + ';top:' + (sticker.position.top || '150px') + ';width:' + (sticker.size.width || '80px') + ';height:' + (sticker.size.height || '80px') + ';z-index:' + (sticker.zIndex || '10') + ';opacity:' + (sticker.opacity || '1') + ';transform:rotate(' + (sticker.rotation || '0') + 'deg);pointer-events:none;';
+            
+            div.style.cssText = 'position:absolute;' +
+                'left:' + (sticker.position.left || '50px') + ';' +
+                'top:' + (sticker.position.top || '150px') + ';' +
+                'width:' + (sticker.size.width || '80px') + ';' +
+                'height:' + (sticker.size.height || '80px') + ';' +
+                'z-index:' + (sticker.zIndex || '10') + ';' +
+                'opacity:' + (sticker.opacity || '1') + ';' +
+                'transform:rotate(' + (sticker.rotation || '0') + 'deg);' +
+                'pointer-events:none;';
             
             var img = document.createElement('img');
             img.src = sticker.src;
@@ -317,10 +471,12 @@
         try {
             var parent = document.querySelector(divider.parentSelector);
             if(!parent) return false;
+            
             var existing = parent.querySelectorAll('.amendment-divider');
             for(var i = 0; i < existing.length; i++){
                 if(existing[i].getAttribute('style') === divider.styles) return false;
             }
+            
             var div = document.createElement('div');
             div.className = 'ed-divider amendment-divider';
             div.dataset.amendmentLoaded = 'true';
@@ -334,34 +490,43 @@
         try {
             var parent = document.querySelector(link.parentSelector);
             if(!parent) return false;
+            
             var existing = parent.querySelectorAll('.amendment-link a');
             for(var i = 0; i < existing.length; i++){
                 if(existing[i].href === link.href){
                     existing[i].textContent = link.text;
-                    existing[i].className = link.className || 'btn';
                     return false;
                 }
             }
+            
             var wrapper = document.createElement('div');
             wrapper.className = 'ed-link-block amendment-link';
             wrapper.dataset.amendmentLoaded = 'true';
             wrapper.style.cssText = 'margin:16px 0;';
+            
             var a = document.createElement('a');
             a.href = link.href;
             a.textContent = link.text;
             a.className = link.className || 'btn';
             a.target = link.target || '_blank';
             a.rel = 'noopener noreferrer';
+            
             wrapper.appendChild(a);
             parent.appendChild(wrapper);
             return true;
         } catch(e){ return false; }
     }
     
+    // ══════════════════════════════════════════════════════════════
+    // PROJECT OBSERVER
+    // ══════════════════════════════════════════════════════════════
+    
     function setupProjectObserver(){
         if(!storedAmendments) return;
+        
         var projects = document.querySelectorAll('.bproject');
         if(!projects.length) return;
+        
         var observer = new MutationObserver(function(mutations){
             mutations.forEach(function(mutation){
                 if(mutation.type === 'attributes' && mutation.attributeName === 'class'){
@@ -372,29 +537,39 @@
                 }
             });
         });
-        projects.forEach(function(project){ observer.observe(project, { attributes: true, attributeFilter: ['class'] }); });
+        
+        projects.forEach(function(project){ 
+            observer.observe(project, { attributes: true, attributeFilter: ['class'] }); 
+        });
     }
     
     function reapplyForProject(projectEl){
         if(!storedAmendments) return;
         var projectId = projectEl.dataset.projectId;
         if(!projectId) return;
+        
         var applied = 0;
         
+        // Re-apply stickers
         if(storedAmendments.stickers){
             var existingStickers = projectEl.querySelectorAll('.amendment-sticker');
             if(existingStickers.length === 0){
                 storedAmendments.stickers.forEach(function(sticker){
-                    if(sticker.projectId === projectId) if(applySticker(sticker)) applied++;
+                    if(sticker.projectId === projectId){
+                        if(applySticker(sticker)) applied++;
+                    }
                 });
             }
         }
+        
+        // Re-apply text changes
         if(storedAmendments.textChanges){
             storedAmendments.textChanges.forEach(function(change){
-                if(change.selector.includes(projectId) || change.projectId === projectId){
+                var changeProjectId = change.projectId || extractProjectId(change.selector);
+                if(changeProjectId === projectId){
                     try {
                         var el = document.querySelector(change.selector);
-                        if(el){
+                        if(el && el.innerHTML !== change.content){
                             el.innerHTML = change.content;
                             if(change.styles) el.setAttribute('style', change.styles);
                             if(change.classes) applyClasses(el, change.classes);
@@ -404,24 +579,38 @@
                 }
             });
         }
+        
+        // Re-apply dividers
         if(storedAmendments.dividers){
             var existingDividers = projectEl.querySelectorAll('.amendment-divider');
             if(existingDividers.length === 0){
                 storedAmendments.dividers.forEach(function(divider){
-                    if(divider.parentSelector.includes(projectId)) if(applyDivider(divider)) applied++;
+                    if(divider.parentSelector.includes(projectId)){
+                        if(applyDivider(divider)) applied++;
+                    }
                 });
             }
         }
+        
+        // Re-apply links
         if(storedAmendments.links){
             var existingLinks = projectEl.querySelectorAll('.amendment-link');
             if(existingLinks.length === 0){
                 storedAmendments.links.forEach(function(link){
-                    if(link.parentSelector.includes(projectId)) if(applyLink(link)) applied++;
+                    if(link.parentSelector.includes(projectId)){
+                        if(applyLink(link)) applied++;
+                    }
                 });
             }
         }
+        
         if(applied > 0) console.log('📌 Re-applied ' + applied + ' items to:', projectId);
     }
     
+    // ══════════════════════════════════════════════════════════════
+    // RUN IMMEDIATELY (synchronous, before app.js)
+    // ══════════════════════════════════════════════════════════════
+    
     loadAllAmendments();
+    
 })();
