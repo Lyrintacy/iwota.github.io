@@ -1210,28 +1210,71 @@ markEditables(container){
 
 markEditables(container){
     var scope = container || document;
-    var selector = '.hero-right h1,.hero-right h2,.hero-right p,.section-title,.section-sub,.pcard h3,.pcard-short,.bp-text,.bp-heading,.bp-caption,.bproject-header-text h3,.bproject-tagline,.bm-value,.whisper,.hero-desc,.rcard h3,.rcard-role,.rcard p,.mantras li,.about-text p';
+    
+    // Expanded selector to include all editable project elements
+    var selector = [
+        // Hero section
+        '.hero-right h1',
+        '.hero-right h2', 
+        '.hero-right p',
+        '.hero-desc',
+        '.whisper',
+        
+        // Section titles
+        '.section-title',
+        '.section-sub',
+        
+        // Project cards (thumbnails)
+        '.pcard h3',
+        '.pcard-short',
+        
+        // Basement project header
+        '.bproject-header-text h3',  // Project title
+        '.bproject-tagline',          // Tagline
+        
+        // Basement project meta
+        '.bm-value',                  // Role, Team, Engine, Timeline
+        
+        // Basement project content
+        '.bp-text',
+        '.bp-heading',
+        '.bp-caption',
+        
+        // Basement project tags
+        '.bproject-tags span',        // Individual tags
+        
+        // References
+        '.rcard h3',
+        '.rcard-role',
+        '.rcard p',
+        
+        // About
+        '.about-text p',
+        '.mantras li'
+    ].join(',');
     
     var editables = scope.querySelectorAll(selector);
     for(var i = 0; i < editables.length; i++){
         var el = editables[i];
-        // Only mark if not already marked
         if(!el.hasAttribute('data-ed-original')){
             el.setAttribute('data-ed-original', el.innerHTML);
             el.classList.add('ed-editable');
         }
     }
     
-    // Also mark images and blocks
-    var images = scope.querySelectorAll('.bp-img,.bp-gallery-img,.bproject-thumb-img');
-    for(var i = 0; i < images.length; i++){
-        images[i].classList.add('ed-interactive');
+    if(container){
+        var images = container.querySelectorAll('.bp-img,.bp-gallery-img,.bproject-thumb-img');
+        for(var i = 0; i < images.length; i++){
+            images[i].classList.add('ed-interactive');
+        }
+        
+        var blocks = container.querySelectorAll('.bp-figure,.bp-gallery-item,.bp-quote,.bp-text,.bp-heading');
+        for(var i = 0; i < blocks.length; i++){
+            blocks[i].classList.add('ed-block');
+        }
     }
     
-    var blocks = scope.querySelectorAll('.bp-figure,.bp-gallery-item,.bp-quote,.bp-text,.bp-heading');
-    for(var i = 0; i < blocks.length; i++){
-        blocks[i].classList.add('ed-block');
-    }
+    console.log('✏️ Marked', editables.length, 'editable elements in', container ? 'project' : 'document');
 }
 
 }

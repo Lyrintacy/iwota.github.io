@@ -1,4 +1,4 @@
-/* ═══════ AMENDMENTS LOADER v4 — Patches PROJECTS + Smart Merge ═══════ */
+/* ═══════ AMENDMENTS LOADER v4 — Full Text Support ═══════ */
 (function(){
     'use strict';
     
@@ -16,7 +16,6 @@
         'amendments-009.json'
     ];
     
-    // Exposed globally for editor
     window.LOADED_AMENDMENTS = {
         stickers: {},
         textChanges: {},
@@ -62,7 +61,7 @@
         AMENDMENTS_FILES.forEach(function(filename){
             try {
                 var xhr = new XMLHttpRequest();
-                xhr.open('GET', AMENDMENTS_FOLDER + filename, false); // Synchronous!
+                xhr.open('GET', AMENDMENTS_FOLDER + filename, false);
                 xhr.send(null);
                 
                 if(xhr.status === 200){
@@ -77,7 +76,6 @@
         if(loadedCount > 0){
             storedAmendments = finalizeAmendments();
             
-            // Expose for editor's smart export
             window.LOADED_AMENDMENTS = {
                 stickers: Object.assign({}, mergedAmendments.stickers),
                 textChanges: Object.assign({}, mergedAmendments.textChanges),
@@ -89,9 +87,7 @@
                 _loaded: true
             };
             
-            // ═══════════════════════════════════════════════════════
-            // PATCH PROJECTS ARRAY (before app.js builds DOM)
-            // ═══════════════════════════════════════════════════════
+            // Patch PROJECTS data BEFORE app.js builds DOM
             patchProjectsData(storedAmendments);
             
             // Reorder arrays
@@ -101,8 +97,8 @@
             }
             
             console.log('📦 Merged ' + loadedCount + ' amendment file(s)');
+            console.log('📝 Text changes to apply:', storedAmendments.textChanges.length);
             
-            // Schedule visual changes (stickers, dividers, etc.) for after DOM is built
             scheduleVisualChanges(storedAmendments);
         } else {
             window.LOADED_AMENDMENTS._loaded = true;
@@ -111,7 +107,7 @@
     }
     
     // ══════════════════════════════════════════════════════════════
-    // PATCH PROJECTS DATA - Modify PROJECTS array before app.js uses it
+    // PATCH PROJECTS DATA
     // ══════════════════════════════════════════════════════════════
     
     function patchProjectsData(data){
@@ -126,7 +122,6 @@
             
             if(!projectId) return;
             
-            // Find project in array
             var project = null;
             for(var i = 0; i < PROJECTS.length; i++){
                 if(PROJECTS[i].id === projectId){
@@ -137,51 +132,57 @@
             
             if(!project) return;
             
-            // Determine what field to patch based on selector
             var content = change.content;
             
-            // Title: .bproject-header-text h3
+            // Title
             if(selector.includes('bproject-header-text') && selector.includes('h3')){
                 project.title = stripTags(content);
                 patched++;
-                console.log('📝 Patched title for:', projectId);
+                console.log('📝 Patched title for:', projectId, '→', project.title);
             }
-            // Tagline: .bproject-tagline
+            // Tagline
             else if(selector.includes('bproject-tagline')){
                 project.tagline = stripTags(content);
                 patched++;
                 console.log('📝 Patched tagline for:', projectId);
             }
-            // Role: .bm-value (first one)
-            else if(selector.includes('bm-value') && change._field === 'role'){
+            // Role
+            else if(selector.includes('bm-value') && selector.includes(':nth-child(1)')){
                 project.role = stripTags(content);
                 patched++;
             }
             // Team
-            else if(selector.includes('bm-value') && change._field === 'team'){
+            else if(selector.includes('bm-value') && selector.includes(':nth-child(2)')){
                 project.team = stripTags(content);
                 patched++;
             }
-            // Content paragraphs: .bp-text
+            // Engine
+            else if(selector.includes('bm-value') && selector.includes(':nth-child(3)')){
+                // Extract just the engine name (might have icon)
+                project.engine = stripTags(content).replace(/^\s*\S+\s*/, '').trim() || stripTags(content);
+                patched++;
+            }
+            // Timeline
+            else if(selector.includes('bm-value') && selector.includes(':nth-child(4)')){
+                project.timeframe = stripTags(content);
+                patched++;
+            }
+            // Content paragraphs
             else if(selector.includes('bp-text')){
-                // Find which paragraph
                 var match = selector.match(/:nth-child\((\d+)\)/);
                 var index = match ? parseInt(match[1]) - 1 : 0;
                 
-                // Patch content array or paragraphs
                 if(project.content && project.content[index]){
                     if(project.content[index].type === 'text'){
                         project.content[index].value = content;
                         patched++;
-                        console.log('📝 Patched content[' + index + '] for:', projectId);
                     }
                 } else if(project.paragraphs && project.paragraphs[index] !== undefined){
                     project.paragraphs[index] = content;
                     patched++;
-                    console.log('📝 Patched paragraph[' + index + '] for:', projectId);
                 }
             }
-            // Heading: .bp-heading
+            // Headings
             else if(selector.includes('bp-heading')){
                 var match = selector.match(/:nth-child\((\d+)\)/);
                 var index = match ? parseInt(match[1]) - 1 : 0;
@@ -189,25 +190,30 @@
                 if(project.content && project.content[index] && project.content[index].type === 'heading'){
                     project.content[index].value = stripTags(content);
                     patched++;
-                    console.log('📝 Patched heading for:', projectId);
+                }
+            }
+            // Tags - handled differently (array)
+            else if(selector.includes('bproject-tags') && selector.includes('span')){
+                var match = selector.match(/:nth-child\((\d+)\)/);
+                var index = match ? parseInt(match[1]) - 1 : 0;
+                
+                if(project.tags && project.tags[index] !== undefined){
+                    project.tags[index] = stripTags(content);
+                    patched++;
                 }
             }
         });
         
         if(patched > 0){
-            console.log('🔧 Patched ' + patched + ' project fields');
+            console.log('🔧 Patched ' + patched + ' project fields in PROJECTS array');
         }
     }
     
     function extractProjectId(selector){
-        // Extract from [data-project-id="xxx"]
         var match = selector.match(/\[data-project-id="([^"]+)"\]/);
         if(match) return match[1];
-        
-        // Extract from #bp-xxx
         match = selector.match(/#bp-([^\s\.\[]+)/);
         if(match) return match[1];
-        
         return null;
     }
     
@@ -297,36 +303,42 @@
     }
     
     // ══════════════════════════════════════════════════════════════
-    // VISUAL CHANGES (after DOM is built)
+    // VISUAL CHANGES (after DOM built)
     // ══════════════════════════════════════════════════════════════
     
     function scheduleVisualChanges(data){
         var apply = function(){ applyVisualChanges(data); };
         if(document.readyState === 'loading'){
-            document.addEventListener('DOMContentLoaded', function(){ setTimeout(apply, 300); });
+            document.addEventListener('DOMContentLoaded', function(){ setTimeout(apply, 400); });
         } else {
-            setTimeout(apply, 300);
+            setTimeout(apply, 400);
         }
     }
     
     function applyVisualChanges(data){
         var applied = 0;
         
-        // Apply text changes to DOM (backup for anything not patched in data)
-        if(data.textChanges){
+        // Apply text changes to DOM (for anything not caught by data patching)
+        if(data.textChanges && data.textChanges.length){
+            console.log('🎨 Applying', data.textChanges.length, 'text changes to DOM...');
+            
             data.textChanges.forEach(function(change){
                 try {
                     var el = document.querySelector(change.selector);
                     if(el){
-                        // Check if content differs (might already be correct from data patch)
                         if(el.innerHTML !== change.content){
                             el.innerHTML = change.content;
                             if(change.styles) el.setAttribute('style', change.styles);
                             if(change.classes) applyClasses(el, change.classes);
                             applied++;
+                            console.log('  ✓ Applied to:', change.selector.substring(0, 60) + '...');
                         }
+                    } else {
+                        console.log('  ⚠️ Element not found:', change.selector.substring(0, 60) + '...');
                     }
-                } catch(e){}
+                } catch(e){
+                    console.log('  ❌ Error:', e.message);
+                }
             });
         }
         
@@ -365,12 +377,11 @@
             });
         }
         
-        // Reorder DOM (backup)
         if(data.projectOrder) reorderDOMProjects(data.projectOrder);
         
         setupProjectObserver();
         
-        if(applied > 0) console.log('🎨 Applied ' + applied + ' visual changes');
+        console.log('🎨 Applied ' + applied + ' visual changes total');
     }
     
     function reorderDOMProjects(order){
@@ -395,7 +406,7 @@
         var newClasses = classString.split(' ').filter(function(c){ 
             return c && !c.startsWith('ed-') && c !== 'expanded'; 
         });
-        var preserve = ['bproject', 'bproject-content', 'bp-figure', 'bp-gallery', 'pcard', 'bp-text', 'bp-heading'];
+        var preserve = ['bproject', 'bproject-content', 'bp-figure', 'bp-gallery', 'pcard', 'bp-text', 'bp-heading', 'bm-value', 'bproject-tagline'];
         var existing = Array.from(el.classList).filter(function(c){ 
             return preserve.indexOf(c) !== -1; 
         });
@@ -429,7 +440,6 @@
             
             if(!stickerLayer) return false;
             
-            // Check duplicates
             var existing = stickerLayer.querySelectorAll('.amendment-sticker');
             for(var i = 0; i < existing.length; i++){
                 if(existing[i].style.left === sticker.position.left && 
@@ -550,18 +560,6 @@
         
         var applied = 0;
         
-        // Re-apply stickers
-        if(storedAmendments.stickers){
-            var existingStickers = projectEl.querySelectorAll('.amendment-sticker');
-            if(existingStickers.length === 0){
-                storedAmendments.stickers.forEach(function(sticker){
-                    if(sticker.projectId === projectId){
-                        if(applySticker(sticker)) applied++;
-                    }
-                });
-            }
-        }
-        
         // Re-apply text changes
         if(storedAmendments.textChanges){
             storedAmendments.textChanges.forEach(function(change){
@@ -578,6 +576,18 @@
                     } catch(e){}
                 }
             });
+        }
+        
+        // Re-apply stickers
+        if(storedAmendments.stickers){
+            var existingStickers = projectEl.querySelectorAll('.amendment-sticker');
+            if(existingStickers.length === 0){
+                storedAmendments.stickers.forEach(function(sticker){
+                    if(sticker.projectId === projectId){
+                        if(applySticker(sticker)) applied++;
+                    }
+                });
+            }
         }
         
         // Re-apply dividers
@@ -607,10 +617,7 @@
         if(applied > 0) console.log('📌 Re-applied ' + applied + ' items to:', projectId);
     }
     
-    // ══════════════════════════════════════════════════════════════
-    // RUN IMMEDIATELY (synchronous, before app.js)
-    // ══════════════════════════════════════════════════════════════
-    
+    // RUN
     loadAllAmendments();
     
 })();
