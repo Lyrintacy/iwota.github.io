@@ -1195,71 +1195,86 @@ markEditables(container){
     if(!el || el === document.body) return 'body';
     if(el.id) return '#' + el.id;
     
-    // For project elements, use data-project-id
+    // For elements inside a project, use data-project-id
     var project = el.closest('.bproject');
     if(project && project.dataset.projectId){
         var projectId = project.dataset.projectId;
-        var projectSelector = '[data-project-id="' + projectId + '"]';
+        var base = '[data-project-id="' + projectId + '"]';
         
-        // Find element's position within the project
+        // Get element info
         var tag = el.tagName.toLowerCase();
-        var classes = Array.from(el.classList).filter(function(c){
-            return !c.startsWith('ed-') && c !== 'expanded';
-        });
+        var mainClass = '';
         
-        var baseSelector = tag;
-        if(classes.length) baseSelector += '.' + classes[0]; // Use first class only
-        
-        // Find index among siblings with same tag+class
-        var container = el.closest('.bproject-content, .bproject-header, .bproject-meta');
-        if(container){
-            var containerClass = container.classList[0];
-            var siblings = container.querySelectorAll(':scope > ' + baseSelector);
-            var index = Array.prototype.indexOf.call(siblings, el);
-            
-            if(siblings.length > 1){
-                return projectSelector + ' .' + containerClass + ' > ' + baseSelector + ':nth-of-type(' + (index + 1) + ')';
-            } else {
-                return projectSelector + ' .' + containerClass + ' > ' + baseSelector;
+        // Get first meaningful class
+        for(var i = 0; i < el.classList.length; i++){
+            var c = el.classList[i];
+            if(!c.startsWith('ed-') && c !== 'expanded'){
+                mainClass = c;
+                break;
             }
         }
         
+        // Build element selector
+        var elSelector = tag;
+        if(mainClass) elSelector = tag + '.' + mainClass;
+        
+        // Find which container it's in
+        var container = el.closest('.bproject-content, .bproject-header-text, .bproject-meta');
+        if(container){
+            var containerClass = container.className.split(' ')[0];
+            
+            // Find index among same elements in container
+            var siblings = container.querySelectorAll(elSelector);
+            var index = 0;
+            for(var i = 0; i < siblings.length; i++){
+                if(siblings[i] === el){
+                    index = i + 1;
+                    break;
+                }
+            }
+            
+            if(siblings.length > 1){
+                return base + ' .' + containerClass + ' ' + elSelector + ':nth-of-type(' + index + ')';
+            }
+            return base + ' .' + containerClass + ' ' + elSelector;
+        }
+        
         // Fallback for project elements
-        return projectSelector + ' ' + baseSelector;
+        return base + ' ' + elSelector;
     }
     
-    // For non-project elements
+    // For non-project elements (hero, about, etc.)
     var path = [];
     var current = el;
     
     while(current && current !== document.body && current.nodeType === 1){
-        var selector = current.tagName.toLowerCase();
+        var sel = current.tagName.toLowerCase();
         
         if(current.id){
             path.unshift('#' + current.id);
             break;
         }
         
-        var classes = Array.from(current.classList).filter(function(c){
-            return !c.startsWith('ed-') && c !== 'expanded';
-        });
-        
-        if(classes.length) selector += '.' + classes[0];
-        
-        var parent = current.parentElement;
-        if(parent){
-            var siblings = parent.querySelectorAll(':scope > ' + current.tagName.toLowerCase());
-            if(siblings.length > 1){
-                var index = Array.prototype.indexOf.call(siblings, current) + 1;
-                selector += ':nth-of-type(' + index + ')';
+        // Add first class if exists
+        for(var i = 0; i < current.classList.length; i++){
+            var c = current.classList[i];
+            if(!c.startsWith('ed-') && c !== 'expanded'){
+                sel += '.' + c;
+                break;
             }
         }
         
-        path.unshift(selector);
-        current = parent;
+        path.unshift(sel);
+        current = current.parentElement;
+        
+        // Stop at known containers
+        if(current && (current.id || current.classList.contains('zone-inner'))){
+            if(current.id) path.unshift('#' + current.id);
+            break;
+        }
     }
     
-    return path.join(' > ');
+    return path.join(' ');
 }
     
     setStatus(msg){var s=document.getElementById('edStatus');if(s){s.textContent=msg;s.classList.add('ed-flash');setTimeout(function(){s.classList.remove('ed-flash');},300);}}
