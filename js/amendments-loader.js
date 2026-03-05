@@ -1,4 +1,4 @@
-/* ═══════ AMENDMENTS LOADER v8 — Fast + Auto-scan ═══════ */
+/* ═══════ AMENDMENTS LOADER v9 — Manifest Only, Zero Probing ═══════ */
 (function(){
     'use strict';
 
@@ -27,102 +27,33 @@
     function log(){ if(DEBUG) console.log.apply(console, arguments); }
 
     // ══════════════════════════════════════════════════════════════
-    // DISCOVER FILES — fast, no timestamp brute force
+    // LOAD — manifest only, no probing
     // ══════════════════════════════════════════════════════════════
 
-    function discoverFiles(){
-        // Strategy 1: manifest.json lists all files explicitly
-        var manifestFiles = tryManifest();
-        if(manifestFiles.length > 0){
-            log('📋 Using manifest:', manifestFiles.length, 'files');
-            return manifestFiles;
-        }
-
-        // Strategy 2: directory listing (works on Apache/nginx with autoindex)
-        var dirFiles = tryDirectoryListing();
-        if(dirFiles.length > 0){
-            log('📂 Using directory listing:', dirFiles.length, 'files');
-            return sortFiles(dirFiles);
-        }
-
-        // Strategy 3: probe only numbered files (001-020), fast
-        var numbered = probeNumberedFiles();
-        log('🔢 Using numbered probe:', numbered.length, 'files');
-        return numbered;
-    }
-
-    function tryManifest(){
-        // manifest.json is a simple array of filenames:
-        // ["amendments.json", "amendments-20260304-1400.json"]
+    function loadAllAmendments(){
+        // Read manifest.json — if missing or empty, do nothing
+        var files = [];
         try {
             var xhr = new XMLHttpRequest();
             xhr.open('GET', AMENDMENTS_FOLDER + 'manifest.json', false);
             xhr.send(null);
             if(xhr.status === 200){
-                var list = JSON.parse(xhr.responseText);
-                if(Array.isArray(list) && list.length) return sortFiles(list);
+                var parsed = JSON.parse(xhr.responseText);
+                if(Array.isArray(parsed)) files = parsed.sort();
             }
-        } catch(e){}
-        return [];
-    }
-
-    function tryDirectoryListing(){
-        try {
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', AMENDMENTS_FOLDER, false);
-            xhr.send(null);
-            if(xhr.status === 200){
-                var text = xhr.responseText;
-                var regex = /amendments[^"'\s<>]*\.json/g;
-                var matches = text.match(regex) || [];
-                var seen = {}, found = [];
-                matches.forEach(function(m){
-                    // exclude manifest itself
-                    if(!seen[m] && m !== 'manifest.json'){
-                        seen[m] = true;
-                        found.push(m);
-                    }
-                });
-                if(found.length) return found;
-            }
-        } catch(e){}
-        return [];
-    }
-
-    function probeNumberedFiles(){
-        // Only probes amendments.json + amendments-001 to amendments-020
-        // Fast: max 21 HEAD requests
-        var found = [];
-        var candidates = ['amendments.json'];
-        for(var n = 1; n <= 20; n++){
-            var padded = n < 10 ? '00' + n : '0' + n;
-            candidates.push('amendments-' + padded + '.json');
+        } catch(e){
+            log('ℹ️ No manifest.json found — no amendments loaded');
+            window.LOADED_AMENDMENTS._loaded = true;
+            return;
         }
-        candidates.forEach(function(filename){
-            try {
-                var xhr = new XMLHttpRequest();
-                xhr.open('HEAD', AMENDMENTS_FOLDER + filename, false);
-                xhr.send(null);
-                if(xhr.status === 200) found.push(filename);
-            } catch(e){}
-        });
-        return found;
-    }
 
-    function sortFiles(files){
-        // Alphabetical sort = older files first, newer timestamps last
-        // amendments.json < amendments-001.json < amendments-20260304-1400.json
-        return files.slice().sort();
-    }
+        if(files.length === 0){
+            log('ℹ️ manifest.json is empty — no amendments loaded');
+            window.LOADED_AMENDMENTS._loaded = true;
+            return;
+        }
 
-    // ══════════════════════════════════════════════════════════════
-    // LOAD + MERGE
-    // ══════════════════════════════════════════════════════════════
-
-    function loadAllAmendments(){
-        log('🔍 Discovering amendment files...');
-        var files = discoverFiles();
-        log('📁 Files to load:', files);
+        log('📋 Manifest found:', files.length, 'file(s):', files);
 
         var loadedCount = 0;
         files.forEach(function(filename){
@@ -135,8 +66,10 @@
                     smartMerge(data);
                     loadedCount++;
                     log('✅ Loaded:', filename);
+                } else {
+                    log('⚠️ File listed in manifest but not found:', filename);
                 }
-            } catch(e){ log('❌ Failed:', filename, e.message); }
+            } catch(e){ log('❌ Failed to parse:', filename, e.message); }
         });
 
         if(loadedCount > 0){
@@ -163,7 +96,7 @@
             scheduleVisualChanges(storedAmendments);
         } else {
             window.LOADED_AMENDMENTS._loaded = true;
-            log('ℹ️ No amendment files found');
+            log('ℹ️ No amendment files loaded');
         }
     }
 
@@ -258,26 +191,22 @@
     }
 
     // ══════════════════════════════════════════════════════════════
-    // ELEMENT FINDER — 4-strategy fallback
+    // ELEMENT FINDER
     // ══════════════════════════════════════════════════════════════
 
     function findElement(change){
-        // 1: direct querySelector
         if(change.selector){
             try {
                 var el = document.querySelector(change.selector);
                 if(el) return el;
             } catch(e){}
         }
-        // 2: data-ed-idx
         if(change.selector && change.selector.includes('data-ed-idx')){
             return findByIndex(change);
         }
-        // 3: old nth-of-type
         if(change.selector && change.selector.includes('nth-of-type')){
             return findByNthFallback(change);
         }
-        // 4: project + class
         if(change.projectId && change.classes){
             return findByProjectAndClass(change);
         }
@@ -288,36 +217,26 @@
         var idxMatch = change.selector.match(/data-ed-idx="(\d+)"/);
         if(!idxMatch) return null;
         var idx = parseInt(idxMatch[1]);
-
         var project = document.querySelector('[data-project-id="' + change.projectId + '"]');
         if(!project) return null;
-
         var elMatch = change.selector.match(/\]\s*\.[\w-]+\s+([\w.]+)\[data-ed-idx/);
         if(!elMatch) return null;
-        var elSelector = elMatch[1];
-
         var containerMatch = change.selector.match(/\]\s*\.([\w-]+)\s+/);
         if(!containerMatch) return null;
-
         var container = project.querySelector('.' + containerMatch[1]);
         if(!container) return null;
-
-        return Array.from(container.querySelectorAll(elSelector))[idx] || null;
+        return Array.from(container.querySelectorAll(elMatch[1]))[idx] || null;
     }
 
     function findByNthFallback(change){
         var project = document.querySelector('[data-project-id="' + change.projectId + '"]');
         if(!project) return null;
-
         var nthMatch = change.selector.match(/:nth-of-type\((\d+)\)/);
         var idx = nthMatch ? parseInt(nthMatch[1]) - 1 : 0;
-
         var tagClassMatch = change.selector.match(/(\w+)\.([\w-]+):nth-of-type/);
         if(!tagClassMatch) return null;
-
         var content = project.querySelector('.bproject-content');
         if(!content) return null;
-
         var candidates = Array.from(
             content.querySelectorAll(tagClassMatch[1] + '.' + tagClassMatch[2])
         );
@@ -366,21 +285,17 @@
                 return false;
             }
             project.style.position = 'relative';
-
             var layer = project.querySelector('.bproject-stickers');
             if(!layer){
                 layer = document.createElement('div');
                 layer.className = 'bproject-stickers';
                 project.insertBefore(layer, project.firstChild);
             }
-
-            // Deduplicate
             var existing = layer.querySelectorAll('.amendment-sticker');
             for(var i = 0; i < existing.length; i++){
                 if(existing[i].style.left === sticker.position.left &&
                    existing[i].style.top  === sticker.position.top) return false;
             }
-
             var div = document.createElement('div');
             div.className = 'ed-sticker amendment-sticker';
             div.dataset.amendmentLoaded = 'true';
@@ -395,12 +310,10 @@
                 'opacity:' + (sticker.opacity || 1)  + ';' +
                 'transform:rotate(' + (sticker.rotation || 0) + 'deg);' +
                 'pointer-events:none;';
-
             var img = document.createElement('img');
             img.src = sticker.src;
             img.style.cssText = 'width:100%;height:100%;object-fit:contain;pointer-events:none;';
             img.onerror = function(){ log('  ❌ Sticker img failed'); };
-
             div.appendChild(img);
             layer.appendChild(div);
             log('  ✓ Sticker on:', sticker.projectId);
@@ -460,7 +373,7 @@
     }
 
     // ══════════════════════════════════════════════════════════════
-    // PROJECT OBSERVER — re-apply on expand
+    // PROJECT OBSERVER
     // ══════════════════════════════════════════════════════════════
 
     function setupProjectObserver(){
@@ -483,7 +396,6 @@
         if(!storedAmendments || !projectId) return;
         log('📌 Re-applying for:', projectId);
 
-        // Stamp idx on freshly rendered elements
         var project = document.querySelector('[data-project-id="' + projectId + '"]');
         if(project){
             project.querySelectorAll('.bproject-content,.bproject-header-text,.bproject-meta')
