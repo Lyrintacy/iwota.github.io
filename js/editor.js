@@ -900,148 +900,219 @@ class LiveEditor{
     // FIXED: exportAmendment — stamps data-ed-idx on elements before export
     // ══════════════════════════════════════════════════════════════
     exportAmendment(){
-        var self=this;
-        var loaded=window.LOADED_AMENDMENTS||{stickers:{},textChanges:{},dividers:{},links:{},images:{}};
+    var self = this;
+    var loaded = window.LOADED_AMENDMENTS || {stickers:{}, textChanges:{}, dividers:{}, links:{}, images:{}};
 
-        // Stamp index attributes on all editable elements so selectors are reliable
-        document.querySelectorAll('.bproject').forEach(function(project){
-            var projectId=project.dataset.projectId;
-            if(!projectId)return;
-            var containers=project.querySelectorAll('.bproject-content,.bproject-header-text,.bproject-meta');
-            containers.forEach(function(container){
-                // Group by tag+class combo
-                var groups={};
-                Array.from(container.children).forEach(function(child){
-                    var tag=child.tagName.toLowerCase();
-                    var mainClass='';
-                    for(var i=0;i<child.classList.length;i++){
-                        var c=child.classList[i];
-                        if(!c.startsWith('ed-')&&c!=='expanded'&&c!=='ed-selected'){mainClass=c;break;}
+    document.querySelectorAll('.bproject').forEach(function(project){
+        var projectId = project.dataset.projectId;
+        if(!projectId) return;
+        project.querySelectorAll('.bproject-content,.bproject-header-text,.bproject-meta')
+        .forEach(function(container){
+            var groups = {};
+            Array.from(container.children).forEach(function(child){
+                var tag = child.tagName.toLowerCase();
+                var mainClass = '';
+                for(var i = 0; i < child.classList.length; i++){
+                    var c = child.classList[i];
+                    if(!c.startsWith('ed-') && c !== 'expanded' && c !== 'ed-selected'){
+                        mainClass = c; break;
                     }
-                    var key=mainClass?tag+'.'+mainClass:tag;
-                    if(!groups[key])groups[key]=[];
-                    groups[key].push(child);
+                }
+                var key = mainClass ? tag+'.'+mainClass : tag;
+                if(!groups[key]) groups[key] = [];
+                groups[key].push(child);
+            });
+            Object.keys(groups).forEach(function(key){
+                groups[key].forEach(function(el, idx){
+                    el.setAttribute('data-ed-idx', idx);
                 });
-                Object.keys(groups).forEach(function(key){
-                    groups[key].forEach(function(el,idx){
-                        el.setAttribute('data-ed-idx',idx);
-                    });
-                });
             });
         });
+    });
 
-        var amendment={
-            _version:'3.1',
-            _exported:new Date().toISOString(),
-            projectOrder:null,
-            textChanges:[],
-            images:[],
-            stickers:[],
-            dividers:[],
-            links:[]
-        };
+    var amendment = {
+        _version: '3.1',
+        _exported: new Date().toISOString(),
+        projectOrder: null,
+        textChanges: [],
+        images: [],
+        stickers: [],
+        dividers: [],
+        links: []
+    };
 
-        // Project order
-        var currentProjectOrder=[];
-        document.querySelectorAll('.basement-projects .bproject').forEach(function(p){
-            if(p.dataset.projectId)currentProjectOrder.push(p.dataset.projectId);
-        });
-        if(loaded.projectOrder){
-            if(JSON.stringify(currentProjectOrder)!==JSON.stringify(loaded.projectOrder))amendment.projectOrder=currentProjectOrder;
-        }else if(currentProjectOrder.length){
-            amendment.projectOrder=currentProjectOrder;
-        }
-
-        // Text changes
-        document.querySelectorAll('[data-ed-original]').forEach(function(el){
-            var original=el.getAttribute('data-ed-original');
-            var current=el.innerHTML;
-            if(original===current)return; // No change
-
-            var selector=self.getUniqueSelector(el);
-            var loadedChange=loaded.textChanges?loaded.textChanges[selector]:null;
-            if(loadedChange&&loadedChange.content===current)return; // Same as loaded
-
-            var projectEl=el.closest('.bproject');
-            amendment.textChanges.push({
-                selector:selector,
-                content:current,
-                styles:el.getAttribute('style')||'',
-                classes:el.className,
-                projectId:projectEl?projectEl.dataset.projectId:null
-            });
-        });
-
-        // Images (base64 only — means they were replaced)
-        document.querySelectorAll('img[src^="data:"]').forEach(function(img){
-            var selector=self.getUniqueSelector(img);
-            var loadedImg=loaded.images?loaded.images[selector]:null;
-            if(!loadedImg||loadedImg.src!==img.src){
-                amendment.images.push({selector:selector,src:img.src,alt:img.alt||''});
-            }
-        });
-
-        // Stickers — only new ones
-        document.querySelectorAll('.ed-sticker').forEach(function(s){
-            if(s.dataset.amendmentLoaded==='true')return;
-            var sImg=s.querySelector('img');
-            var stickerLayer=s.closest('.bproject-stickers');
-            var projectCard=stickerLayer?stickerLayer.closest('.bproject'):null;
-            var projectId=projectCard?projectCard.dataset.projectId:'';
-            var key=(projectId||'global')+'|'+(s.style.left||'0')+'|'+(s.style.top||'0');
-            if(!loaded.stickers||!loaded.stickers[key]){
-                amendment.stickers.push({
-                    projectId:projectId,
-                    src:sImg?sImg.src:'',
-                    position:{left:s.style.left,top:s.style.top},
-                    size:{width:s.style.width,height:s.style.height},
-                    rotation:s.dataset.rotation||'0',
-                    zIndex:s.style.zIndex||'10',
-                    opacity:s.style.opacity||'1',
-                    layer:s.dataset.z||'normal'
-                });
-            }
-        });
-
-        // Dividers — only new ones
-        document.querySelectorAll('.ed-divider').forEach(function(d){
-            if(d.dataset.amendmentLoaded==='true')return;
-            amendment.dividers.push({
-                parentSelector:self.getUniqueSelector(d.parentElement),
-                styles:d.getAttribute('style')||''
-            });
-        });
-
-        // Links — only new ones
-        document.querySelectorAll('.ed-link-block').forEach(function(l){
-            if(l.dataset.amendmentLoaded==='true')return;
-            var a=l.querySelector('a');
-            amendment.links.push({
-                parentSelector:self.getUniqueSelector(l.parentElement),
-                text:a?a.textContent:'',
-                href:a?a.href:'#',
-                className:a?a.className:'btn',
-                target:a?a.target:'_blank'
-            });
-        });
-
-        var total=amendment.textChanges.length+amendment.stickers.length+
-            amendment.dividers.length+amendment.links.length+amendment.images.length+
-            (amendment.projectOrder?1:0);
-
-        if(total===0){this.setStatus('📭 No new changes to export');return;}
-
-        var now=new Date();
-        var timestamp=now.toISOString().slice(0,10).replace(/-/g,'')+'-'+now.toISOString().slice(11,16).replace(':','');
-        var filename='amendments-'+timestamp+'.json';
-
-        var blob=new Blob([JSON.stringify(amendment,null,2)],{type:'application/json'});
-        var url=URL.createObjectURL(blob);
-        var a=document.createElement('a');a.href=url;a.download=filename;a.click();
-        URL.revokeObjectURL(url);
-        this.setStatus('📄 Exported '+total+' changes → '+filename);
+    var currentProjectOrder = [];
+    document.querySelectorAll('.basement-projects .bproject').forEach(function(p){
+        if(p.dataset.projectId) currentProjectOrder.push(p.dataset.projectId);
+    });
+    if(loaded.projectOrder){
+        if(JSON.stringify(currentProjectOrder) !== JSON.stringify(loaded.projectOrder))
+            amendment.projectOrder = currentProjectOrder;
+    } else if(currentProjectOrder.length){
+        amendment.projectOrder = currentProjectOrder;
     }
 
+    document.querySelectorAll('[data-ed-original]').forEach(function(el){
+        var original = el.getAttribute('data-ed-original');
+        var current = el.innerHTML;
+        if(original === current) return;
+        var selector = self.getUniqueSelector(el);
+        var loadedChange = loaded.textChanges ? loaded.textChanges[selector] : null;
+        if(loadedChange && loadedChange.content === current) return;
+        var projectEl = el.closest('.bproject');
+        amendment.textChanges.push({
+            selector: selector,
+            content: current,
+            styles: el.getAttribute('style') || '',
+            classes: el.className,
+            projectId: projectEl ? projectEl.dataset.projectId : null
+        });
+    });
+
+    document.querySelectorAll('img[src^="data:"]').forEach(function(img){
+        var selector = self.getUniqueSelector(img);
+        var loadedImg = loaded.images ? loaded.images[selector] : null;
+        if(!loadedImg || loadedImg.src !== img.src){
+            amendment.images.push({selector:selector, src:img.src, alt:img.alt||''});
+        }
+    });
+
+    document.querySelectorAll('.ed-sticker').forEach(function(s){
+        if(s.dataset.amendmentLoaded === 'true') return;
+        var sImg = s.querySelector('img');
+        var projectCard = s.closest('.bproject');
+        var projectId = projectCard ? projectCard.dataset.projectId : '';
+        var key = (projectId||'global')+'|'+(s.style.left||'0')+'|'+(s.style.top||'0');
+        if(!loaded.stickers || !loaded.stickers[key]){
+            amendment.stickers.push({
+                projectId: projectId,
+                src: sImg ? sImg.src : '',
+                position: {left:s.style.left, top:s.style.top},
+                size: {width:s.style.width, height:s.style.height},
+                rotation: s.dataset.rotation || '0',
+                zIndex: s.style.zIndex || '10',
+                opacity: s.style.opacity || '1',
+                layer: s.dataset.z || 'normal'
+            });
+        }
+    });
+
+    document.querySelectorAll('.ed-divider').forEach(function(d){
+        if(d.dataset.amendmentLoaded === 'true') return;
+        amendment.dividers.push({
+            parentSelector: self.getUniqueSelector(d.parentElement),
+            styles: d.getAttribute('style') || ''
+        });
+    });
+
+    document.querySelectorAll('.ed-link-block').forEach(function(l){
+        if(l.dataset.amendmentLoaded === 'true') return;
+        var a = l.querySelector('a');
+        amendment.links.push({
+            parentSelector: self.getUniqueSelector(l.parentElement),
+            text: a ? a.textContent : '',
+            href: a ? a.href : '#',
+            className: a ? a.className : 'btn',
+            target: a ? a.target : '_blank'
+        });
+    });
+
+    var total = amendment.textChanges.length + amendment.stickers.length +
+        amendment.dividers.length + amendment.links.length + amendment.images.length +
+        (amendment.projectOrder ? 1 : 0);
+
+    if(total === 0){ this.setStatus('📭 No new changes to export'); return; }
+
+    var now = new Date();
+    var timestamp = now.toISOString().slice(0,10).replace(/-/g,'') + '-' +
+                    now.toISOString().slice(11,16).replace(':','');
+    var filename = 'amendments-' + timestamp + '.json';
+
+    var content = JSON.stringify(amendment, null, 2);
+    var blob = new Blob([content], {type:'application/json'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = filename; a.click();
+    URL.revokeObjectURL(url);
+
+    this.downloadUpdatedManifest(filename);
+    this.setStatus('📄 Exported ' + total + ' changes → ' + filename);
+}
+
+downloadUpdatedManifest(newFilename){
+    var currentList = [];
+    try {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', './js/amendments/manifest.json', false);
+        xhr.send(null);
+        if(xhr.status === 200){
+            currentList = JSON.parse(xhr.responseText);
+        }
+    } catch(e){}
+
+    if(currentList.indexOf(newFilename) === -1){
+        currentList.push(newFilename);
+    }
+
+    currentList.sort();
+
+    var blob = new Blob(
+        [JSON.stringify(currentList, null, 2)],
+        {type: 'application/json'}
+    );
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'manifest.json';
+
+    setTimeout(function(){
+        a.click();
+        URL.revokeObjectURL(url);
+    }, 300);
+
+    console.log('📋 Manifest updated with:', newFilename);
+    console.log('📋 Full manifest:', currentList);
+}
+
+downloadUpdatedManifest(newFilename){
+    // Try to read current manifest first
+    var currentList = [];
+    try {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', './js/amendments/manifest.json', false);
+        xhr.send(null);
+        if(xhr.status === 200){
+            currentList = JSON.parse(xhr.responseText);
+        }
+    } catch(e){}
+
+    // Add new file if not already in list
+    if(currentList.indexOf(newFilename) === -1){
+        currentList.push(newFilename);
+    }
+
+    // Sort so older files load first, newer last
+    currentList.sort();
+
+    // Download updated manifest
+    var blob = new Blob(
+        [JSON.stringify(currentList, null, 2)],
+        {type: 'application/json'}
+    );
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'manifest.json';
+
+    // Small delay so both downloads don't clash
+    setTimeout(function(){
+        a.click();
+        URL.revokeObjectURL(url);
+    }, 300);
+
+    console.log('📋 Manifest updated with:', newFilename);
+    console.log('📋 Full manifest:', currentList);
+}
     setStatus(msg){
         var s=document.getElementById('edStatus');
         if(s){s.textContent=msg;s.classList.add('ed-flash');setTimeout(function(){s.classList.remove('ed-flash');},300);}

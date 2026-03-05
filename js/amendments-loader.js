@@ -1,4 +1,4 @@
-/* ═══════ AMENDMENTS LOADER v7 — Auto-scan + Smart Merge ═══════ */
+/* ═══════ AMENDMENTS LOADER v8 — Fast + Auto-scan ═══════ */
 (function(){
     'use strict';
 
@@ -27,129 +27,102 @@
     function log(){ if(DEBUG) console.log.apply(console, arguments); }
 
     // ══════════════════════════════════════════════════════════════
-    // SCAN FOR ALL AMENDMENT FILES
+    // DISCOVER FILES — fast, no timestamp brute force
     // ══════════════════════════════════════════════════════════════
 
     function discoverFiles(){
-        var found = [];
-
-        // Always try base file first
-        var baseNames = [
-            'amendments.json'
-        ];
-
-        // Generate numbered files: amendments-001.json to amendments-099.json
-        for(var n = 1; n <= 99; n++){
-            var padded = n < 10 ? '00' + n : n < 100 ? '0' + n : '' + n;
-            baseNames.push('amendments-' + padded + '.json');
+        // Strategy 1: manifest.json lists all files explicitly
+        var manifestFiles = tryManifest();
+        if(manifestFiles.length > 0){
+            log('📋 Using manifest:', manifestFiles.length, 'files');
+            return manifestFiles;
         }
 
-        // Generate timestamp files for years 2024-2030, all months/days
-        // Pattern: amendments-YYYYMMDD-HHMM.json
-        // We probe a broad range by trying known-possible timestamps
-        // Instead of brute-forcing dates, we use a smarter approach:
-        // Try fetching a directory listing via XHR (works on some servers)
-        var directoryFiles = tryDirectoryListing();
-        if(directoryFiles.length > 0){
-            log('📂 Directory listing found:', directoryFiles.length, 'files');
-            return sortFiles(directoryFiles);
+        // Strategy 2: directory listing (works on Apache/nginx with autoindex)
+        var dirFiles = tryDirectoryListing();
+        if(dirFiles.length > 0){
+            log('📂 Using directory listing:', dirFiles.length, 'files');
+            return sortFiles(dirFiles);
         }
 
-        // Fallback: probe hardcoded patterns
-        baseNames.forEach(function(filename){
-            if(fileExists(filename)) found.push(filename);
-        });
+        // Strategy 3: probe only numbered files (001-020), fast
+        var numbered = probeNumberedFiles();
+        log('🔢 Using numbered probe:', numbered.length, 'files');
+        return numbered;
+    }
 
-        // Also probe timestamp pattern files we might know about
-        // by trying a range of recent dates
-        var timestampFiles = probeTimestampFiles();
-        timestampFiles.forEach(function(f){ found.push(f); });
-
-        return sortFiles(found);
+    function tryManifest(){
+        // manifest.json is a simple array of filenames:
+        // ["amendments.json", "amendments-20260304-1400.json"]
+        try {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', AMENDMENTS_FOLDER + 'manifest.json', false);
+            xhr.send(null);
+            if(xhr.status === 200){
+                var list = JSON.parse(xhr.responseText);
+                if(Array.isArray(list) && list.length) return sortFiles(list);
+            }
+        } catch(e){}
+        return [];
     }
 
     function tryDirectoryListing(){
-        // Some servers return directory listings as HTML/JSON
-        // Try to parse filenames from a directory GET request
-        var found = [];
         try {
             var xhr = new XMLHttpRequest();
             xhr.open('GET', AMENDMENTS_FOLDER, false);
             xhr.send(null);
-
             if(xhr.status === 200){
                 var text = xhr.responseText;
-                // Match any amendments*.json filenames in the response
-                var regex = /amendments[^"'<>\s]*\.json/g;
-                var matches = text.match(regex);
-                if(matches){
-                    // Deduplicate
-                    var seen = {};
-                    matches.forEach(function(m){
-                        if(!seen[m]){ seen[m] = true; found.push(m); }
-                    });
-                }
+                var regex = /amendments[^"'\s<>]*\.json/g;
+                var matches = text.match(regex) || [];
+                var seen = {}, found = [];
+                matches.forEach(function(m){
+                    // exclude manifest itself
+                    if(!seen[m] && m !== 'manifest.json'){
+                        seen[m] = true;
+                        found.push(m);
+                    }
+                });
+                if(found.length) return found;
             }
         } catch(e){}
-        return found;
+        return [];
     }
 
-    function probeTimestampFiles(){
-        // Probe timestamp-format files: amendments-YYYYMMDD-HHMM.json
-        // We try dates from 2024-01-01 to 2 years from now
+    function probeNumberedFiles(){
+        // Only probes amendments.json + amendments-001 to amendments-020
+        // Fast: max 21 HEAD requests
         var found = [];
-        var now = new Date();
-        var startYear = 2024;
-        var endYear = now.getFullYear() + 1;
-
-        for(var year = startYear; year <= endYear; year++){
-            for(var month = 1; month <= 12; month++){
-                for(var day = 1; day <= 31; day++){
-                    var mm = month < 10 ? '0' + month : '' + month;
-                    var dd = day < 10 ? '0' + day : '' + day;
-                    var datePrefix = 'amendments-' + year + mm + dd + '-';
-
-                    // For each day, probe hours 00-23
-                    for(var hour = 0; hour <= 23; hour++){
-                        // Only probe round hours + half hours to keep requests manageable
-                        var probeMinutes = [0, 30];
-                        probeMinutes.forEach(function(min){
-                            var hh = hour < 10 ? '0' + hour : '' + hour;
-                            var mn = min < 10 ? '0' + min : '' + min;
-                            var filename = datePrefix + hh + mn + '.json';
-                            if(fileExists(filename)) found.push(filename);
-                        });
-                    }
-                }
-            }
+        var candidates = ['amendments.json'];
+        for(var n = 1; n <= 20; n++){
+            var padded = n < 10 ? '00' + n : '0' + n;
+            candidates.push('amendments-' + padded + '.json');
         }
+        candidates.forEach(function(filename){
+            try {
+                var xhr = new XMLHttpRequest();
+                xhr.open('HEAD', AMENDMENTS_FOLDER + filename, false);
+                xhr.send(null);
+                if(xhr.status === 200) found.push(filename);
+            } catch(e){}
+        });
         return found;
-    }
-
-    function fileExists(filename){
-        try {
-            var xhr = new XMLHttpRequest();
-            xhr.open('HEAD', AMENDMENTS_FOLDER + filename, false);
-            xhr.send(null);
-            return xhr.status === 200;
-        } catch(e){ return false; }
     }
 
     function sortFiles(files){
-        // Sort alphabetically — this means:
-        // amendments.json < amendments-001.json < amendments-20260101-0000.json
-        // Newer timestamps naturally sort later = higher priority
-        return files.sort();
+        // Alphabetical sort = older files first, newer timestamps last
+        // amendments.json < amendments-001.json < amendments-20260304-1400.json
+        return files.slice().sort();
     }
 
     // ══════════════════════════════════════════════════════════════
-    // LOAD + MERGE ALL FOUND FILES
+    // LOAD + MERGE
     // ══════════════════════════════════════════════════════════════
 
     function loadAllAmendments(){
-        log('🔍 Scanning for amendment files...');
+        log('🔍 Discovering amendment files...');
         var files = discoverFiles();
-        log('📁 Found', files.length, 'file(s):', files);
+        log('📁 Files to load:', files);
 
         var loadedCount = 0;
         files.forEach(function(filename){
@@ -163,12 +136,11 @@
                     loadedCount++;
                     log('✅ Loaded:', filename);
                 }
-            } catch(e){ log('❌ Failed to parse:', filename, e.message); }
+            } catch(e){ log('❌ Failed:', filename, e.message); }
         });
 
         if(loadedCount > 0){
             storedAmendments = finalizeAmendments();
-
             window.LOADED_AMENDMENTS = {
                 stickers:     Object.assign({}, mergedAmendments.stickers),
                 textChanges:  Object.assign({}, mergedAmendments.textChanges),
@@ -196,20 +168,16 @@
     }
 
     // ══════════════════════════════════════════════════════════════
-    // SMART MERGE — later files overwrite earlier ones by key
+    // SMART MERGE — later files overwrite earlier by key
     // ══════════════════════════════════════════════════════════════
 
     function smartMerge(data){
-        // Text changes — key by projectId + selector
-        // Later file with same key overwrites earlier
         if(data.textChanges){
             data.textChanges.forEach(function(change){
                 var key = (change.projectId || 'static') + '|' + change.selector;
                 mergedAmendments.textChanges[key] = change;
             });
         }
-
-        // Stickers — key by projectId + position
         if(data.stickers){
             data.stickers.forEach(function(sticker){
                 var key = (sticker.projectId || 'global') + '|' +
@@ -217,29 +185,21 @@
                 mergedAmendments.stickers[key] = sticker;
             });
         }
-
-        // Dividers — key by parentSelector
         if(data.dividers){
             data.dividers.forEach(function(d){
                 mergedAmendments.dividers[d.parentSelector] = d;
             });
         }
-
-        // Links — key by parentSelector + href
         if(data.links){
             data.links.forEach(function(l){
                 mergedAmendments.links[l.parentSelector + '|' + l.href] = l;
             });
         }
-
-        // Images — key by selector
         if(data.images){
             data.images.forEach(function(img){
                 mergedAmendments.images[img.selector] = img;
             });
         }
-
-        // Project order — last file wins
         if(data.projectOrder) mergedAmendments.projectOrder = data.projectOrder;
     }
 
@@ -280,7 +240,6 @@
     function applyAll(data){
         log('🎨 Applying amendments to DOM...');
         var applied = 0;
-
         if(data.textChanges) data.textChanges.forEach(function(c){ if(applyTextChange(c)) applied++; });
         if(data.stickers)    data.stickers.forEach(function(s){    if(applySticker(s))    applied++; });
         if(data.dividers)    data.dividers.forEach(function(d){    if(applyDivider(d))    applied++; });
@@ -293,40 +252,35 @@
                 } catch(e){}
             });
         }
-
         if(data.projectOrder) reorderDOM(data.projectOrder);
         setupProjectObserver();
         log('✅ Applied', applied, 'amendments');
     }
 
     // ══════════════════════════════════════════════════════════════
-    // FIND ELEMENT — 4-strategy fallback
+    // ELEMENT FINDER — 4-strategy fallback
     // ══════════════════════════════════════════════════════════════
 
     function findElement(change){
-        // Strategy 1: direct querySelector (new data-ed-idx format)
+        // 1: direct querySelector
         if(change.selector){
             try {
                 var el = document.querySelector(change.selector);
                 if(el) return el;
             } catch(e){}
         }
-
-        // Strategy 2: data-ed-idx based search
+        // 2: data-ed-idx
         if(change.selector && change.selector.includes('data-ed-idx')){
             return findByIndex(change);
         }
-
-        // Strategy 3: old nth-of-type fallback
+        // 3: old nth-of-type
         if(change.selector && change.selector.includes('nth-of-type')){
             return findByNthFallback(change);
         }
-
-        // Strategy 4: project + class only
+        // 4: project + class
         if(change.projectId && change.classes){
             return findByProjectAndClass(change);
         }
-
         return null;
     }
 
@@ -338,21 +292,17 @@
         var project = document.querySelector('[data-project-id="' + change.projectId + '"]');
         if(!project) return null;
 
-        // Extract element selector (tag.class)
         var elMatch = change.selector.match(/\]\s*\.[\w-]+\s+([\w.]+)\[data-ed-idx/);
         if(!elMatch) return null;
         var elSelector = elMatch[1];
 
-        // Extract container class
         var containerMatch = change.selector.match(/\]\s*\.([\w-]+)\s+/);
         if(!containerMatch) return null;
-        var containerClass = containerMatch[1];
 
-        var container = project.querySelector('.' + containerClass);
+        var container = project.querySelector('.' + containerMatch[1]);
         if(!container) return null;
 
-        var candidates = Array.from(container.querySelectorAll(elSelector));
-        return candidates[idx] || null;
+        return Array.from(container.querySelectorAll(elSelector))[idx] || null;
     }
 
     function findByNthFallback(change){
@@ -365,20 +315,22 @@
         var tagClassMatch = change.selector.match(/(\w+)\.([\w-]+):nth-of-type/);
         if(!tagClassMatch) return null;
 
-        var tag = tagClassMatch[1];
-        var cls = tagClassMatch[2];
         var content = project.querySelector('.bproject-content');
         if(!content) return null;
 
-        var candidates = Array.from(content.querySelectorAll(tag + '.' + cls));
-        log('  📍 nth fallback:', tag + '.' + cls, 'found', candidates.length, 'want index', idx);
+        var candidates = Array.from(
+            content.querySelectorAll(tagClassMatch[1] + '.' + tagClassMatch[2])
+        );
+        log('  📍 nth fallback: found', candidates.length, 'want idx', idx);
         return candidates[idx] || candidates[0] || null;
     }
 
     function findByProjectAndClass(change){
         var project = document.querySelector('[data-project-id="' + change.projectId + '"]');
         if(!project) return null;
-        var mainClass = change.classes.split(' ').find(function(c){ return c && !c.startsWith('ed-'); });
+        var mainClass = change.classes.split(' ').find(function(c){
+            return c && !c.startsWith('ed-');
+        });
         if(!mainClass) return null;
         return project.querySelector('.' + mainClass) || null;
     }
@@ -398,23 +350,21 @@
                         if(c && !c.startsWith('ed-') && c !== 'expanded') el.classList.add(c);
                     });
                 }
-                log('  ✓ Text applied:', change.projectId);
+                log('  ✓ Text:', change.projectId, change.selector.substring(0,50));
                 return true;
-            } else {
-                log('  ⚠️ Not found:', change.selector ? change.selector.substring(0,60) : change.projectId);
-                return false;
             }
-        } catch(e){ log('  ❌ Error:', e.message); return false; }
+            log('  ⚠️ Not found:', change.selector ? change.selector.substring(0,60) : '?');
+            return false;
+        } catch(e){ log('  ❌', e.message); return false; }
     }
 
     function applySticker(sticker){
         try {
             var project = document.querySelector('[data-project-id="' + sticker.projectId + '"]');
             if(!project){
-                log('  ❌ Sticker: project not found:', sticker.projectId);
+                log('  ❌ Sticker project not found:', sticker.projectId);
                 return false;
             }
-
             project.style.position = 'relative';
 
             var layer = project.querySelector('.bproject-stickers');
@@ -424,7 +374,7 @@
                 project.insertBefore(layer, project.firstChild);
             }
 
-            // Deduplicate by position
+            // Deduplicate
             var existing = layer.querySelectorAll('.amendment-sticker');
             for(var i = 0; i < existing.length; i++){
                 if(existing[i].style.left === sticker.position.left &&
@@ -441,19 +391,19 @@
                 'top:'     + sticker.position.top  + ';' +
                 'width:'   + sticker.size.width    + ';' +
                 'height:'  + sticker.size.height   + ';' +
-                'z-index:' + (sticker.zIndex  || 10)  + ';' +
-                'opacity:' + (sticker.opacity || 1)   + ';' +
+                'z-index:' + (sticker.zIndex  || 10) + ';' +
+                'opacity:' + (sticker.opacity || 1)  + ';' +
                 'transform:rotate(' + (sticker.rotation || 0) + 'deg);' +
                 'pointer-events:none;';
 
             var img = document.createElement('img');
             img.src = sticker.src;
             img.style.cssText = 'width:100%;height:100%;object-fit:contain;pointer-events:none;';
-            img.onerror = function(){ log('  ❌ Sticker image failed:', sticker.src.substring(0,50)); };
+            img.onerror = function(){ log('  ❌ Sticker img failed'); };
 
             div.appendChild(img);
             layer.appendChild(div);
-            log('  ✓ Sticker applied to:', sticker.projectId);
+            log('  ✓ Sticker on:', sticker.projectId);
             return true;
         } catch(e){ log('  ❌ Sticker error:', e.message); return false; }
     }
@@ -482,9 +432,12 @@
             wrapper.dataset.amendmentLoaded = 'true';
             wrapper.style.margin = '16px 0';
             var a = document.createElement('a');
-            a.href = link.href; a.textContent = link.text;
-            a.className = link.className || 'btn'; a.target = link.target || '_blank';
-            wrapper.appendChild(a); parent.appendChild(wrapper);
+            a.href = link.href;
+            a.textContent = link.text;
+            a.className = link.className || 'btn';
+            a.target = link.target || '_blank';
+            wrapper.appendChild(a);
+            parent.appendChild(wrapper);
             return true;
         } catch(e){ return false; }
     }
@@ -507,16 +460,16 @@
     }
 
     // ══════════════════════════════════════════════════════════════
-    // PROJECT EXPAND OBSERVER
+    // PROJECT OBSERVER — re-apply on expand
     // ══════════════════════════════════════════════════════════════
 
     function setupProjectObserver(){
         if(!storedAmendments) return;
         var observer = new MutationObserver(function(mutations){
             mutations.forEach(function(m){
-                var target = m.target;
-                if(target.classList.contains('bproject') && target.classList.contains('expanded')){
-                    setTimeout(function(){ reapplyForProject(target.dataset.projectId); }, 200);
+                var t = m.target;
+                if(t.classList.contains('bproject') && t.classList.contains('expanded')){
+                    setTimeout(function(){ reapplyForProject(t.dataset.projectId); }, 200);
                 }
             });
         });
@@ -530,10 +483,10 @@
         if(!storedAmendments || !projectId) return;
         log('📌 Re-applying for:', projectId);
 
-        // Stamp idx attributes on freshly rendered content
+        // Stamp idx on freshly rendered elements
         var project = document.querySelector('[data-project-id="' + projectId + '"]');
         if(project){
-            project.querySelectorAll('.bproject-content, .bproject-header-text, .bproject-meta')
+            project.querySelectorAll('.bproject-content,.bproject-header-text,.bproject-meta')
             .forEach(function(container){
                 var groups = {};
                 Array.from(container.children).forEach(function(child){
@@ -548,21 +501,30 @@
                     groups[key].push(child);
                 });
                 Object.keys(groups).forEach(function(key){
-                    groups[key].forEach(function(el, idx){ el.setAttribute('data-ed-idx', idx); });
+                    groups[key].forEach(function(el, idx){
+                        el.setAttribute('data-ed-idx', idx);
+                    });
                 });
             });
         }
 
         var applied = 0;
-        storedAmendments.textChanges.forEach(function(c){ if(c.projectId === projectId && applyTextChange(c)) applied++; });
-        storedAmendments.stickers.forEach(function(s){    if(s.projectId === projectId && applySticker(s))    applied++; });
-        storedAmendments.dividers.forEach(function(d){    if(d.parentSelector && d.parentSelector.includes(projectId) && applyDivider(d)) applied++; });
-        storedAmendments.links.forEach(function(l){       if(l.parentSelector && l.parentSelector.includes(projectId) && applyLink(l))    applied++; });
+        storedAmendments.textChanges.forEach(function(c){
+            if(c.projectId === projectId && applyTextChange(c)) applied++;
+        });
+        storedAmendments.stickers.forEach(function(s){
+            if(s.projectId === projectId && applySticker(s)) applied++;
+        });
+        storedAmendments.dividers.forEach(function(d){
+            if(d.parentSelector && d.parentSelector.includes(projectId) && applyDivider(d)) applied++;
+        });
+        storedAmendments.links.forEach(function(l){
+            if(l.parentSelector && l.parentSelector.includes(projectId) && applyLink(l)) applied++;
+        });
 
         log('  Applied', applied, 'items for', projectId);
     }
 
-    // ── RUN ──
     loadAllAmendments();
 
 })();
