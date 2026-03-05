@@ -1,4 +1,4 @@
-/* ═══════ AMENDMENTS LOADER v9 — Manifest Only + Thumbnail Sync ═══════ */
+/* ═══════ AMENDMENTS LOADER v10 — Correct Project Targeting ═══════ */
 (function(){
     'use strict';
 
@@ -26,8 +26,24 @@
 
     function log(){ if(DEBUG) console.log.apply(console, arguments); }
 
+    // ── Scoped selectors ──
+    function getBasementProject(projectId){
+        return document.querySelector(
+            '#basementProjects [data-project-id="' + projectId + '"],' +
+            '.basement-projects [data-project-id="' + projectId + '"],' +
+            '#bp-' + projectId
+        );
+    }
+
+    function getThumbCard(projectId){
+        return document.querySelector(
+            '#projectGrid [data-project-id="' + projectId + '"],' +
+            '.pgrid [data-project-id="' + projectId + '"]'
+        );
+    }
+
     // ══════════════════════════════════════════════════════════════
-    // LOAD — manifest only
+    // LOAD
     // ══════════════════════════════════════════════════════════════
 
     function loadAllAmendments(){
@@ -103,7 +119,7 @@
     }
 
     // ══════════════════════════════════════════════════════════════
-    // SMART MERGE
+    // MERGE
     // ══════════════════════════════════════════════════════════════
 
     function smartMerge(data){
@@ -159,7 +175,7 @@
     }
 
     // ══════════════════════════════════════════════════════════════
-    // APPLY TO DOM
+    // APPLY
     // ══════════════════════════════════════════════════════════════
 
     function scheduleVisualChanges(data){
@@ -188,24 +204,14 @@
             });
         }
         if(data.projectOrder) reorderDOM(data.projectOrder);
-
-        // Sync text changes to thumbnails
         if(data.textChanges) syncAllThumbnails(data.textChanges);
-
         setupProjectObserver();
         log('✅ Applied', applied, 'amendments');
     }
 
     // ══════════════════════════════════════════════════════════════
-    // THUMBNAIL SYNC — mirrors basement edits to pcard thumbnails
+    // THUMBNAIL SYNC
     // ══════════════════════════════════════════════════════════════
-
-    function getThumbCard(projectId){
-        return document.querySelector(
-            '#projectGrid [data-project-id="' + projectId + '"],' +
-            '.pgrid [data-project-id="' + projectId + '"]'
-        );
-    }
 
     function plainText(html){
         var tmp = document.createElement('div');
@@ -227,18 +233,18 @@
         var thumb = getThumbCard(projectId);
         if(!thumb) return;
 
-        // ── Title: .bproject-header-text h3 ──
+        // Title
         if(sel.includes('bproject-header-text') && sel.match(/h[1-6]/i)){
-            thumb.querySelector('h3').textContent = text;
-            updateProjectsArray(projectId, 'title', text);
-            // also update thumb img alt
+            var h3 = thumb.querySelector('h3');
+            if(h3) h3.textContent = text;
             var img = thumb.querySelector('.pcard-thumb-img');
             if(img) img.alt = text;
+            updateProjectsArray(projectId, 'title', text);
             log('  🔄 Thumb title synced:', projectId, text);
             return;
         }
 
-        // ── Tagline: .bproject-tagline → .pcard-short ──
+        // Tagline → pcard-short
         if(sel.includes('bproject-tagline')){
             var shortEl = thumb.querySelector('.pcard-short');
             if(shortEl) shortEl.textContent = text;
@@ -248,30 +254,24 @@
             return;
         }
 
-        // ── Meta fields: .bm-value → .pm-value ──
+        // Meta .bm-value → .pm-value by index
         if(sel.includes('bm-value')){
-            // Find the label next to this value in the basement project
-            var basement = document.querySelector(
-                '.basement-projects [data-project-id="' + projectId + '"]'
-            );
+            var basement = getBasementProject(projectId);
             if(!basement) return;
-
-            // Find which bm-value index this is
-            var allValues = Array.from(basement.querySelectorAll('.bm-value'));
             var allLabels = Array.from(basement.querySelectorAll('.bm-label'));
+            var allValues = Array.from(basement.querySelectorAll('.bm-value'));
+            var labelText = '';
 
             // Match by content
-            var labelText = '';
             for(var i = 0; i < allValues.length; i++){
-                var valText = plainText(allValues[i].innerHTML);
-                if(valText === text || allValues[i].innerHTML === change.content){
+                if(plainText(allValues[i].innerHTML) === text){
                     labelText = allLabels[i] ? allLabels[i].textContent.toLowerCase().trim() : '';
                     break;
                 }
             }
 
-            // Fallback: use index from selector if available
-            if(!labelText && sel.includes('data-ed-idx')){
+            // Fallback: use data-ed-idx
+            if(!labelText){
                 var idxMatch = sel.match(/data-ed-idx="(\d+)"/);
                 if(idxMatch){
                     var idx = parseInt(idxMatch[1]);
@@ -280,45 +280,25 @@
             }
 
             if(!labelText) return;
-
-            // Map label → pm-value index in thumbnail
-            // Order in pcard: Role(0), Team(1), Engine(2), Timeline(3)
             var pmValues = Array.from(thumb.querySelectorAll('.pm-value'));
-            var tooltipRows = Array.from(thumb.querySelectorAll('.pcard-tooltip-row'));
 
             if(labelText.includes('role')){
                 if(pmValues[0]) pmValues[0].textContent = text;
-                // tooltip role is 2nd row
-                if(tooltipRows[1]){
-                    var tSpan = tooltipRows[1].querySelector('.pcard-tooltip-label');
-                    if(tSpan) tSpan.nextSibling
-                        ? tooltipRows[1].lastChild.textContent = text
-                        : null;
-                }
                 updateProjectsArray(projectId, 'role', text);
                 log('  🔄 Thumb role synced:', projectId, text);
-            }
-            else if(labelText.includes('team')){
+            } else if(labelText.includes('team')){
                 if(pmValues[1]) pmValues[1].textContent = text;
-                if(tooltipRows[2]){
-                    var children = tooltipRows[2].childNodes;
-                    if(children[children.length-1])
-                        children[children.length-1].textContent = text;
-                }
                 updateProjectsArray(projectId, 'team', text);
                 log('  🔄 Thumb team synced:', projectId, text);
-            }
-            else if(labelText.includes('engine')){
-                // Engine has an icon span — only update text node after icon
+            } else if(labelText.includes('engine')){
                 if(pmValues[2]){
-                    var engineSpan = pmValues[2].querySelector('.engine-icon');
-                    if(engineSpan) engineSpan.textContent = text;
+                    var eIcon = pmValues[2].querySelector('.engine-icon');
+                    if(eIcon) eIcon.textContent = text;
                     else pmValues[2].textContent = text;
                 }
                 updateProjectsArray(projectId, 'engine', text);
                 log('  🔄 Thumb engine synced:', projectId, text);
-            }
-            else if(labelText.includes('time') || labelText.includes('timeline')){
+            } else if(labelText.includes('time')){
                 if(pmValues[3]) pmValues[3].textContent = text;
                 updateProjectsArray(projectId, 'timeframe', text);
                 log('  🔄 Thumb timeline synced:', projectId, text);
@@ -329,10 +309,7 @@
     function updateProjectsArray(projectId, field, value){
         if(typeof PROJECTS === 'undefined') return;
         for(var i = 0; i < PROJECTS.length; i++){
-            if(PROJECTS[i].id === projectId){
-                PROJECTS[i][field] = value;
-                break;
-            }
+            if(PROJECTS[i].id === projectId){ PROJECTS[i][field] = value; break; }
         }
     }
 
@@ -341,6 +318,16 @@
     // ══════════════════════════════════════════════════════════════
 
     function findElement(change){
+        if(change.projectId){
+            var basement = getBasementProject(change.projectId);
+            if(basement && change.selector){
+                var stripped = change.selector.replace(/\[data-project-id="[^"]+"\]\s*/, '');
+                try {
+                    var el = basement.querySelector(stripped);
+                    if(el) return el;
+                } catch(e){}
+            }
+        }
         if(change.selector){
             try {
                 var el = document.querySelector(change.selector);
@@ -357,7 +344,7 @@
         var idxMatch = change.selector.match(/data-ed-idx="(\d+)"/);
         if(!idxMatch) return null;
         var idx = parseInt(idxMatch[1]);
-        var project = document.querySelector('[data-project-id="' + change.projectId + '"]');
+        var project = getBasementProject(change.projectId);
         if(!project) return null;
         var elMatch = change.selector.match(/\]\s*\.[\w-]+\s+([\w.]+)\[data-ed-idx/);
         if(!elMatch) return null;
@@ -369,7 +356,7 @@
     }
 
     function findByNthFallback(change){
-        var project = document.querySelector('[data-project-id="' + change.projectId + '"]');
+        var project = getBasementProject(change.projectId);
         if(!project) return null;
         var nthMatch = change.selector.match(/:nth-of-type\((\d+)\)/);
         var idx = nthMatch ? parseInt(nthMatch[1]) - 1 : 0;
@@ -382,7 +369,7 @@
     }
 
     function findByProjectAndClass(change){
-        var project = document.querySelector('[data-project-id="' + change.projectId + '"]');
+        var project = getBasementProject(change.projectId);
         if(!project) return null;
         var mainClass = change.classes.split(' ').find(function(c){ return c && !c.startsWith('ed-'); });
         if(!mainClass) return null;
@@ -414,20 +401,29 @@
 
     function applySticker(sticker){
         try {
-            var project = document.querySelector('[data-project-id="' + sticker.projectId + '"]');
-            if(!project){ log('  ❌ Project not found:', sticker.projectId); return false; }
+            // ── Always target basement project, never pcard ──
+            var project = getBasementProject(sticker.projectId);
+            if(!project){
+                log('  ❌ Basement project not found:', sticker.projectId);
+                return false;
+            }
+
             project.style.position = 'relative';
+
             var layer = project.querySelector('.bproject-stickers');
             if(!layer){
                 layer = document.createElement('div');
                 layer.className = 'bproject-stickers';
-                project.insertBefore(layer, project.firstChild);
+                project.appendChild(layer);
             }
+
+            // Deduplicate
             var existing = layer.querySelectorAll('.amendment-sticker');
             for(var i = 0; i < existing.length; i++){
                 if(existing[i].style.left === sticker.position.left &&
                    existing[i].style.top  === sticker.position.top) return false;
             }
+
             var div = document.createElement('div');
             div.className = 'ed-sticker amendment-sticker';
             div.dataset.amendmentLoaded = 'true';
@@ -442,13 +438,14 @@
                 'opacity:' + (sticker.opacity || 1)  + ';' +
                 'transform:rotate(' + (sticker.rotation || 0) + 'deg);' +
                 'pointer-events:none;';
+
             var img = document.createElement('img');
             img.src = sticker.src;
             img.style.cssText = 'width:100%;height:100%;object-fit:contain;pointer-events:none;';
             img.onerror = function(){ log('  ❌ Sticker img failed'); };
             div.appendChild(img);
             layer.appendChild(div);
-            log('  ✓ Sticker:', sticker.projectId);
+            log('  ✓ Sticker placed in basement:', sticker.projectId);
             return true;
         } catch(e){ log('  ❌ Sticker error:', e.message); return false; }
     }
@@ -491,7 +488,7 @@
         var container = document.querySelector('.basement-projects, #basementProjects');
         if(container){
             order.forEach(function(id){
-                var el = container.querySelector('[data-project-id="' + id + '"]');
+                var el = container.querySelector('[data-project-id="' + id + '"], #bp-' + id);
                 if(el) container.appendChild(el);
             });
         }
@@ -505,7 +502,7 @@
     }
 
     // ══════════════════════════════════════════════════════════════
-    // PROJECT OBSERVER — re-apply on expand
+    // PROJECT OBSERVER
     // ══════════════════════════════════════════════════════════════
 
     function setupProjectObserver(){
@@ -514,7 +511,10 @@
             mutations.forEach(function(m){
                 var t = m.target;
                 if(t.classList.contains('bproject') && t.classList.contains('expanded')){
-                    setTimeout(function(){ reapplyForProject(t.dataset.projectId); }, 200);
+                    // Get projectId from data-project-id OR id="bp-xxx"
+                    var projectId = t.dataset.projectId ||
+                        (t.id && t.id.startsWith('bp-') ? t.id.replace('bp-', '') : null);
+                    if(projectId) setTimeout(function(){ reapplyForProject(projectId); }, 200);
                 }
             });
         });
@@ -528,8 +528,7 @@
         if(!storedAmendments || !projectId) return;
         log('📌 Re-applying for:', projectId);
 
-        // Stamp idx on freshly rendered elements
-        var project = document.querySelector('[data-project-id="' + projectId + '"]');
+        var project = getBasementProject(projectId);
         if(project){
             project.querySelectorAll('.bproject-content,.bproject-header-text,.bproject-meta')
             .forEach(function(container){
@@ -566,14 +565,11 @@
         storedAmendments.links.forEach(function(l){
             if(l.parentSelector && l.parentSelector.includes(projectId) && applyLink(l)) applied++;
         });
-
-        // Re-sync thumbnails after re-apply
         if(storedAmendments.textChanges){
             syncAllThumbnails(
                 storedAmendments.textChanges.filter(function(c){ return c.projectId === projectId; })
             );
         }
-
         log('  Applied', applied, 'items for', projectId);
     }
 
