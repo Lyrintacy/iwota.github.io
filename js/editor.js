@@ -447,17 +447,115 @@ class LiveEditor{
         this.updateHighlight(el);
     }
 
-    deselectAll(){
-        if(this.selectedEl&&this.selectedEl.classList&&this.selectedEl.classList.contains('ed-editable')){
-            this.selectedEl.contentEditable='false';
-            var original=this.selectedEl.getAttribute('data-ed-original');
-            if(original!==null&&original!==this.selectedEl.innerHTML)this.pushUndo({el:this.selectedEl,type:'html',value:original});
+   deselectAll(){
+    if(this.selectedEl && this.selectedEl.classList && this.selectedEl.classList.contains('ed-editable')){
+        this.selectedEl.contentEditable = 'false';
+        var original = this.selectedEl.getAttribute('data-ed-original');
+        if(original !== null && original !== this.selectedEl.innerHTML){
+            this.pushUndo({el:this.selectedEl, type:'html', value:original});
+            this.syncElementToThumbnail(this.selectedEl); // ← sync on deselect
         }
-        document.querySelectorAll('.ed-selected').forEach(function(el){el.classList.remove('ed-selected');});
-        document.querySelectorAll('.ed-project-selected').forEach(function(el){el.classList.remove('ed-project-selected');});
-        this.selectedEl=null;this.highlight.style.display='none';this.hideFormatBar();
-        document.getElementById('edPanelBody').innerHTML='<p class="ed-panel-hint">Select element to edit</p>';
     }
+    document.querySelectorAll('.ed-selected').forEach(function(el){el.classList.remove('ed-selected');});
+    document.querySelectorAll('.ed-project-selected').forEach(function(el){el.classList.remove('ed-project-selected');});
+    this.selectedEl = null;
+    this.highlight.style.display = 'none';
+    this.hideFormatBar();
+    document.getElementById('edPanelBody').innerHTML = '<p class="ed-panel-hint">Select element to edit</p>';
+}
+
+syncElementToThumbnail(el){
+    var projectEl = el.closest('.bproject');
+    if(!projectEl) return;
+    var projectId = projectEl.dataset.projectId;
+    if(!projectId) return;
+
+    var text = el.textContent || el.innerText || '';
+    text = text.trim();
+
+    // Find matching thumbnail card
+    var thumb = document.querySelector(
+        '#projectGrid [data-project-id="' + projectId + '"],' +
+        '.pgrid [data-project-id="' + projectId + '"]'
+    );
+    if(!thumb) return;
+
+    // Title — h3 inside .bproject-header-text
+    if(el.closest('.bproject-header-text') && /^H[1-6]$/.test(el.tagName)){
+        var h3 = thumb.querySelector('h3');
+        if(h3){ h3.textContent = text; }
+        var img = thumb.querySelector('.pcard-thumb-img');
+        if(img) img.alt = text;
+        this.updateProjectsArray(projectId, 'title', text);
+        this.setStatus('✓ Title synced to thumbnail');
+        return;
+    }
+
+    // Tagline → pcard-short
+    if(el.classList.contains('bproject-tagline')){
+        var shortEl = thumb.querySelector('.pcard-short');
+        if(shortEl){ shortEl.textContent = text; }
+        this.updateProjectsArray(projectId, 'tagline', text);
+        this.updateProjectsArray(projectId, 'short', text);
+        this.setStatus('✓ Tagline synced to thumbnail');
+        return;
+    }
+
+    // Meta .bm-value → .pm-value (by index position)
+    if(el.classList.contains('bm-value')){
+        var allBmValues = Array.from(projectEl.querySelectorAll('.bm-value'));
+        var allBmLabels = Array.from(projectEl.querySelectorAll('.bm-label'));
+        var valueIndex = allBmValues.indexOf(el);
+        if(valueIndex === -1) return;
+
+        var labelText = allBmLabels[valueIndex]
+            ? allBmLabels[valueIndex].textContent.toLowerCase().trim()
+            : '';
+
+        var pmValues = Array.from(thumb.querySelectorAll('.pm-value'));
+
+        // pcard order: Role(0) Team(1) Engine(2) Timeline(3)
+        if(labelText.includes('role')){
+            if(pmValues[0]) pmValues[0].textContent = text;
+            // fix tooltip
+            var tRows = thumb.querySelectorAll('.pcard-tooltip-row');
+            if(tRows[1]) tRows[1].lastChild.textContent = ' ' + text;
+            this.updateProjectsArray(projectId, 'role', text);
+            this.setStatus('✓ Role synced to thumbnail');
+        }
+        else if(labelText.includes('team')){
+            if(pmValues[1]) pmValues[1].textContent = text;
+            var tRows = thumb.querySelectorAll('.pcard-tooltip-row');
+            if(tRows[2]) tRows[2].lastChild.textContent = ' ' + text;
+            this.updateProjectsArray(projectId, 'team', text);
+            this.setStatus('✓ Team synced to thumbnail');
+        }
+        else if(labelText.includes('engine')){
+            if(pmValues[2]){
+                var eIcon = pmValues[2].querySelector('.engine-icon');
+                if(eIcon) eIcon.textContent = text;
+                else pmValues[2].textContent = text;
+            }
+            this.updateProjectsArray(projectId, 'engine', text);
+            this.setStatus('✓ Engine synced to thumbnail');
+        }
+        else if(labelText.includes('time')){
+            if(pmValues[3]) pmValues[3].textContent = text;
+            this.updateProjectsArray(projectId, 'timeframe', text);
+            this.setStatus('✓ Timeline synced to thumbnail');
+        }
+    }
+}
+
+updateProjectsArray(projectId, field, value){
+    if(typeof PROJECTS === 'undefined') return;
+    for(var i = 0; i < PROJECTS.length; i++){
+        if(PROJECTS[i].id === projectId){
+            PROJECTS[i][field] = value;
+            break;
+        }
+    }
+}
 
     updateHighlight(el){
         var rect=el.getBoundingClientRect();

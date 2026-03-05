@@ -1,4 +1,4 @@
-/* ═══════ AMENDMENTS LOADER v9 — Manifest Only ═══════ */
+/* ═══════ AMENDMENTS LOADER v9 — Manifest Only + Thumbnail Sync ═══════ */
 (function(){
     'use strict';
 
@@ -26,9 +26,12 @@
 
     function log(){ if(DEBUG) console.log.apply(console, arguments); }
 
+    // ══════════════════════════════════════════════════════════════
+    // LOAD — manifest only
+    // ══════════════════════════════════════════════════════════════
+
     function loadAllAmendments(){
         var files = [];
-
         try {
             var xhr = new XMLHttpRequest();
             xhr.open('GET', AMENDMENTS_FOLDER + 'manifest.json', false);
@@ -37,7 +40,6 @@
                 var parsed = JSON.parse(xhr.responseText);
                 if(Array.isArray(parsed)) files = parsed.sort();
             } else {
-                // manifest not found — stop completely, no probing
                 log('ℹ️ No manifest.json — amendments disabled');
                 window.LOADED_AMENDMENTS._loaded = true;
                 return;
@@ -100,6 +102,10 @@
         }
     }
 
+    // ══════════════════════════════════════════════════════════════
+    // SMART MERGE
+    // ══════════════════════════════════════════════════════════════
+
     function smartMerge(data){
         if(data.textChanges){
             data.textChanges.forEach(function(change){
@@ -152,6 +158,10 @@
         });
     }
 
+    // ══════════════════════════════════════════════════════════════
+    // APPLY TO DOM
+    // ══════════════════════════════════════════════════════════════
+
     function scheduleVisualChanges(data){
         if(document.readyState === 'loading'){
             document.addEventListener('DOMContentLoaded', function(){
@@ -178,9 +188,157 @@
             });
         }
         if(data.projectOrder) reorderDOM(data.projectOrder);
+
+        // Sync text changes to thumbnails
+        if(data.textChanges) syncAllThumbnails(data.textChanges);
+
         setupProjectObserver();
         log('✅ Applied', applied, 'amendments');
     }
+
+    // ══════════════════════════════════════════════════════════════
+    // THUMBNAIL SYNC — mirrors basement edits to pcard thumbnails
+    // ══════════════════════════════════════════════════════════════
+
+    function getThumbCard(projectId){
+        return document.querySelector(
+            '#projectGrid [data-project-id="' + projectId + '"],' +
+            '.pgrid [data-project-id="' + projectId + '"]'
+        );
+    }
+
+    function plainText(html){
+        var tmp = document.createElement('div');
+        tmp.innerHTML = html;
+        return (tmp.textContent || tmp.innerText || '').trim();
+    }
+
+    function syncAllThumbnails(textChanges){
+        textChanges.forEach(function(change){
+            if(!change.projectId) return;
+            syncOneChange(change);
+        });
+    }
+
+    function syncOneChange(change){
+        var projectId = change.projectId;
+        var sel = change.selector;
+        var text = plainText(change.content);
+        var thumb = getThumbCard(projectId);
+        if(!thumb) return;
+
+        // ── Title: .bproject-header-text h3 ──
+        if(sel.includes('bproject-header-text') && sel.match(/h[1-6]/i)){
+            thumb.querySelector('h3').textContent = text;
+            updateProjectsArray(projectId, 'title', text);
+            // also update thumb img alt
+            var img = thumb.querySelector('.pcard-thumb-img');
+            if(img) img.alt = text;
+            log('  🔄 Thumb title synced:', projectId, text);
+            return;
+        }
+
+        // ── Tagline: .bproject-tagline → .pcard-short ──
+        if(sel.includes('bproject-tagline')){
+            var shortEl = thumb.querySelector('.pcard-short');
+            if(shortEl) shortEl.textContent = text;
+            updateProjectsArray(projectId, 'tagline', text);
+            updateProjectsArray(projectId, 'short', text);
+            log('  🔄 Thumb tagline synced:', projectId, text);
+            return;
+        }
+
+        // ── Meta fields: .bm-value → .pm-value ──
+        if(sel.includes('bm-value')){
+            // Find the label next to this value in the basement project
+            var basement = document.querySelector(
+                '.basement-projects [data-project-id="' + projectId + '"]'
+            );
+            if(!basement) return;
+
+            // Find which bm-value index this is
+            var allValues = Array.from(basement.querySelectorAll('.bm-value'));
+            var allLabels = Array.from(basement.querySelectorAll('.bm-label'));
+
+            // Match by content
+            var labelText = '';
+            for(var i = 0; i < allValues.length; i++){
+                var valText = plainText(allValues[i].innerHTML);
+                if(valText === text || allValues[i].innerHTML === change.content){
+                    labelText = allLabels[i] ? allLabels[i].textContent.toLowerCase().trim() : '';
+                    break;
+                }
+            }
+
+            // Fallback: use index from selector if available
+            if(!labelText && sel.includes('data-ed-idx')){
+                var idxMatch = sel.match(/data-ed-idx="(\d+)"/);
+                if(idxMatch){
+                    var idx = parseInt(idxMatch[1]);
+                    labelText = allLabels[idx] ? allLabels[idx].textContent.toLowerCase().trim() : '';
+                }
+            }
+
+            if(!labelText) return;
+
+            // Map label → pm-value index in thumbnail
+            // Order in pcard: Role(0), Team(1), Engine(2), Timeline(3)
+            var pmValues = Array.from(thumb.querySelectorAll('.pm-value'));
+            var tooltipRows = Array.from(thumb.querySelectorAll('.pcard-tooltip-row'));
+
+            if(labelText.includes('role')){
+                if(pmValues[0]) pmValues[0].textContent = text;
+                // tooltip role is 2nd row
+                if(tooltipRows[1]){
+                    var tSpan = tooltipRows[1].querySelector('.pcard-tooltip-label');
+                    if(tSpan) tSpan.nextSibling
+                        ? tooltipRows[1].lastChild.textContent = text
+                        : null;
+                }
+                updateProjectsArray(projectId, 'role', text);
+                log('  🔄 Thumb role synced:', projectId, text);
+            }
+            else if(labelText.includes('team')){
+                if(pmValues[1]) pmValues[1].textContent = text;
+                if(tooltipRows[2]){
+                    var children = tooltipRows[2].childNodes;
+                    if(children[children.length-1])
+                        children[children.length-1].textContent = text;
+                }
+                updateProjectsArray(projectId, 'team', text);
+                log('  🔄 Thumb team synced:', projectId, text);
+            }
+            else if(labelText.includes('engine')){
+                // Engine has an icon span — only update text node after icon
+                if(pmValues[2]){
+                    var engineSpan = pmValues[2].querySelector('.engine-icon');
+                    if(engineSpan) engineSpan.textContent = text;
+                    else pmValues[2].textContent = text;
+                }
+                updateProjectsArray(projectId, 'engine', text);
+                log('  🔄 Thumb engine synced:', projectId, text);
+            }
+            else if(labelText.includes('time') || labelText.includes('timeline')){
+                if(pmValues[3]) pmValues[3].textContent = text;
+                updateProjectsArray(projectId, 'timeframe', text);
+                log('  🔄 Thumb timeline synced:', projectId, text);
+            }
+        }
+    }
+
+    function updateProjectsArray(projectId, field, value){
+        if(typeof PROJECTS === 'undefined') return;
+        for(var i = 0; i < PROJECTS.length; i++){
+            if(PROJECTS[i].id === projectId){
+                PROJECTS[i][field] = value;
+                break;
+            }
+        }
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // ELEMENT FINDER
+    // ══════════════════════════════════════════════════════════════
 
     function findElement(change){
         if(change.selector){
@@ -231,6 +389,10 @@
         return project.querySelector('.' + mainClass) || null;
     }
 
+    // ══════════════════════════════════════════════════════════════
+    // APPLY FUNCTIONS
+    // ══════════════════════════════════════════════════════════════
+
     function applyTextChange(change){
         try {
             var el = findElement(change);
@@ -242,7 +404,7 @@
                         if(c && !c.startsWith('ed-') && c !== 'expanded') el.classList.add(c);
                     });
                 }
-                log('  ✓ Text:', change.projectId);
+                log('  ✓ Text:', change.projectId, change.selector.substring(0,50));
                 return true;
             }
             log('  ⚠️ Not found:', change.selector ? change.selector.substring(0,60) : '?');
@@ -336,11 +498,15 @@
         var grid = document.querySelector('.pgrid, #projectGrid');
         if(grid){
             order.forEach(function(id){
-                var el = grid.querySelector('[data-project-id="' + id + '"], [data-target="' + id + '"]');
+                var el = grid.querySelector('[data-project-id="' + id + '"]');
                 if(el) grid.appendChild(el);
             });
         }
     }
+
+    // ══════════════════════════════════════════════════════════════
+    // PROJECT OBSERVER — re-apply on expand
+    // ══════════════════════════════════════════════════════════════
 
     function setupProjectObserver(){
         if(!storedAmendments) return;
@@ -361,6 +527,8 @@
     function reapplyForProject(projectId){
         if(!storedAmendments || !projectId) return;
         log('📌 Re-applying for:', projectId);
+
+        // Stamp idx on freshly rendered elements
         var project = document.querySelector('[data-project-id="' + projectId + '"]');
         if(project){
             project.querySelectorAll('.bproject-content,.bproject-header-text,.bproject-meta')
@@ -384,11 +552,28 @@
                 });
             });
         }
+
         var applied = 0;
-        storedAmendments.textChanges.forEach(function(c){ if(c.projectId === projectId && applyTextChange(c)) applied++; });
-        storedAmendments.stickers.forEach(function(s){    if(s.projectId === projectId && applySticker(s))    applied++; });
-        storedAmendments.dividers.forEach(function(d){    if(d.parentSelector && d.parentSelector.includes(projectId) && applyDivider(d)) applied++; });
-        storedAmendments.links.forEach(function(l){       if(l.parentSelector && l.parentSelector.includes(projectId) && applyLink(l))    applied++; });
+        storedAmendments.textChanges.forEach(function(c){
+            if(c.projectId === projectId && applyTextChange(c)) applied++;
+        });
+        storedAmendments.stickers.forEach(function(s){
+            if(s.projectId === projectId && applySticker(s)) applied++;
+        });
+        storedAmendments.dividers.forEach(function(d){
+            if(d.parentSelector && d.parentSelector.includes(projectId) && applyDivider(d)) applied++;
+        });
+        storedAmendments.links.forEach(function(l){
+            if(l.parentSelector && l.parentSelector.includes(projectId) && applyLink(l)) applied++;
+        });
+
+        // Re-sync thumbnails after re-apply
+        if(storedAmendments.textChanges){
+            syncAllThumbnails(
+                storedAmendments.textChanges.filter(function(c){ return c.projectId === projectId; })
+            );
+        }
+
         log('  Applied', applied, 'items for', projectId);
     }
 
