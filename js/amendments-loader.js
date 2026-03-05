@@ -1,4 +1,4 @@
-/* ═══════ AMENDMENTS LOADER v9 — Manifest Only, Zero Probing ═══════ */
+/* ═══════ AMENDMENTS LOADER v9 — Manifest Only ═══════ */
 (function(){
     'use strict';
 
@@ -26,13 +26,9 @@
 
     function log(){ if(DEBUG) console.log.apply(console, arguments); }
 
-    // ══════════════════════════════════════════════════════════════
-    // LOAD — manifest only, no probing
-    // ══════════════════════════════════════════════════════════════
-
     function loadAllAmendments(){
-        // Read manifest.json — if missing or empty, do nothing
         var files = [];
+
         try {
             var xhr = new XMLHttpRequest();
             xhr.open('GET', AMENDMENTS_FOLDER + 'manifest.json', false);
@@ -40,20 +36,25 @@
             if(xhr.status === 200){
                 var parsed = JSON.parse(xhr.responseText);
                 if(Array.isArray(parsed)) files = parsed.sort();
+            } else {
+                // manifest not found — stop completely, no probing
+                log('ℹ️ No manifest.json — amendments disabled');
+                window.LOADED_AMENDMENTS._loaded = true;
+                return;
             }
         } catch(e){
-            log('ℹ️ No manifest.json found — no amendments loaded');
+            log('ℹ️ manifest.json error — amendments disabled');
             window.LOADED_AMENDMENTS._loaded = true;
             return;
         }
 
         if(files.length === 0){
-            log('ℹ️ manifest.json is empty — no amendments loaded');
+            log('ℹ️ manifest.json empty — no amendments loaded');
             window.LOADED_AMENDMENTS._loaded = true;
             return;
         }
 
-        log('📋 Manifest found:', files.length, 'file(s):', files);
+        log('📋 Manifest:', files);
 
         var loadedCount = 0;
         files.forEach(function(filename){
@@ -62,14 +63,13 @@
                 xhr.open('GET', AMENDMENTS_FOLDER + filename, false);
                 xhr.send(null);
                 if(xhr.status === 200){
-                    var data = JSON.parse(xhr.responseText);
-                    smartMerge(data);
+                    smartMerge(JSON.parse(xhr.responseText));
                     loadedCount++;
                     log('✅ Loaded:', filename);
                 } else {
-                    log('⚠️ File listed in manifest but not found:', filename);
+                    log('⚠️ Not found:', filename);
                 }
-            } catch(e){ log('❌ Failed to parse:', filename, e.message); }
+            } catch(e){ log('❌ Failed:', filename, e.message); }
         });
 
         if(loadedCount > 0){
@@ -99,10 +99,6 @@
             log('ℹ️ No amendment files loaded');
         }
     }
-
-    // ══════════════════════════════════════════════════════════════
-    // SMART MERGE — later files overwrite earlier by key
-    // ══════════════════════════════════════════════════════════════
 
     function smartMerge(data){
         if(data.textChanges){
@@ -156,10 +152,6 @@
         });
     }
 
-    // ══════════════════════════════════════════════════════════════
-    // APPLY TO DOM
-    // ══════════════════════════════════════════════════════════════
-
     function scheduleVisualChanges(data){
         if(document.readyState === 'loading'){
             document.addEventListener('DOMContentLoaded', function(){
@@ -171,7 +163,7 @@
     }
 
     function applyAll(data){
-        log('🎨 Applying amendments to DOM...');
+        log('🎨 Applying amendments...');
         var applied = 0;
         if(data.textChanges) data.textChanges.forEach(function(c){ if(applyTextChange(c)) applied++; });
         if(data.stickers)    data.stickers.forEach(function(s){    if(applySticker(s))    applied++; });
@@ -190,10 +182,6 @@
         log('✅ Applied', applied, 'amendments');
     }
 
-    // ══════════════════════════════════════════════════════════════
-    // ELEMENT FINDER
-    // ══════════════════════════════════════════════════════════════
-
     function findElement(change){
         if(change.selector){
             try {
@@ -201,15 +189,9 @@
                 if(el) return el;
             } catch(e){}
         }
-        if(change.selector && change.selector.includes('data-ed-idx')){
-            return findByIndex(change);
-        }
-        if(change.selector && change.selector.includes('nth-of-type')){
-            return findByNthFallback(change);
-        }
-        if(change.projectId && change.classes){
-            return findByProjectAndClass(change);
-        }
+        if(change.selector && change.selector.includes('data-ed-idx')) return findByIndex(change);
+        if(change.selector && change.selector.includes('nth-of-type')) return findByNthFallback(change);
+        if(change.projectId && change.classes) return findByProjectAndClass(change);
         return null;
     }
 
@@ -237,26 +219,17 @@
         if(!tagClassMatch) return null;
         var content = project.querySelector('.bproject-content');
         if(!content) return null;
-        var candidates = Array.from(
-            content.querySelectorAll(tagClassMatch[1] + '.' + tagClassMatch[2])
-        );
-        log('  📍 nth fallback: found', candidates.length, 'want idx', idx);
+        var candidates = Array.from(content.querySelectorAll(tagClassMatch[1] + '.' + tagClassMatch[2]));
         return candidates[idx] || candidates[0] || null;
     }
 
     function findByProjectAndClass(change){
         var project = document.querySelector('[data-project-id="' + change.projectId + '"]');
         if(!project) return null;
-        var mainClass = change.classes.split(' ').find(function(c){
-            return c && !c.startsWith('ed-');
-        });
+        var mainClass = change.classes.split(' ').find(function(c){ return c && !c.startsWith('ed-'); });
         if(!mainClass) return null;
         return project.querySelector('.' + mainClass) || null;
     }
-
-    // ══════════════════════════════════════════════════════════════
-    // APPLY FUNCTIONS
-    // ══════════════════════════════════════════════════════════════
 
     function applyTextChange(change){
         try {
@@ -269,7 +242,7 @@
                         if(c && !c.startsWith('ed-') && c !== 'expanded') el.classList.add(c);
                     });
                 }
-                log('  ✓ Text:', change.projectId, change.selector.substring(0,50));
+                log('  ✓ Text:', change.projectId);
                 return true;
             }
             log('  ⚠️ Not found:', change.selector ? change.selector.substring(0,60) : '?');
@@ -280,10 +253,7 @@
     function applySticker(sticker){
         try {
             var project = document.querySelector('[data-project-id="' + sticker.projectId + '"]');
-            if(!project){
-                log('  ❌ Sticker project not found:', sticker.projectId);
-                return false;
-            }
+            if(!project){ log('  ❌ Project not found:', sticker.projectId); return false; }
             project.style.position = 'relative';
             var layer = project.querySelector('.bproject-stickers');
             if(!layer){
@@ -316,7 +286,7 @@
             img.onerror = function(){ log('  ❌ Sticker img failed'); };
             div.appendChild(img);
             layer.appendChild(div);
-            log('  ✓ Sticker on:', sticker.projectId);
+            log('  ✓ Sticker:', sticker.projectId);
             return true;
         } catch(e){ log('  ❌ Sticker error:', e.message); return false; }
     }
@@ -372,10 +342,6 @@
         }
     }
 
-    // ══════════════════════════════════════════════════════════════
-    // PROJECT OBSERVER
-    // ══════════════════════════════════════════════════════════════
-
     function setupProjectObserver(){
         if(!storedAmendments) return;
         var observer = new MutationObserver(function(mutations){
@@ -395,7 +361,6 @@
     function reapplyForProject(projectId){
         if(!storedAmendments || !projectId) return;
         log('📌 Re-applying for:', projectId);
-
         var project = document.querySelector('[data-project-id="' + projectId + '"]');
         if(project){
             project.querySelectorAll('.bproject-content,.bproject-header-text,.bproject-meta')
@@ -419,21 +384,11 @@
                 });
             });
         }
-
         var applied = 0;
-        storedAmendments.textChanges.forEach(function(c){
-            if(c.projectId === projectId && applyTextChange(c)) applied++;
-        });
-        storedAmendments.stickers.forEach(function(s){
-            if(s.projectId === projectId && applySticker(s)) applied++;
-        });
-        storedAmendments.dividers.forEach(function(d){
-            if(d.parentSelector && d.parentSelector.includes(projectId) && applyDivider(d)) applied++;
-        });
-        storedAmendments.links.forEach(function(l){
-            if(l.parentSelector && l.parentSelector.includes(projectId) && applyLink(l)) applied++;
-        });
-
+        storedAmendments.textChanges.forEach(function(c){ if(c.projectId === projectId && applyTextChange(c)) applied++; });
+        storedAmendments.stickers.forEach(function(s){    if(s.projectId === projectId && applySticker(s))    applied++; });
+        storedAmendments.dividers.forEach(function(d){    if(d.parentSelector && d.parentSelector.includes(projectId) && applyDivider(d)) applied++; });
+        storedAmendments.links.forEach(function(l){       if(l.parentSelector && l.parentSelector.includes(projectId) && applyLink(l))    applied++; });
         log('  Applied', applied, 'items for', projectId);
     }
 
