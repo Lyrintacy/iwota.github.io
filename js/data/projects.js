@@ -66,7 +66,16 @@ var PROJECTS = [
             {
                 type: 'text',
                 text: 'Final paragraph about technical implementation.'
-            }
+            },
+               { type: 'heading', text: 'About This Project' },
+    { type: 'text', text: 'Your first paragraph...' },
+    { type: 'image', src: '...', caption: '...', size: 'full' },
+    { type: 'text', text: 'Another paragraph...' },
+    // ADD YOUR NEW PARAGRAPHS HERE:
+    { type: 'text', text: 'Your new paragraph 3 text here' },
+    { type: 'heading', text: 'Your new heading' },
+    { type: 'text', text: 'Your new paragraph 4 text here' },
+    // etc
         ],
         icon: '<svg viewBox="0 0 80 80" fill="none"><circle cx="40" cy="38" r="22" stroke="currentColor" stroke-width="2" opacity="0.5"/><circle cx="32" cy="32" r="5" fill="currentColor" opacity="0.4"/><circle cx="48" cy="32" r="5" fill="currentColor" opacity="0.4"/><circle cx="32" cy="32" r="2.5" fill="#1a0e35"/><circle cx="48" cy="32" r="2.5" fill="#1a0e35"/><path d="M34 46Q40 52 46 46" stroke="currentColor" stroke-width="1.5" fill="none" opacity="0.3"/></svg>'
     },
@@ -143,5 +152,9 @@ var PROJECTS = [
             }
         ],
         icon: '<svg viewBox="0 0 80 80" fill="none"><path d="M20 40Q20 14 40 14Q60 14 60 40L60 58Q56 52 52 58Q48 52 44 58Q40 52 36 58Q32 52 28 58Q24 52 20 58Z" stroke="currentColor" stroke-width="2" fill="none" opacity="0.5"/><circle cx="32" cy="32" r="5" fill="currentColor" opacity="0.4"/><circle cx="48" cy="32" r="5" fill="currentColor" opacity="0.4"/><ellipse cx="40" cy="44" rx="4" ry="5" stroke="currentColor" stroke-width="1.5" fill="none" opacity="0.3"/></svg>'
+    
+    
+    
     }
+    
 ];
