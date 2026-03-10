@@ -189,25 +189,125 @@
     }
 
     function applyAll(data){
-        log('🎨 Applying amendments...');
-        var applied = 0;
-        if(data.textChanges) data.textChanges.forEach(function(c){ if(applyTextChange(c)) applied++; });
-        if(data.stickers)    data.stickers.forEach(function(s){    if(applySticker(s))    applied++; });
-        if(data.dividers)    data.dividers.forEach(function(d){    if(applyDivider(d))    applied++; });
-        if(data.links)       data.links.forEach(function(l){       if(applyLink(l))       applied++; });
-        if(data.images){
-            data.images.forEach(function(img){
-                try {
-                    var el = document.querySelector(img.selector);
-                    if(el && el.tagName === 'IMG'){ el.src = img.src; applied++; }
-                } catch(e){}
-            });
-        }
-        if(data.projectOrder) reorderDOM(data.projectOrder);
-        if(data.textChanges) syncAllThumbnails(data.textChanges);
-        setupProjectObserver();
-        log('✅ Applied', applied, 'amendments');
+    log('🎨 Applying amendments...');
+
+    // Pass 1: stamp indices on original DOM
+    stampAllProjects();
+
+    // Pass 2: apply header/meta text first (these are stable selectors)
+    var applied = 0;
+    if(data.textChanges){
+        // First pass: non-content changes (header, meta, tagline)
+        data.textChanges.forEach(function(c){
+            if(c.selector && !c.selector.includes('bproject-content')){
+                if(applyTextChange(c)) applied++;
+            }
+        });
+        // Second pass: content changes (bp-text, bp-heading etc)
+        data.textChanges.forEach(function(c){
+            if(c.selector && c.selector.includes('bproject-content')){
+                if(applyTextChange(c)) applied++;
+            }
+        });
     }
+
+    if(data.stickers)    data.stickers.forEach(function(s){    if(applySticker(s))    applied++; });
+    if(data.dividers)    data.dividers.forEach(function(d){    if(applyDivider(d))    applied++; });
+    if(data.links)       data.links.forEach(function(l){       if(applyLink(l))       applied++; });
+    if(data.images){
+        data.images.forEach(function(img){
+            try {
+                var el = document.querySelector(img.selector);
+                if(el && el.tagName === 'IMG'){ el.src = img.src; applied++; }
+            } catch(e){}
+        });
+    }
+    if(data.projectOrder) reorderDOM(data.projectOrder);
+    if(data.textChanges) syncAllThumbnails(data.textChanges);
+    setupProjectObserver();
+    log('✅ Applied', applied, 'amendments');
+}
+
+function stampAllProjects(){
+    document.querySelectorAll('.bproject').forEach(function(project){
+        project.querySelectorAll('.bproject-content,.bproject-header-text,.bproject-meta')
+        .forEach(function(container){
+            var groups = {};
+            Array.from(container.children).forEach(function(child){
+                var tag = child.tagName.toLowerCase();
+                var mainClass = '';
+                for(var i = 0; i < child.classList.length; i++){
+                    var c = child.classList[i];
+                    if(!c.startsWith('ed-') && c !== 'expanded'){
+                        mainClass = c; break;
+                    }
+                }
+                var key = mainClass ? tag + '.' + mainClass : tag;
+                if(!groups[key]) groups[key] = [];
+                groups[key].push(child);
+            });
+            Object.keys(groups).forEach(function(key){
+                groups[key].forEach(function(el, idx){
+                    el.setAttribute('data-ed-idx', idx);
+                });
+            });
+        });
+    });
+    log('🏷️ Stamped idx on all projects');
+}
+
+function stampAllProjects(){
+    document.querySelectorAll('.bproject').forEach(function(project){
+        project.querySelectorAll('.bproject-content,.bproject-header-text,.bproject-meta')
+        .forEach(function(container){
+            var groups = {};
+            Array.from(container.children).forEach(function(child){
+                var tag = child.tagName.toLowerCase();
+                var mainClass = '';
+                for(var i = 0; i < child.classList.length; i++){
+                    var c = child.classList[i];
+                    if(!c.startsWith('ed-') && c !== 'expanded'){
+                        mainClass = c; break;
+                    }
+                }
+                var key = mainClass ? tag + '.' + mainClass : tag;
+                if(!groups[key]) groups[key] = [];
+                groups[key].push(child);
+            });
+            Object.keys(groups).forEach(function(key){
+                groups[key].forEach(function(el, idx){
+                    el.setAttribute('data-ed-idx', idx);
+                });
+            });
+        });
+    });
+    log('🏷️ Stamped idx on all projects');
+}
+function stampAllProjects(){
+    document.querySelectorAll('.bproject').forEach(function(project){
+        project.querySelectorAll('.bproject-content,.bproject-header-text,.bproject-meta')
+        .forEach(function(container){
+            var groups = {};
+            Array.from(container.children).forEach(function(child){
+                var tag = child.tagName.toLowerCase();
+                var mainClass = '';
+                for(var i = 0; i < child.classList.length; i++){
+                    var c = child.classList[i];
+                    if(!c.startsWith('ed-') && c !== 'expanded'){ mainClass = c; break; }
+                }
+                var key = mainClass ? tag + '.' + mainClass : tag;
+                if(!groups[key]) groups[key] = [];
+                groups[key].push(child);
+            });
+            Object.keys(groups).forEach(function(key){
+                groups[key].forEach(function(el, idx){
+                    el.setAttribute('data-ed-idx', idx);
+                });
+            });
+        });
+    });
+    log('🏷️ Stamped idx on all projects');
+}
 
     // ══════════════════════════════════════════════════════════════
     // THUMBNAIL SYNC
@@ -341,20 +441,34 @@
     }
 
     function findByIndex(change){
-        var idxMatch = change.selector.match(/data-ed-idx="(\d+)"/);
-        if(!idxMatch) return null;
-        var idx = parseInt(idxMatch[1]);
-        var project = getBasementProject(change.projectId);
-        if(!project) return null;
-        var elMatch = change.selector.match(/\]\s*\.[\w-]+\s+([\w.]+)\[data-ed-idx/);
-        if(!elMatch) return null;
-        var containerMatch = change.selector.match(/\]\s*\.([\w-]+)\s+/);
-        if(!containerMatch) return null;
-        var container = project.querySelector('.' + containerMatch[1]);
-        if(!container) return null;
-        return Array.from(container.querySelectorAll(elMatch[1]))[idx] || null;
-    }
+    var idxMatch = change.selector.match(/data-ed-idx="(\d+)"/);
+    if(!idxMatch) return null;
+    var idx = parseInt(idxMatch[1]);
 
+    var project = getBasementProject(change.projectId);
+    if(!project) return null;
+
+    // Extract element selector without the [data-ed-idx] part
+    var elMatch = change.selector.match(/\]\s*\.[\w-]+\s+([\w.]+)\[data-ed-idx/);
+    if(!elMatch) return null;
+    var elSelector = elMatch[1]; // e.g. "p.bp-text"
+
+    var containerMatch = change.selector.match(/\]\s*\.([\w-]+)\s+/);
+    if(!containerMatch) return null;
+    var containerClass = containerMatch[1]; // e.g. "bproject-content"
+
+    var container = project.querySelector('.' + containerClass);
+    if(!container) return null;
+
+    // Try with data-ed-idx attribute first
+    var byAttr = container.querySelector(elSelector + '[data-ed-idx="' + idx + '"]');
+    if(byAttr) return byAttr;
+
+    // Fallback: get by position among matching elements
+    log('  ⚠️ data-ed-idx not stamped yet, falling back to index position');
+    var candidates = Array.from(container.querySelectorAll(elSelector));
+    return candidates[idx] || null;
+}
     function findByNthFallback(change){
         var project = getBasementProject(change.projectId);
         if(!project) return null;
