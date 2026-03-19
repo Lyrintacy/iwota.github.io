@@ -1,6 +1,7 @@
 class LiveEditor{
     constructor(){
-        this.active=false;this.selectedEl=null;this.undoStack=[];this.stickerDragging=null;this.stickerOffset={x:0,y:0};
+        this.active=false;this.selectedEl=null;this.undoStack=[];
+        this.stickerDragging=null;this.stickerOffset={x:0,y:0};
         this.projectOrder=null;
 
         this.shortcodes=[
@@ -42,30 +43,30 @@ class LiveEditor{
             '.ed-project-item .ed-proj-num{width:20px;height:20px;background:#c084fc;color:#000;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:bold}'+
             '.ed-project-item .ed-proj-name{flex:1;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'+
             '.ed-project-item .ed-proj-btns{display:flex;gap:2px}'+
-            '.ed-project-item .ed-proj-btns button{padding:2px 6px;font-size:10px}'+
-            '.ed-new-element{outline:2px dashed #4ade80;outline-offset:2px}';
+            '.ed-project-item .ed-proj-btns button{padding:2px 6px;font-size:10px}';
         document.head.appendChild(s);
-
         this.buildUI();
         this.bindShortcut();
     }
 
     buildUI(){
         var toolbar=document.createElement('div');toolbar.id='editorToolbar';
-        toolbar.innerHTML='<div class="ed-header"><span class="ed-title">☠ Live Editor</span><div class="ed-controls">'+
-            '<button class="ed-btn" id="edAddImage" title="Add Image">🖼️</button>'+
+        toolbar.innerHTML=
+            '<div class="ed-header"><span class="ed-title">☠ Live Editor</span><div class="ed-controls">'+
             '<button class="ed-btn" id="edAddText" title="Add Text">📝</button>'+
             '<button class="ed-btn" id="edAddHeading" title="Add Heading">📌</button>'+
             '<button class="ed-btn" id="edAddQuote" title="Add Quote">💬</button>'+
             '<button class="ed-btn" id="edAddDivider" title="Add Divider">➖</button>'+
             '<button class="ed-btn" id="edAddLink" title="Add Link">🔗</button>'+
+            '<button class="ed-btn" id="edAddImage" title="Add Image">🖼️</button>'+
             '<button class="ed-btn" id="edAddSticker" title="Add Sticker">⭐</button>'+
             '<span class="ed-sep"></span>'+
-            '<button class="ed-btn" id="edReorderProjects" title="Reorder Projects">📋</button>'+
+            '<button class="ed-btn" id="edReorderProjects" title="Reorder">📋</button>'+
             '<button class="ed-btn" id="edUndo" title="Undo">↩️</button>'+
             '<button class="ed-btn ed-amendment" id="edExportAmendment" title="Export">📄 Export</button>'+
-            '<button class="ed-btn ed-close" id="edClose" title="Close">✕</button>'+
-            '</div></div><div class="ed-status" id="edStatus">F2 to toggle • Click to edit</div>';
+            '<button class="ed-btn ed-close" id="edClose">✕</button>'+
+            '</div></div>'+
+            '<div class="ed-status" id="edStatus">F2 to toggle • Click to edit • Right-click menu</div>';
         document.body.appendChild(toolbar);
 
         var formatBar=document.createElement('div');formatBar.id='edFormatBar';
@@ -75,7 +76,9 @@ class LiveEditor{
             '<button class="ed-fmt" data-cmd="underline"><u>U</u></button>'+
             '<span class="ed-fmt-sep">|</span>'+
             '<input type="color" class="ed-fmt-color" id="edFmtColor" value="#c084fc">'+
-            '<select class="ed-fmt-select" id="edFmtSize"><option value="">Size</option><option value="1">XS</option><option value="3">M</option><option value="5">L</option><option value="7">XL</option></select>'+
+            '<select class="ed-fmt-select" id="edFmtSize">'+
+            '<option value="">Size</option><option value="1">XS</option><option value="3">M</option><option value="5">L</option><option value="7">XL</option>'+
+            '</select>'+
             '<button class="ed-fmt" data-cmd="createLink">🔗</button>'+
             '<button class="ed-fmt" id="edFmtFancy">✨</button>'+
             '<button class="ed-fmt" data-cmd="removeFormat">⌧</button>';
@@ -89,14 +92,15 @@ class LiveEditor{
         var ctx=document.createElement('div');ctx.id='editorContext';document.body.appendChild(ctx);
         var fileInput=document.createElement('input');fileInput.type='file';fileInput.id='edFileInput';fileInput.accept='image/*,.gif';fileInput.style.display='none';document.body.appendChild(fileInput);
 
-        this.toolbar=toolbar;this.formatBar=formatBar;this.panel=panel;this.highlight=highlight;this.ctx=ctx;this.fileInput=fileInput;
+        this.toolbar=toolbar;this.formatBar=formatBar;this.panel=panel;
+        this.highlight=highlight;this.ctx=ctx;this.fileInput=fileInput;
     }
 
     bindShortcut(){
         var self=this;
         document.addEventListener('keydown',function(e){
             if(e.key==='F2'){e.preventDefault();self.toggle();return;}
-            if(!self.active) return;
+            if(!self.active)return;
             if(e.ctrlKey&&e.key==='z'){e.preventDefault();self.undo();}
             if(e.key==='Delete'&&self.selectedEl&&!self.selectedEl.isContentEditable) self.deleteSelected();
             if(e.key==='Escape'){self.deselectAll();self.hideContext();}
@@ -105,7 +109,7 @@ class LiveEditor{
                 if(e.key==='ArrowDown'){e.preventDefault();self.moveElement(self.selectedEl,'down');}
             }
             if(e.key==='Enter'&&self.selectedEl&&self.selectedEl.isContentEditable){
-                if(self.processShortcodes(self.selectedEl)) e.preventDefault();
+                if(self.processShortcodes(self.selectedEl))e.preventDefault();
             }
         });
     }
@@ -115,35 +119,32 @@ class LiveEditor{
         document.body.classList.toggle('editor-active',this.active);
         this.toolbar.classList.toggle('ed-visible',this.active);
         this.panel.classList.toggle('ed-visible',this.active);
-        if(this.active){this.enableEditing();this.setStatus('Editor active • F2 to close');}
+        if(this.active){this.enableEditing();this.setStatus('Editor ON • F2 to close');}
         else{this.disableEditing();this.deselectAll();this.hideContext();this.hideFormatBar();}
     }
 
     enableEditing(){
         var self=this;
         this.markEditables();
-
         document.querySelectorAll('.bp-img,.bp-gallery-img,.bproject-thumb-img,.pcard-thumb-img,.hero-photo,.rcard img')
             .forEach(function(el){el.classList.add('ed-interactive');});
         document.querySelectorAll('.bp-figure,.bp-gallery-item,.bp-gallery,.bp-columns,.bp-quote,.bp-text,.bp-heading,.ed-divider,.ed-link-block')
             .forEach(function(el){el.classList.add('ed-block');});
 
-        this._projectExpandObserver=new MutationObserver(function(mutations){
+        this._expandObs=new MutationObserver(function(mutations){
             mutations.forEach(function(m){
-                if(m.attributeName==='class'){
-                    var t=m.target;
-                    if(t.classList.contains('bproject')&&t.classList.contains('expanded')){
-                        setTimeout(function(){self.markEditables(t);},100);
-                    }
+                var t=m.target;
+                if(t.classList.contains('bproject')&&t.classList.contains('expanded')){
+                    setTimeout(function(){self.markEditables(t);},100);
                 }
             });
         });
         document.querySelectorAll('.bproject').forEach(function(p){
-            self._projectExpandObserver.observe(p,{attributes:true,attributeFilter:['class']});
+            self._expandObs.observe(p,{attributes:true,attributeFilter:['class']});
         });
 
         this._clickHandler=function(e){
-            if(!self.active) return;
+            if(!self.active)return;
             var t=e.target;
             var proj=t.closest('.bproject');
             if(proj&&!proj.classList.contains('expanded')&&!t.closest('.ed-editable,.ed-interactive,.ed-sticker')){
@@ -159,47 +160,44 @@ class LiveEditor{
         };
         document.addEventListener('click',this._clickHandler);
 
-        this._contextHandler=function(e){
-            if(!self.active) return;
+        this._ctxHandler=function(e){
+            if(!self.active)return;
             var proj=e.target.closest('.bproject');
             if(proj&&!proj.classList.contains('expanded')){e.preventDefault();self.showProjectContext(e,proj);return;}
             var t=e.target.closest('.ed-block,.ed-interactive,.ed-editable,.ed-sticker,.ed-divider,.ed-link-block');
             if(t){e.preventDefault();self.showContext(e,t);}
         };
-        document.addEventListener('contextmenu',this._contextHandler);
+        document.addEventListener('contextmenu',this._ctxHandler);
 
-        this._mousedownHandler=function(e){
-            if(!self.active) return;
+        this._mdHandler=function(e){
+            if(!self.active)return;
             var s=e.target.closest('.ed-sticker');
             if(s&&!e.target.closest('.ed-sticker-delete')){
                 self.stickerDragging=s;
                 var r=s.getBoundingClientRect();
-                self.stickerOffset.x=e.clientX-r.left;
-                self.stickerOffset.y=e.clientY-r.top;
-                s.classList.add('ed-sticker-dragging');
-                e.preventDefault();
+                self.stickerOffset={x:e.clientX-r.left,y:e.clientY-r.top};
+                s.classList.add('ed-sticker-dragging');e.preventDefault();
             }
         };
-        this._mousemoveHandler=function(e){
-            if(!self.stickerDragging) return;
-            var p=self.stickerDragging.parentElement;
-            var pr=p.getBoundingClientRect();
+        this._mmHandler=function(e){
+            if(!self.stickerDragging)return;
+            var pr=self.stickerDragging.parentElement.getBoundingClientRect();
             self.stickerDragging.style.left=(e.clientX-pr.left-self.stickerOffset.x)+'px';
             self.stickerDragging.style.top=(e.clientY-pr.top-self.stickerOffset.y)+'px';
         };
-        this._mouseupHandler=function(){
+        this._muHandler=function(){
             if(self.stickerDragging){self.stickerDragging.classList.remove('ed-sticker-dragging');self.stickerDragging=null;}
         };
-        document.addEventListener('mousedown',this._mousedownHandler);
-        document.addEventListener('mousemove',this._mousemoveHandler);
-        document.addEventListener('mouseup',this._mouseupHandler);
+        document.addEventListener('mousedown',this._mdHandler);
+        document.addEventListener('mousemove',this._mmHandler);
+        document.addEventListener('mouseup',this._muHandler);
 
-        document.getElementById('edAddImage').onclick=function(){self.addImage();};
         document.getElementById('edAddText').onclick=function(){self.addTextBlock();};
         document.getElementById('edAddHeading').onclick=function(){self.addHeading();};
         document.getElementById('edAddQuote').onclick=function(){self.addQuoteBlock();};
         document.getElementById('edAddDivider').onclick=function(){self.addDivider();};
         document.getElementById('edAddLink').onclick=function(){self.addLinkBlock();};
+        document.getElementById('edAddImage').onclick=function(){self.addImage();};
         document.getElementById('edAddSticker').onclick=function(){self.addSticker();};
         document.getElementById('edReorderProjects').onclick=function(){self.showProjectReorderPanel();};
         document.getElementById('edUndo').onclick=function(){self.undo();};
@@ -249,12 +247,12 @@ class LiveEditor{
         document.querySelectorAll('.ed-interactive').forEach(function(el){el.classList.remove('ed-interactive','ed-selected');});
         document.querySelectorAll('.ed-block').forEach(function(el){el.classList.remove('ed-block','ed-selected');});
         document.querySelectorAll('.ed-project-selected').forEach(function(el){el.classList.remove('ed-project-selected');});
-        if(this._clickHandler) document.removeEventListener('click',this._clickHandler);
-        if(this._contextHandler) document.removeEventListener('contextmenu',this._contextHandler);
-        if(this._mousedownHandler) document.removeEventListener('mousedown',this._mousedownHandler);
-        if(this._mousemoveHandler) document.removeEventListener('mousemove',this._mousemoveHandler);
-        if(this._mouseupHandler) document.removeEventListener('mouseup',this._mouseupHandler);
-        if(this._projectExpandObserver){this._projectExpandObserver.disconnect();this._projectExpandObserver=null;}
+        if(this._clickHandler)document.removeEventListener('click',this._clickHandler);
+        if(this._ctxHandler)document.removeEventListener('contextmenu',this._ctxHandler);
+        if(this._mdHandler)document.removeEventListener('mousedown',this._mdHandler);
+        if(this._mmHandler)document.removeEventListener('mousemove',this._mmHandler);
+        if(this._muHandler)document.removeEventListener('mouseup',this._muHandler);
+        if(this._expandObs){this._expandObs.disconnect();this._expandObs=null;}
     }
 
     // ══════════════════════════════════════════════════════════════
@@ -272,36 +270,38 @@ class LiveEditor{
 
     showProjectProps(projectEl){
         var panel=document.getElementById('edPanelBody');
-        var projectId=projectEl.dataset.projectId||'unknown';
+        var pid=projectEl.dataset.projectId||'unknown';
         var nameEl=projectEl.querySelector('.bproject-header-text h3');
-        var projectName=nameEl?nameEl.textContent:'Project';
+        var name=nameEl?nameEl.textContent:'Project';
         var projects=document.querySelectorAll('.bproject');
-        var idx=-1;
-        for(var i=0;i<projects.length;i++){if(projects[i]===projectEl){idx=i;break;}}
+        var idx=-1;for(var i=0;i<projects.length;i++){if(projects[i]===projectEl){idx=i;break;}}
         panel.innerHTML=
-            '<div class="ed-prop"><label>Project</label><p style="margin:0;color:#c084fc;font-size:14px">'+projectName+'</p><small style="color:#666">ID: '+projectId+'</small></div>'+
-            '<div class="ed-prop"><label>Position ('+(idx+1)+' of '+projects.length+')</label><div class="ed-move-controls">'+
-            '<button class="ed-btn" id="edProjMoveUp" '+(idx===0?'disabled':'')+'>⬆️ Up</button>'+
-            '<button class="ed-btn" id="edProjMoveDown" '+(idx===projects.length-1?'disabled':'')+'>⬇️ Down</button>'+
+            '<div class="ed-prop"><label>Project</label>'+
+            '<p style="margin:0;color:#c084fc;font-size:14px">'+name+'</p>'+
+            '<small style="color:#666">ID: '+pid+'</small></div>'+
+            '<div class="ed-prop"><label>Position ('+(idx+1)+'/'+projects.length+')</label>'+
+            '<div class="ed-move-controls">'+
+            '<button class="ed-btn" id="edPMU" '+(idx===0?'disabled':'')+'>⬆️ Up</button>'+
+            '<button class="ed-btn" id="edPMD" '+(idx===projects.length-1?'disabled':'')+'>⬇️ Down</button>'+
             '</div></div>'+
             '<div class="ed-prop"><div class="ed-move-controls">'+
-            '<button class="ed-btn" id="edProjMoveTop" '+(idx===0?'disabled':'')+'>⏫ First</button>'+
-            '<button class="ed-btn" id="edProjMoveLast" '+(idx===projects.length-1?'disabled':'')+'>⏬ Last</button>'+
+            '<button class="ed-btn" id="edPMT" '+(idx===0?'disabled':'')+'>⏫ First</button>'+
+            '<button class="ed-btn" id="edPML" '+(idx===projects.length-1?'disabled':'')+'>⏬ Last</button>'+
             '</div></div>'+
             '<div class="ed-prop"><button class="ed-btn ed-full" id="edOpenReorder">📋 Reorder All</button></div>';
         var self=this;
-        document.getElementById('edProjMoveUp').onclick=function(){self.moveProject(projectEl,'up');};
-        document.getElementById('edProjMoveDown').onclick=function(){self.moveProject(projectEl,'down');};
-        document.getElementById('edProjMoveTop').onclick=function(){self.moveProject(projectEl,'first');};
-        document.getElementById('edProjMoveLast').onclick=function(){self.moveProject(projectEl,'last');};
+        document.getElementById('edPMU').onclick=function(){self.moveProject(projectEl,'up');};
+        document.getElementById('edPMD').onclick=function(){self.moveProject(projectEl,'down');};
+        document.getElementById('edPMT').onclick=function(){self.moveProject(projectEl,'first');};
+        document.getElementById('edPML').onclick=function(){self.moveProject(projectEl,'last');};
         document.getElementById('edOpenReorder').onclick=function(){self.showProjectReorderPanel();};
     }
 
-    moveProject(projectEl,direction){
+    moveProject(projectEl,dir){
         var container=projectEl.parentElement;
         var projects=Array.from(container.querySelectorAll('.bproject'));
         var i=projects.indexOf(projectEl);
-        switch(direction){
+        switch(dir){
             case'up':if(i>0)container.insertBefore(projectEl,projects[i-1]);break;
             case'down':if(i<projects.length-1)container.insertBefore(projects[i+1],projectEl);break;
             case'first':container.insertBefore(projectEl,projects[0]);break;
@@ -310,7 +310,7 @@ class LiveEditor{
         this.syncThumbnailOrder();
         this.showProjectProps(projectEl);
         this.updateHighlight(projectEl);
-        this.setStatus('Project moved '+direction);
+        this.setStatus('Moved '+dir);
         this.projectOrder=this.getCurrentProjectOrder();
     }
 
@@ -320,10 +320,10 @@ class LiveEditor{
         var self=this;
         var html='<div class="ed-prop"><label>Drag to Reorder</label></div><div class="ed-project-list" id="edProjectList">';
         for(var i=0;i<projects.length;i++){
-            var id=projects[i].dataset.projectId||'proj-'+i;
-            var nameEl=projects[i].querySelector('.bproject-header-text h3');
-            var name=nameEl?nameEl.textContent:'Project '+(i+1);
-            html+='<div class="ed-project-item" data-project-id="'+id+'" draggable="true">'+
+            var pid=projects[i].dataset.projectId||'proj-'+i;
+            var ne=projects[i].querySelector('.bproject-header-text h3');
+            var name=ne?ne.textContent:'Project '+(i+1);
+            html+='<div class="ed-project-item" data-project-id="'+pid+'" draggable="true">'+
                 '<span class="ed-proj-num">'+(i+1)+'</span>'+
                 '<span class="ed-proj-name">'+name+'</span>'+
                 '<span class="ed-proj-btns">'+
@@ -331,7 +331,7 @@ class LiveEditor{
                 '<button class="ed-btn" data-action="down" '+(i===projects.length-1?'disabled':'')+'>↓</button>'+
                 '</span></div>';
         }
-        html+='</div><div class="ed-prop"><button class="ed-btn ed-full" id="edApplyOrder">✓ Apply Order</button></div>';
+        html+='</div><div class="ed-prop"><button class="ed-btn ed-full" id="edApplyOrder">✓ Apply</button></div>';
         panel.innerHTML=html;
         this.setupProjectListDragDrop();
         panel.querySelectorAll('.ed-proj-btns button').forEach(function(btn){
@@ -348,11 +348,9 @@ class LiveEditor{
             item.addEventListener('dragend',function(){item.classList.remove('dragging');dragged=null;self.updateProjectListNumbers();});
             item.addEventListener('dragover',function(e){
                 e.preventDefault();
-                if(dragged&&dragged!==item){
-                    var mid=item.getBoundingClientRect().top+item.getBoundingClientRect().height/2;
-                    if(e.clientY<mid)list.insertBefore(dragged,item);
-                    else list.insertBefore(dragged,item.nextSibling);
-                }
+                if(!dragged||dragged===item)return;
+                var mid=item.getBoundingClientRect().top+item.getBoundingClientRect().height/2;
+                list.insertBefore(dragged,e.clientY<mid?item:item.nextSibling);
             });
         });
     }
@@ -381,7 +379,7 @@ class LiveEditor{
         var order=[];
         items.forEach(function(item){order.push(item.dataset.projectId);});
         order.forEach(function(id){
-            var el=document.querySelector('.bproject[data-project-id="'+id+'"]');
+            var el=document.querySelector('.bproject[data-project-id="'+id+'"],#bp-'+id);
             if(el)container.appendChild(el);
         });
         this.syncThumbnailOrder();
@@ -400,8 +398,8 @@ class LiveEditor{
         var grid=document.querySelector('.pgrid,#projectGrid');if(!grid)return;
         document.querySelectorAll('.bproject').forEach(function(p){
             var id=p.dataset.projectId;if(!id)return;
-            var thumb=grid.querySelector('[data-project-id="'+id+'"]');
-            if(thumb)grid.appendChild(thumb);
+            var t=grid.querySelector('[data-project-id="'+id+'"]');
+            if(t)grid.appendChild(t);
         });
     }
 
@@ -409,15 +407,13 @@ class LiveEditor{
         var projects=document.querySelectorAll('.bproject');
         var idx=-1;for(var i=0;i<projects.length;i++){if(projects[i]===projectEl){idx=i;break;}}
         this.ctx.innerHTML=
-            '<button data-action="select">✏️ Edit Project</button><hr class="ed-ctx-sep">'+
-            '<button data-action="moveup" '+(idx===0?'disabled':'')+'>⬆️ Move Up</button>'+
-            '<button data-action="movedown" '+(idx===projects.length-1?'disabled':'')+'>⬇️ Move Down</button>'+
-            '<button data-action="movefirst" '+(idx===0?'disabled':'')+'>⏫ Move First</button>'+
-            '<button data-action="movelast" '+(idx===projects.length-1?'disabled':'')+'>⏬ Move Last</button>'+
+            '<button data-action="select">✏️ Edit</button><hr class="ed-ctx-sep">'+
+            '<button data-action="moveup" '+(idx===0?'disabled':'')+'>⬆️ Up</button>'+
+            '<button data-action="movedown" '+(idx===projects.length-1?'disabled':'')+'>⬇️ Down</button>'+
+            '<button data-action="movefirst" '+(idx===0?'disabled':'')+'>⏫ First</button>'+
+            '<button data-action="movelast" '+(idx===projects.length-1?'disabled':'')+'>⏬ Last</button>'+
             '<hr class="ed-ctx-sep"><button data-action="reorder">📋 Reorder All</button>';
-        this.ctx.style.display='block';
-        this.ctx.style.left=Math.min(e.clientX,innerWidth-200)+'px';
-        this.ctx.style.top=Math.min(e.clientY,innerHeight-200)+'px';
+        this.ctx.style.cssText='display:block;left:'+Math.min(e.clientX,innerWidth-200)+'px;top:'+Math.min(e.clientY,innerHeight-200)+'px';
         var self=this;
         this.ctx.querySelectorAll('button').forEach(function(btn){
             btn.onclick=function(){
@@ -435,14 +431,13 @@ class LiveEditor{
     }
 
     // ══════════════════════════════════════════════════════════════
-    // ELEMENT SELECTION
+    // ELEMENT SELECTION & EDITING
     // ══════════════════════════════════════════════════════════════
 
     selectElement(el){
         this.deselectAll();
-        document.querySelectorAll('.ed-project-selected').forEach(function(el){el.classList.remove('ed-project-selected');});
-        this.selectedEl=el;
-        el.classList.add('ed-selected');
+        document.querySelectorAll('.ed-project-selected').forEach(function(e){e.classList.remove('ed-project-selected');});
+        this.selectedEl=el;el.classList.add('ed-selected');
         if(el.classList.contains('ed-editable')){el.contentEditable='true';el.focus();this.showFormatBar(el);this.showTextProps(el);}
         else if(el.tagName==='IMG'){this.hideFormatBar();this.showImageProps(el);}
         else if(el.classList.contains('ed-sticker')){this.hideFormatBar();this.showStickerProps(el);}
@@ -455,10 +450,10 @@ class LiveEditor{
     deselectAll(){
         if(this.selectedEl&&this.selectedEl.classList&&this.selectedEl.classList.contains('ed-editable')){
             this.selectedEl.contentEditable='false';
-            var original=this.selectedEl.getAttribute('data-ed-original');
-            if(original!==null&&original!==this.selectedEl.innerHTML){
-                this.pushUndo({el:this.selectedEl,type:'html',value:original});
-                this.syncElementToThumbnail(this.selectedEl);
+            var orig=this.selectedEl.getAttribute('data-ed-original');
+            if(orig!==null&&orig!==this.selectedEl.innerHTML){
+                this.pushUndo({el:this.selectedEl,type:'html',value:orig});
+                this.syncToThumbnail(this.selectedEl);
             }
         }
         document.querySelectorAll('.ed-selected').forEach(function(el){el.classList.remove('ed-selected');});
@@ -467,6 +462,34 @@ class LiveEditor{
         this.highlight.style.display='none';
         this.hideFormatBar();
         document.getElementById('edPanelBody').innerHTML='<p class="ed-panel-hint">Select element to edit</p>';
+    }
+
+    syncToThumbnail(el){
+        var proj=el.closest('.bproject');if(!proj)return;
+        var pid=proj.dataset.projectId;if(!pid)return;
+        var text=(el.textContent||'').trim();
+        var thumb=document.querySelector('#projectGrid [data-project-id="'+pid+'"],.pgrid [data-project-id="'+pid+'"]');
+        if(!thumb)return;
+        if(el.closest('.bproject-header-text')&&/^H/.test(el.tagName)){
+            var h=thumb.querySelector('h3');if(h)h.textContent=text;
+            this.setStatus('✓ Title synced');
+        }
+        if(el.classList.contains('bproject-tagline')){
+            var s=thumb.querySelector('.pcard-short');if(s)s.textContent=text;
+            this.setStatus('✓ Tagline synced');
+        }
+        if(el.classList.contains('bm-value')){
+            var vals=Array.from(proj.querySelectorAll('.bm-value'));
+            var lbls=Array.from(proj.querySelectorAll('.bm-label'));
+            var vi=vals.indexOf(el);if(vi===-1)return;
+            var lbl=lbls[vi]?lbls[vi].textContent.toLowerCase():'';
+            var pmv=Array.from(thumb.querySelectorAll('.pm-value'));
+            if(lbl.includes('role')&&pmv[0])pmv[0].textContent=text;
+            if(lbl.includes('team')&&pmv[1])pmv[1].textContent=text;
+            if(lbl.includes('time')&&pmv[3])pmv[3].textContent=text;
+            if(lbl.includes('engine')&&pmv[2]){var ei=pmv[2].querySelector('.engine-icon');if(ei)ei.textContent=text;else pmv[2].textContent=text;}
+            this.setStatus('✓ Meta synced');
+        }
     }
 
     updateHighlight(el){
@@ -483,60 +506,10 @@ class LiveEditor{
         this.formatBar.classList.add('ed-visible');
         this.formatBar.style.top=Math.max(70,r.top+window.scrollY-50)+'px';
         this.formatBar.style.left=Math.max(10,r.left)+'px';
-        var fb=document.getElementById('edFmtFancy');
-        fb.classList.toggle('ed-fancy-active',el.classList.contains('fancy')||el.classList.contains('alt-font'));
+        document.getElementById('edFmtFancy').classList.toggle('ed-fancy-active',el.classList.contains('fancy')||el.classList.contains('alt-font'));
     }
-
     hideFormatBar(){this.formatBar.classList.remove('ed-visible');}
     hideContext(){this.ctx.style.display='none';}
-
-    // ══════════════════════════════════════════════════════════════
-    // THUMBNAIL SYNC
-    // ══════════════════════════════════════════════════════════════
-
-    syncElementToThumbnail(el){
-        var projectEl=el.closest('.bproject');if(!projectEl)return;
-        var projectId=projectEl.dataset.projectId;if(!projectId)return;
-        var text=(el.textContent||el.innerText||'').trim();
-        var thumb=document.querySelector('#projectGrid [data-project-id="'+projectId+'"],.pgrid [data-project-id="'+projectId+'"]');
-        if(!thumb)return;
-
-        if(el.closest('.bproject-header-text')&&/^H[1-6]$/.test(el.tagName)){
-            var h3=thumb.querySelector('h3');if(h3)h3.textContent=text;
-            var img=thumb.querySelector('.pcard-thumb-img');if(img)img.alt=text;
-            this.updateProjectsArray(projectId,'title',text);
-            this.setStatus('✓ Title synced');return;
-        }
-        if(el.classList.contains('bproject-tagline')){
-            var s=thumb.querySelector('.pcard-short');if(s)s.textContent=text;
-            this.updateProjectsArray(projectId,'tagline',text);
-            this.updateProjectsArray(projectId,'short',text);
-            this.setStatus('✓ Tagline synced');return;
-        }
-        if(el.classList.contains('bm-value')){
-            var allVals=Array.from(projectEl.querySelectorAll('.bm-value'));
-            var allLabels=Array.from(projectEl.querySelectorAll('.bm-label'));
-            var vi=allVals.indexOf(el);if(vi===-1)return;
-            var label=allLabels[vi]?allLabels[vi].textContent.toLowerCase().trim():'';
-            var pmv=Array.from(thumb.querySelectorAll('.pm-value'));
-            if(label.includes('role')){if(pmv[0])pmv[0].textContent=text;this.updateProjectsArray(projectId,'role',text);this.setStatus('✓ Role synced');}
-            else if(label.includes('team')){if(pmv[1])pmv[1].textContent=text;this.updateProjectsArray(projectId,'team',text);this.setStatus('✓ Team synced');}
-            else if(label.includes('engine')){
-                if(pmv[2]){var ei=pmv[2].querySelector('.engine-icon');if(ei)ei.textContent=text;else pmv[2].textContent=text;}
-                this.updateProjectsArray(projectId,'engine',text);this.setStatus('✓ Engine synced');
-            }
-            else if(label.includes('time')){if(pmv[3])pmv[3].textContent=text;this.updateProjectsArray(projectId,'timeframe',text);this.setStatus('✓ Timeline synced');}
-        }
-    }
-
-    updateProjectsArray(projectId,field,value){
-        if(typeof PROJECTS==='undefined')return;
-        for(var i=0;i<PROJECTS.length;i++){if(PROJECTS[i].id===projectId){PROJECTS[i][field]=value;break;}}
-    }
-
-    // ══════════════════════════════════════════════════════════════
-    // TEXT PROPS UI
-    // ══════════════════════════════════════════════════════════════
 
     showTextProps(el){
         var panel=document.getElementById('edPanelBody');
@@ -544,34 +517,33 @@ class LiveEditor{
         var ct=this.getElementType(el);
         var isFancy=el.classList.contains('fancy')||el.classList.contains('alt-font');
         panel.innerHTML=
-            '<div class="ed-prop"><label>Position</label><div class="ed-move-controls">'+
-            '<button class="ed-btn" id="edMoveUp">⬆️ Up</button>'+
-            '<button class="ed-btn" id="edMoveDown">⬇️ Down</button></div></div>'+
+            '<div class="ed-prop"><label>Move</label><div class="ed-move-controls">'+
+            '<button class="ed-btn" id="edMU">⬆️ Up</button>'+
+            '<button class="ed-btn" id="edMD">⬇️ Down</button></div></div>'+
             '<div class="ed-prop"><label>Convert To</label><div class="ed-type-select">'+
             ['text','heading','subheading','caption','quote','whisper'].map(function(t){
-                return '<button class="ed-type-btn'+(ct===t?' active':'')+'" data-type="'+t+'">'+t.charAt(0).toUpperCase()+t.slice(1)+'</button>';
-            }).join('')+
-            '</div></div>'+
-            '<div class="ed-prop"><button class="ed-btn ed-full'+(isFancy?' ed-fancy-active':'')+'" id="edToggleFancy">✨ '+(isFancy?'Remove':'Apply')+' Fancy</button></div>'+
-            '<div class="ed-prop"><label>Font Size</label><input type="number" class="ed-prop-input" id="edPropFS" value="'+parseInt(cs.fontSize)+'" min="8" max="120"></div>'+
-            '<div class="ed-prop"><label>Opacity</label><input type="range" class="ed-prop-range" id="edPropOp" min="0" max="1" step="0.05" value="'+(cs.opacity||1)+'"></div>'+
-            '<div class="ed-prop"><button class="ed-btn ed-full ed-danger" id="edDeleteText">🗑️ Delete</button></div>'+
-            '<div class="ed-shortcode-hint"><strong>Quick codes (+ Enter):</strong><br>'+
-            '<code>## text</code> Heading &nbsp; <code>>>> text</code> Quote<br>'+
-            '<code>~~~ text</code> Fancy &nbsp; <code>---</code> Divider</div>';
+                return'<button class="ed-type-btn'+(ct===t?' active':'')+'" data-type="'+t+'">'+t[0].toUpperCase()+t.slice(1)+'</button>';
+            }).join('')+'</div></div>'+
+            '<div class="ed-prop"><button class="ed-btn ed-full'+(isFancy?' ed-fancy-active':'')+'" id="edTFancy">✨ '+(isFancy?'Remove':'Apply')+' Fancy</button></div>'+
+            '<div class="ed-prop"><label>Size px</label><input type="number" class="ed-prop-input" id="edFS" value="'+parseInt(cs.fontSize)+'" min="8" max="120"></div>'+
+            '<div class="ed-prop"><label>Opacity</label><input type="range" class="ed-prop-range" id="edOp" min="0" max="1" step="0.05" value="'+(cs.opacity||1)+'"></div>'+
+            '<div class="ed-prop"><button class="ed-btn ed-full ed-danger" id="edDelText">🗑️ Delete</button></div>'+
+            '<div class="ed-shortcode-hint"><strong>Shortcuts (Enter):</strong><br>'+
+            '<code>## h</code> Heading &nbsp;<code>>>> q</code> Quote<br>'+
+            '<code>~~~ t</code> Fancy &nbsp;<code>---</code> Divider</div>';
         var self=this;
-        document.getElementById('edMoveUp').onclick=function(){self.moveElement(el,'up');};
-        document.getElementById('edMoveDown').onclick=function(){self.moveElement(el,'down');};
+        document.getElementById('edMU').onclick=function(){self.moveElement(el,'up');};
+        document.getElementById('edMD').onclick=function(){self.moveElement(el,'down');};
         panel.querySelectorAll('.ed-type-btn').forEach(function(btn){btn.onclick=function(){self.convertElementType(el,btn.dataset.type);};});
-        document.getElementById('edToggleFancy').onclick=function(){self.toggleFancyFontOnElement(el);self.showTextProps(el);};
-        document.getElementById('edPropFS').oninput=function(){el.style.fontSize=this.value+'px';self.updateHighlight(el);};
-        document.getElementById('edPropOp').oninput=function(){el.style.opacity=this.value;};
-        document.getElementById('edDeleteText').onclick=function(){self.deleteSelected();};
+        document.getElementById('edTFancy').onclick=function(){self.toggleFancyFontOnElement(el);self.showTextProps(el);};
+        document.getElementById('edFS').oninput=function(){el.style.fontSize=this.value+'px';self.updateHighlight(el);};
+        document.getElementById('edOp').oninput=function(){el.style.opacity=this.value;};
+        document.getElementById('edDelText').onclick=function(){self.deleteSelected();};
     }
 
     getElementType(el){
         var tag=el.tagName.toLowerCase();var cls=el.className||'';
-        if(/^h[1-6]$/.test(tag)||cls.includes('heading')||cls.includes('section-title'))return'heading';
+        if(/^h[1-6]$/.test(tag)||cls.includes('heading'))return'heading';
         if(cls.includes('sub')||cls.includes('tagline'))return'subheading';
         if(cls.includes('caption'))return'caption';
         if(tag==='blockquote'||cls.includes('quote'))return'quote';
@@ -579,23 +551,22 @@ class LiveEditor{
         return'text';
     }
 
-    convertElementType(el,newType){
-        var self=this;var content=el.innerHTML;var parent=el.parentElement;var next=el.nextElementSibling;var newEl;
+    convertElementType(el,type){
+        var self=this;var content=el.innerHTML;var parent=el.parentElement;var next=el.nextElementSibling;var ne;
         this.pushUndo({el:parent,type:'child',value:el.outerHTML,ref:next});
-        switch(newType){
-            case'heading':newEl=document.createElement('h4');newEl.className='bp-heading ed-editable ed-block';newEl.innerHTML=content;break;
-            case'subheading':newEl=document.createElement('p');newEl.className='bp-caption ed-editable ed-block';newEl.style.cssText='font-size:1.1em;opacity:0.8;';newEl.innerHTML=content;break;
-            case'caption':newEl=document.createElement('p');newEl.className='bp-caption ed-editable ed-block';newEl.style.cssText='font-size:0.85em;opacity:0.6;';newEl.innerHTML=content;break;
-            case'quote':newEl=document.createElement('blockquote');newEl.className='bp-quote ed-block';newEl.innerHTML='<p class="ed-editable" data-ed-original="">'+content+'</p>';break;
-            case'whisper':newEl=document.createElement('p');newEl.className='whisper ed-editable ed-block';newEl.innerHTML=content;break;
-            default:newEl=document.createElement('p');newEl.className='bp-text ed-editable ed-block';newEl.innerHTML=content;
+        switch(type){
+            case'heading':ne=document.createElement('h4');ne.className='bp-heading ed-editable ed-block';ne.innerHTML=content;break;
+            case'subheading':ne=document.createElement('p');ne.className='bp-caption ed-editable ed-block';ne.style.cssText='font-size:1.1em;opacity:0.8;';ne.innerHTML=content;break;
+            case'caption':ne=document.createElement('p');ne.className='bp-caption ed-editable ed-block';ne.style.cssText='font-size:0.85em;opacity:0.6;';ne.innerHTML=content;break;
+            case'quote':ne=document.createElement('blockquote');ne.className='bp-quote ed-block';ne.innerHTML='<p class="ed-editable" data-ed-original="">'+content+'</p>';break;
+            case'whisper':ne=document.createElement('p');ne.className='whisper ed-editable ed-block';ne.innerHTML=content;break;
+            default:ne=document.createElement('p');ne.className='bp-text ed-editable ed-block';ne.innerHTML=content;
         }
-        newEl.setAttribute('data-ed-original','');
-        newEl.dataset.isNew='true'; // mark as new element
-        if(next)parent.insertBefore(newEl,next);else parent.appendChild(newEl);
+        ne.setAttribute('data-ed-original','');
+        if(next)parent.insertBefore(ne,next);else parent.appendChild(ne);
         el.remove();
-        setTimeout(function(){self.selectElement(newEl);},10);
-        this.setStatus('Converted to '+newType);
+        setTimeout(function(){self.selectElement(ne);},10);
+        this.setStatus('Converted to '+type);
     }
 
     processShortcodes(el){
@@ -606,7 +577,7 @@ class LiveEditor{
                 switch(sc.type){
                     case'heading':el.innerHTML=m[1];this.convertElementType(el,'heading');return true;
                     case'quote':el.innerHTML=m[1];this.convertElementType(el,'quote');return true;
-                    case'divider':this.addDividerAfter(el);el.innerHTML='';el.remove();return true;
+                    case'divider':this.addDividerAfter(el);el.remove();return true;
                     case'fancy':el.innerHTML=m[1];this.toggleFancyFontOnElement(el);return true;
                     case'link':el.innerHTML='<a href="'+m[2]+'" target="_blank" rel="noopener">'+m[1]+'</a>';return true;
                 }
@@ -633,10 +604,11 @@ class LiveEditor{
     }
 
     moveElement(el,dir){
-        var movable=el.closest('.bp-figure,.bp-gallery-item,.bp-quote,.ed-divider,.ed-link-block')||el;
-        if(dir==='up'&&movable.previousElementSibling){movable.parentElement.insertBefore(movable,movable.previousElementSibling);this.setStatus('Moved up');}
-        else if(dir==='down'&&movable.nextElementSibling){movable.parentElement.insertBefore(movable.nextElementSibling,movable);this.setStatus('Moved down');}
-        else this.setStatus('Cannot move '+dir);
+        var mov=el.closest('.bp-figure,.bp-gallery-item,.bp-quote,.ed-divider,.ed-link-block')||el;
+        if(dir==='up'&&mov.previousElementSibling)mov.parentElement.insertBefore(mov,mov.previousElementSibling);
+        else if(dir==='down'&&mov.nextElementSibling)mov.parentElement.insertBefore(mov.nextElementSibling,mov);
+        else{this.setStatus('Cannot move '+dir);return;}
+        this.setStatus('Moved '+dir);
         this.updateHighlight(el);
     }
 
@@ -646,114 +618,104 @@ class LiveEditor{
         el.parentElement.insertBefore(d,el.nextElementSibling);
     }
 
-    // ══════════════════════════════════════════════════════════════
-    // PROPS PANELS
-    // ══════════════════════════════════════════════════════════════
-
     showImageProps(el){
         var panel=document.getElementById('edPanelBody');var self=this;
         panel.innerHTML=
-            '<div class="ed-prop"><label>Position</label><div class="ed-move-controls">'+
-            '<button class="ed-btn" id="edMoveUp">⬆️ Up</button>'+
-            '<button class="ed-btn" id="edMoveDown">⬇️ Down</button></div></div>'+
-            '<div class="ed-prop"><button class="ed-btn ed-full" id="edReplaceImg">📁 Replace</button></div>'+
-            '<div class="ed-prop"><button class="ed-btn ed-full ed-danger" id="edDeleteImg">🗑️ Delete</button></div>';
-        document.getElementById('edMoveUp').onclick=function(){self.moveElement(el,'up');};
-        document.getElementById('edMoveDown').onclick=function(){self.moveElement(el,'down');};
-        document.getElementById('edReplaceImg').onclick=function(){
+            '<div class="ed-prop"><div class="ed-move-controls">'+
+            '<button class="ed-btn" id="edMU">⬆️ Up</button>'+
+            '<button class="ed-btn" id="edMD">⬇️ Down</button></div></div>'+
+            '<div class="ed-prop"><button class="ed-btn ed-full" id="edRI">📁 Replace</button></div>'+
+            '<div class="ed-prop"><button class="ed-btn ed-full ed-danger" id="edDI">🗑️ Delete</button></div>';
+        document.getElementById('edMU').onclick=function(){self.moveElement(el,'up');};
+        document.getElementById('edMD').onclick=function(){self.moveElement(el,'down');};
+        document.getElementById('edRI').onclick=function(){
             self.fileInput.onchange=function(){
                 if(this.files&&this.files[0]){
                     var r=new FileReader();
-                    r.onload=function(e){self.pushUndo({el:el,type:'attr',attr:'src',value:el.src});el.src=e.target.result;self.setStatus('Image replaced');};
+                    r.onload=function(e){self.pushUndo({el:el,type:'attr',attr:'src',value:el.src});el.src=e.target.result;};
                     r.readAsDataURL(this.files[0]);
                 }
             };self.fileInput.click();
         };
-        document.getElementById('edDeleteImg').onclick=function(){self.deleteSelected();};
+        document.getElementById('edDI').onclick=function(){self.deleteSelected();};
     }
 
     showBlockProps(el){
         var panel=document.getElementById('edPanelBody');var self=this;
         panel.innerHTML=
-            '<div class="ed-prop"><label>Position</label><div class="ed-move-controls">'+
-            '<button class="ed-btn" id="edBlockUp">⬆️ Up</button>'+
-            '<button class="ed-btn" id="edBlockDown">⬇️ Down</button></div></div>'+
-            '<div class="ed-prop"><button class="ed-btn ed-full ed-danger" id="edBlockDelete">🗑️ Delete</button></div>';
-        document.getElementById('edBlockUp').onclick=function(){self.moveElement(el,'up');};
-        document.getElementById('edBlockDown').onclick=function(){self.moveElement(el,'down');};
-        document.getElementById('edBlockDelete').onclick=function(){self.deleteSelected();};
+            '<div class="ed-prop"><div class="ed-move-controls">'+
+            '<button class="ed-btn" id="edBU">⬆️ Up</button>'+
+            '<button class="ed-btn" id="edBD">⬇️ Down</button></div></div>'+
+            '<div class="ed-prop"><button class="ed-btn ed-full ed-danger" id="edBDel">🗑️ Delete</button></div>';
+        document.getElementById('edBU').onclick=function(){self.moveElement(el,'up');};
+        document.getElementById('edBD').onclick=function(){self.moveElement(el,'down');};
+        document.getElementById('edBDel').onclick=function(){self.deleteSelected();};
     }
 
     showStickerProps(el){
         var panel=document.getElementById('edPanelBody');var self=this;var cz=el.dataset.z||'normal';
         panel.innerHTML=
-            '<div class="ed-prop"><label>Size</label><input type="number" class="ed-prop-input" id="edStickerSize" value="'+(parseInt(el.style.width)||80)+'" min="20" max="500"></div>'+
-            '<div class="ed-prop"><label>Rotation</label><input type="range" class="ed-prop-range" id="edStickerRot" min="-180" max="180" value="'+(parseInt(el.dataset.rotation)||0)+'"></div>'+
-            '<div class="ed-prop"><label>Opacity</label><input type="range" class="ed-prop-range" id="edStickerOp" min="0" max="1" step="0.05" value="'+(el.style.opacity||1)+'"></div>'+
-            '<div class="ed-prop"><label>Layer</label><select class="ed-prop-select" id="edStickerZ">'+
-            ['behind','back','normal','above','top'].map(function(v){return'<option value="'+v+'" '+(cz===v?'selected':'')+'>'+v+'</option>';}).join('')+
+            '<div class="ed-prop"><label>Size</label><input type="number" class="ed-prop-input" id="edSS" value="'+(parseInt(el.style.width)||80)+'" min="20" max="600"></div>'+
+            '<div class="ed-prop"><label>Rotation</label><input type="range" class="ed-prop-range" id="edSR" min="-180" max="180" value="'+(parseInt(el.dataset.rotation)||0)+'"></div>'+
+            '<div class="ed-prop"><label>Opacity</label><input type="range" class="ed-prop-range" id="edSO" min="0" max="1" step="0.05" value="'+(el.style.opacity||1)+'"></div>'+
+            '<div class="ed-prop"><label>Layer</label><select class="ed-prop-select" id="edSZ">'+
+            ['behind','back','normal','above','top'].map(function(v){return'<option value="'+v+'"'+(cz===v?' selected':'')+'>'+v+'</option>';}).join('')+
             '</select></div>'+
-            '<div class="ed-prop ed-layer-controls"><button class="ed-btn" id="edStickerFront">⬆️ Front</button><button class="ed-btn" id="edStickerBack">⬇️ Back</button></div>'+
-            '<div class="ed-prop"><button class="ed-btn ed-full ed-danger" id="edStickerDelete">🗑️ Delete</button></div>';
-        document.getElementById('edStickerSize').oninput=function(){el.style.width=this.value+'px';el.style.height=this.value+'px';self.updateHighlight(el);};
-        document.getElementById('edStickerRot').oninput=function(){el.dataset.rotation=this.value;el.style.transform='rotate('+this.value+'deg)';};
-        document.getElementById('edStickerOp').oninput=function(){el.style.opacity=this.value;};
-        document.getElementById('edStickerZ').onchange=function(){el.dataset.z=this.value;self.applyStickerZ(el,this.value);};
-        document.getElementById('edStickerFront').onclick=function(){self.bringToFront(el);};
-        document.getElementById('edStickerBack').onclick=function(){self.sendToBack(el);};
-        document.getElementById('edStickerDelete').onclick=function(){self.deleteSelected();};
+            '<div class="ed-prop ed-layer-controls"><button class="ed-btn" id="edSFront">⬆️ Front</button><button class="ed-btn" id="edSBack">⬇️ Back</button></div>'+
+            '<div class="ed-prop"><button class="ed-btn ed-full ed-danger" id="edSDel">🗑️ Delete</button></div>';
+        document.getElementById('edSS').oninput=function(){el.style.width=this.value+'px';el.style.height=this.value+'px';self.updateHighlight(el);};
+        document.getElementById('edSR').oninput=function(){el.dataset.rotation=this.value;el.style.transform='rotate('+this.value+'deg)';};
+        document.getElementById('edSO').oninput=function(){el.style.opacity=this.value;};
+        document.getElementById('edSZ').onchange=function(){el.dataset.z=this.value;var z={behind:-1,back:1,normal:10,above:100,top:1000};el.style.zIndex=z[this.value]||10;};
+        document.getElementById('edSFront').onclick=function(){
+            var stickers=el.parentElement.querySelectorAll('.ed-sticker');var max=0;
+            stickers.forEach(function(s){var z=parseInt(s.style.zIndex)||0;if(z>max)max=z;});
+            el.style.zIndex=max+1;
+        };
+        document.getElementById('edSBack').onclick=function(){
+            var stickers=el.parentElement.querySelectorAll('.ed-sticker');var min=9999;
+            stickers.forEach(function(s){var z=parseInt(s.style.zIndex)||0;if(z<min)min=z;});
+            el.style.zIndex=min-1;
+        };
+        document.getElementById('edSDel').onclick=function(){self.deleteSelected();};
     }
 
     showDividerProps(el){
         var panel=document.getElementById('edPanelBody');var self=this;
         panel.innerHTML=
-            '<div class="ed-prop"><label>Position</label><div class="ed-move-controls">'+
-            '<button class="ed-btn" id="edMoveUp">⬆️ Up</button>'+
-            '<button class="ed-btn" id="edMoveDown">⬇️ Down</button></div></div>'+
-            '<div class="ed-prop"><label>Width %</label><input type="range" class="ed-prop-range" id="edDivWidth" min="10" max="100" value="'+(parseInt(el.style.width)||100)+'"></div>'+
-            '<div class="ed-prop"><label>Height px</label><input type="number" class="ed-prop-input" id="edDivHeight" min="1" max="20" value="'+(parseInt(el.style.height)||2)+'"></div>'+
-            '<div class="ed-prop"><label>Margin px</label><input type="number" class="ed-prop-input" id="edDivMargin" min="0" max="100" value="'+(parseInt(el.style.marginTop)||20)+'"></div>'+
-            '<div class="ed-prop"><button class="ed-btn ed-full ed-danger" id="edDivDelete">🗑️ Delete</button></div>';
-        document.getElementById('edMoveUp').onclick=function(){self.moveElement(el,'up');};
-        document.getElementById('edMoveDown').onclick=function(){self.moveElement(el,'down');};
-        document.getElementById('edDivWidth').oninput=function(){el.style.width=this.value+'%';};
-        document.getElementById('edDivHeight').oninput=function(){el.style.height=this.value+'px';};
-        document.getElementById('edDivMargin').oninput=function(){el.style.marginTop=this.value+'px';el.style.marginBottom=this.value+'px';};
-        document.getElementById('edDivDelete').onclick=function(){self.deleteSelected();};
+            '<div class="ed-prop"><div class="ed-move-controls">'+
+            '<button class="ed-btn" id="edDivU">⬆️ Up</button>'+
+            '<button class="ed-btn" id="edDivD">⬇️ Down</button></div></div>'+
+            '<div class="ed-prop"><label>Width %</label><input type="range" class="ed-prop-range" id="edDW" min="10" max="100" value="'+(parseInt(el.style.width)||100)+'"></div>'+
+            '<div class="ed-prop"><label>Height px</label><input type="number" class="ed-prop-input" id="edDH" min="1" max="20" value="'+(parseInt(el.style.height)||2)+'"></div>'+
+            '<div class="ed-prop"><label>Margin px</label><input type="number" class="ed-prop-input" id="edDM" min="0" max="100" value="'+(parseInt(el.style.marginTop)||20)+'"></div>'+
+            '<div class="ed-prop"><button class="ed-btn ed-full ed-danger" id="edDivDel">🗑️ Delete</button></div>';
+        document.getElementById('edDivU').onclick=function(){self.moveElement(el,'up');};
+        document.getElementById('edDivD').onclick=function(){self.moveElement(el,'down');};
+        document.getElementById('edDW').oninput=function(){el.style.width=this.value+'%';};
+        document.getElementById('edDH').oninput=function(){el.style.height=this.value+'px';};
+        document.getElementById('edDM').oninput=function(){el.style.marginTop=this.value+'px';el.style.marginBottom=this.value+'px';};
+        document.getElementById('edDivDel').onclick=function(){self.deleteSelected();};
     }
 
     showLinkProps(el){
         var panel=document.getElementById('edPanelBody');var a=el.querySelector('a');var self=this;
         panel.innerHTML=
-            '<div class="ed-prop"><label>Position</label><div class="ed-move-controls">'+
-            '<button class="ed-btn" id="edMoveUp">⬆️ Up</button>'+
-            '<button class="ed-btn" id="edMoveDown">⬇️ Down</button></div></div>'+
-            '<div class="ed-prop"><label>Text</label><input type="text" class="ed-prop-input" id="edLinkText" value="'+(a?a.textContent:'')+'"></div>'+
-            '<div class="ed-prop"><label>URL</label><input type="text" class="ed-prop-input" id="edLinkUrl" value="'+(a?a.href:'')+'"></div>'+
-            '<div class="ed-prop"><label>Style</label><select class="ed-prop-select" id="edLinkStyle">'+
-            '<option value="btn">Button</option><option value="btn-outline">Outline</option><option value="text">Text</option>'+
+            '<div class="ed-prop"><div class="ed-move-controls">'+
+            '<button class="ed-btn" id="edLU">⬆️ Up</button>'+
+            '<button class="ed-btn" id="edLD">⬇️ Down</button></div></div>'+
+            '<div class="ed-prop"><label>Text</label><input type="text" class="ed-prop-input" id="edLT" value="'+(a?a.textContent:'')+'"></div>'+
+            '<div class="ed-prop"><label>URL</label><input type="text" class="ed-prop-input" id="edLU2" value="'+(a?a.href:'')+'"></div>'+
+            '<div class="ed-prop"><label>Style</label><select class="ed-prop-select" id="edLS">'+
+            '<option value="btn">Button</option><option value="btn-outline">Outline</option><option value="">Plain</option>'+
             '</select></div>'+
-            '<div class="ed-prop"><button class="ed-btn ed-full ed-danger" id="edLinkDelete">🗑️ Delete</button></div>';
-        document.getElementById('edMoveUp').onclick=function(){self.moveElement(el,'up');};
-        document.getElementById('edMoveDown').onclick=function(){self.moveElement(el,'down');};
-        document.getElementById('edLinkText').oninput=function(){if(a)a.textContent=this.value;};
-        document.getElementById('edLinkUrl').oninput=function(){if(a)a.href=this.value;};
-        document.getElementById('edLinkStyle').onchange=function(){if(a)a.className=this.value;};
-        document.getElementById('edLinkDelete').onclick=function(){self.deleteSelected();};
-    }
-
-    applyStickerZ(el,level){var z={behind:-1,back:1,normal:10,above:100,top:1000};el.style.zIndex=z[level]||10;}
-
-    bringToFront(el){
-        var stickers=el.parentElement.querySelectorAll('.ed-sticker');var max=0;
-        stickers.forEach(function(s){var z=parseInt(s.style.zIndex)||0;if(z>max)max=z;});
-        el.style.zIndex=max+1;this.setStatus('Brought to front');
-    }
-
-    sendToBack(el){
-        var stickers=el.parentElement.querySelectorAll('.ed-sticker');var min=9999;
-        stickers.forEach(function(s){var z=parseInt(s.style.zIndex)||0;if(z<min)min=z;});
-        el.style.zIndex=min-1;this.setStatus('Sent to back');
+            '<div class="ed-prop"><button class="ed-btn ed-full ed-danger" id="edLDel">🗑️ Delete</button></div>';
+        document.getElementById('edLU').onclick=function(){self.moveElement(el,'up');};
+        document.getElementById('edLD').onclick=function(){self.moveElement(el,'down');};
+        document.getElementById('edLT').oninput=function(){if(a)a.textContent=this.value;};
+        document.getElementById('edLU2').oninput=function(){if(a)a.href=this.value;};
+        document.getElementById('edLS').onchange=function(){if(a)a.className=this.value;};
+        document.getElementById('edLDel').onclick=function(){self.deleteSelected();};
     }
 
     showContext(e,el){
@@ -761,12 +723,16 @@ class LiveEditor{
         var isEd=el.classList.contains('ed-editable');
         var html='<button data-action="select">✏️ Edit</button><hr class="ed-ctx-sep">'+
             '<button data-action="moveup">⬆️ Up</button><button data-action="movedown">⬇️ Down</button>';
-        if(isEd)html+='<hr class="ed-ctx-sep"><button data-action="fancy">✨ Fancy</button><button data-action="heading">📌 → Heading</button><button data-action="quote">💬 → Quote</button>';
-        if(isSt)html+='<hr class="ed-ctx-sep"><button data-action="bringfront">⬆️ Front</button><button data-action="sendback">⬇️ Back</button>';
+        if(isEd)html+='<hr class="ed-ctx-sep">'+
+            '<button data-action="fancy">✨ Fancy</button>'+
+            '<button data-action="heading">📌 Heading</button>'+
+            '<button data-action="quote">💬 Quote</button>';
+        if(isSt)html+='<hr class="ed-ctx-sep">'+
+            '<button data-action="front">⬆️ Front</button>'+
+            '<button data-action="back">⬇️ Back</button>';
         html+='<hr class="ed-ctx-sep"><button data-action="delete" class="ed-ctx-danger">🗑️ Delete</button>';
-        this.ctx.innerHTML=html;this.ctx.style.display='block';
-        this.ctx.style.left=Math.min(e.clientX,innerWidth-200)+'px';
-        this.ctx.style.top=Math.min(e.clientY,innerHeight-200)+'px';
+        this.ctx.innerHTML=html;
+        this.ctx.style.cssText='display:block;left:'+Math.min(e.clientX,innerWidth-200)+'px;top:'+Math.min(e.clientY,innerHeight-200)+'px';
         var self=this;
         this.ctx.querySelectorAll('button').forEach(function(btn){
             btn.onclick=function(){
@@ -775,11 +741,11 @@ class LiveEditor{
                     case'delete':self.selectedEl=el;self.deleteSelected();break;
                     case'moveup':self.moveElement(el,'up');break;
                     case'movedown':self.moveElement(el,'down');break;
-                    case'bringfront':self.bringToFront(el);break;
-                    case'sendback':self.sendToBack(el);break;
                     case'fancy':self.toggleFancyFontOnElement(el);break;
                     case'heading':self.convertElementType(el,'heading');break;
                     case'quote':self.convertElementType(el,'quote');break;
+                    case'front':{var s=el.parentElement.querySelectorAll('.ed-sticker');var max=0;s.forEach(function(x){var z=parseInt(x.style.zIndex)||0;if(z>max)max=z;});el.style.zIndex=max+1;break;}
+                    case'back':{var s=el.parentElement.querySelectorAll('.ed-sticker');var min=9999;s.forEach(function(x){var z=parseInt(x.style.zIndex)||0;if(z<min)min=z;});el.style.zIndex=min-1;break;}
                 }
                 self.hideContext();
             };
@@ -811,7 +777,6 @@ class LiveEditor{
             r.onload=function(e){
                 var fig=document.createElement('figure');fig.className='bp-figure bp-img-full ed-block';
                 fig.innerHTML='<img src="'+e.target.result+'" alt="" class="bp-img ed-interactive">';
-                fig.dataset.isNew='true';
                 target.appendChild(fig);self.setStatus('Image added');
             };r.readAsDataURL(this.files[0]);
         };this.fileInput.click();
@@ -819,28 +784,28 @@ class LiveEditor{
 
     addTextBlock(){
         var target=this.findInsertTarget();if(!target)return;
-        var p=document.createElement('p');p.className='bp-text ed-editable ed-block';p.textContent='Click to edit...';
-        p.setAttribute('data-ed-original','');p.dataset.isNew='true';
+        var p=document.createElement('p');p.className='bp-text ed-editable ed-block';
+        p.textContent='New text...';p.setAttribute('data-ed-original','');
         target.appendChild(p);this.selectElement(p);this.setStatus('Text added');
     }
 
     addHeading(){
         var target=this.findInsertTarget();if(!target)return;
-        var h=document.createElement('h4');h.className='bp-heading ed-editable ed-block';h.textContent='New Heading';
-        h.setAttribute('data-ed-original','');h.dataset.isNew='true';
+        var h=document.createElement('h4');h.className='bp-heading ed-editable ed-block';
+        h.textContent='New Heading';h.setAttribute('data-ed-original','');
         target.appendChild(h);this.selectElement(h);this.setStatus('Heading added');
     }
 
     addQuoteBlock(){
         var target=this.findInsertTarget();if(!target)return;
-        var q=document.createElement('blockquote');q.className='bp-quote ed-block';q.dataset.isNew='true';
-        q.innerHTML='<p class="ed-editable" data-ed-original="">Quote...</p><cite class="ed-editable" data-ed-original="">— Author</cite>';
+        var q=document.createElement('blockquote');q.className='bp-quote ed-block';
+        q.innerHTML='<p class="ed-editable" data-ed-original="">Quote text...</p><cite class="ed-editable" data-ed-original="">— Author</cite>';
         target.appendChild(q);this.setStatus('Quote added');
     }
 
     addDivider(){
         var target=this.findInsertTarget();if(!target)return;
-        var d=document.createElement('div');d.className='ed-divider ed-block';d.dataset.isNew='true';
+        var d=document.createElement('div');d.className='ed-divider ed-block';
         d.style.cssText='width:100%;height:2px;background:linear-gradient(90deg,var(--pri),var(--gold),var(--acc));border-radius:2px;margin:24px auto;';
         target.appendChild(d);this.selectElement(d);this.setStatus('Divider added');
     }
@@ -849,7 +814,7 @@ class LiveEditor{
         var target=this.findInsertTarget();if(!target)return;
         var url=prompt('Enter URL:','https://');if(!url)return;
         var text=prompt('Button text:','Click Here');if(!text)return;
-        var w=document.createElement('div');w.className='ed-link-block ed-block';w.style.cssText='margin:16px 0;';w.dataset.isNew='true';
+        var w=document.createElement('div');w.className='ed-link-block ed-block';w.style.margin='16px 0';
         w.innerHTML='<a href="'+url+'" target="_blank" rel="noopener" class="btn">'+text+'</a>';
         target.appendChild(w);this.selectElement(w);this.setStatus('Link added');
     }
@@ -869,7 +834,7 @@ class LiveEditor{
                     s.className='ed-sticker';s.dataset.rotation='0';s.dataset.z='normal';
                     s.dataset.projectId=expanded.dataset.projectId||'';
                     s.style.cssText='position:absolute;left:50px;top:150px;width:80px;height:80px;z-index:10;';
-                    s.innerHTML='<img src="'+e.target.result+'" style="width:100%;height:100%;object-fit:contain;"><button class="ed-sticker-delete">✕</button>';
+                    s.innerHTML='<img src="'+e.target.result+'" style="width:100%;height:100%;object-fit:contain;pointer-events:none;"><button class="ed-sticker-delete">✕</button>';
                     layer.appendChild(s);
                     s.querySelector('.ed-sticker-delete').onclick=function(ev){ev.stopPropagation();s.remove();self.setStatus('Sticker removed');};
                     self.selectElement(s);self.setStatus('Sticker added');
@@ -891,168 +856,44 @@ class LiveEditor{
         else if(item.type==='attr')item.el.setAttribute(item.attr,item.value);
         else if(item.type==='child'){
             var tmp=document.createElement('div');tmp.innerHTML=item.value;
-            var r=tmp.firstChild;
-            if(item.ref)item.el.insertBefore(r,item.ref);else item.el.appendChild(r);
+            var restored=tmp.firstChild;
+            if(item.ref)item.el.insertBefore(restored,item.ref);else item.el.appendChild(restored);
         }
         this.setStatus('Undone');
     }
 
     // ══════════════════════════════════════════════════════════════
-    // SELECTOR GENERATION
-    // ══════════════════════════════════════════════════════════════
-
-    stampContainer(container){
-        var groups={};
-        Array.from(container.children).forEach(function(child){
-            var tag=child.tagName.toLowerCase();
-            var mc='';
-            for(var i=0;i<child.classList.length;i++){
-                var c=child.classList[i];
-                if(!c.startsWith('ed-')&&c!=='expanded'&&c!=='ed-selected'){mc=c;break;}
-            }
-            var key=mc?tag+'.'+mc:tag;
-            if(!groups[key])groups[key]=[];
-            groups[key].push(child);
-        });
-        Object.keys(groups).forEach(function(key){
-            groups[key].forEach(function(el,idx){el.setAttribute('data-ed-idx',idx);});
-        });
-    }
-
-    stampAllProjects(){
-        var self=this;
-        document.querySelectorAll('.bproject').forEach(function(project){
-            project.querySelectorAll('.bproject-content,.bproject-header-text,.bproject-meta')
-            .forEach(function(container){self.stampContainer(container);});
-        });
-    }
-
-    getUniqueSelector(el){
-        if(!el||el===document.body) return'body';
-        if(el.id) return'#'+el.id;
-
-        var project=el.closest('.bproject');
-        if(project&&project.dataset.projectId){
-            var pid=project.dataset.projectId;
-            var base='[data-project-id="'+pid+'"]';
-            var tag=el.tagName.toLowerCase();
-            var mc='';
-            for(var i=0;i<el.classList.length;i++){
-                var c=el.classList[i];
-                if(!c.startsWith('ed-')&&c!=='expanded'&&c!=='ed-selected'){mc=c;break;}
-            }
-            var elSel=mc?tag+'.'+mc:tag;
-            var container=el.closest('.bproject-content,.bproject-header-text,.bproject-meta');
-            if(container){
-                var cc=container.className.split(' ')[0];
-                var idx=el.getAttribute('data-ed-idx');
-                if(idx!==null){
-                    var siblings=container.querySelectorAll(elSel);
-                    if(siblings.length>1) return base+' .'+cc+' '+elSel+'[data-ed-idx="'+idx+'"]';
-                }
-                return base+' .'+cc+' '+elSel;
-            }
-            return base+' '+elSel;
-        }
-
-        var path=[];var cur=el;
-        while(cur&&cur!==document.body&&cur.nodeType===1){
-            var s=cur.tagName.toLowerCase();
-            if(cur.id){path.unshift('#'+cur.id);break;}
-            for(var i=0;i<cur.classList.length;i++){
-                var c=cur.classList[i];
-                if(!c.startsWith('ed-')&&c!=='expanded'){s+='.'+c;break;}
-            }
-            path.unshift(s);cur=cur.parentElement;
-            if(cur&&(cur.id||cur.classList.contains('zone-inner'))){if(cur.id)path.unshift('#'+cur.id);break;}
-        }
-        return path.join(' ');
-    }
-
-    // ══════════════════════════════════════════════════════════════
-    // EXPORT — handles textChanges AND newElements correctly
+    // EXPORT — serializes entire project DOM to projectOverrides
     // ══════════════════════════════════════════════════════════════
 
     exportAmendment(){
         var self=this;
-        var loaded=window.LOADED_AMENDMENTS||{stickers:{},textChanges:{},dividers:{},links:{},images:{},newElements:{}};
-
-        // Stamp all projects first
-        this.stampAllProjects();
-
         var amendment={
-            _version:'3.2',
+            _version:'4.0',
             _exported:new Date().toISOString(),
             projectOrder:null,
-            textChanges:[],
-            newElements:[],
-            images:[],
-            stickers:[],
-            dividers:[],
-            links:[]
+            projectOverrides:[],
+            stickers:[]
         };
 
         // Project order
         var order=[];
-        document.querySelectorAll('.basement-projects .bproject,.basement-projects [id^="bp-"]')
-        .forEach(function(p){if(p.dataset.projectId)order.push(p.dataset.projectId);});
-        if(loaded.projectOrder){
-            if(JSON.stringify(order)!==JSON.stringify(loaded.projectOrder)) amendment.projectOrder=order;
-        } else if(order.length){
-            amendment.projectOrder=order;
-        }
+        document.querySelectorAll('#basementProjects .bproject,.basement-projects .bproject').forEach(function(p){
+            if(p.dataset.projectId)order.push(p.dataset.projectId);
+        });
+        if(order.length) amendment.projectOrder=order;
 
-        // Separate new elements from text changes
-        document.querySelectorAll('[data-ed-original]').forEach(function(el){
-            var original=el.getAttribute('data-ed-original');
-            var current=el.innerHTML;
-            var isNew=el.dataset.isNew==='true'||el.closest('[data-is-new="true"]');
+        // Serialize each expanded project that has been edited
+        document.querySelectorAll('.bproject').forEach(function(projectEl){
+            var pid=projectEl.dataset.projectId;if(!pid)return;
 
-            if(isNew){
-                // Export as newElement
-                var projectEl=el.closest('.bproject');if(!projectEl)return;
-                var container=el.closest('.bproject-content,.bproject-header-text,.bproject-meta');if(!container)return;
-                var containerSel='.'+container.className.split(' ')[0];
-                var children=Array.from(container.children);
-                var insertIndex=children.indexOf(el);
-
-                // Clean html — remove editor classes
-                var tmp=document.createElement('div');tmp.innerHTML=el.outerHTML;
-                var clone=tmp.firstChild;
-                clone.removeAttribute('data-ed-original');
-                clone.removeAttribute('data-is-new');
-                clone.removeAttribute('data-ed-idx');
-                ['ed-editable','ed-block','ed-selected','ed-interactive'].forEach(function(c){clone.classList.remove(c);});
-
-                amendment.newElements.push({
-                    projectId:projectEl.dataset.projectId,
-                    container:containerSel,
-                    insertIndex:insertIndex,
-                    html:clone.outerHTML
-                });
-                return;
-            }
-
-            // Regular text change — only if different from original
-            if(original===current)return;
-            var selector=self.getUniqueSelector(el);
-            var projectEl=el.closest('.bproject');
-            amendment.textChanges.push({
-                selector:selector,
-                content:current,
-                styles:el.getAttribute('style')||'',
-                classes:el.className,
-                projectId:projectEl?projectEl.dataset.projectId:null
-            });
+            // Only export if project has been touched (has any ed-editable changes)
+            // We always export all visible projects for full override
+            var override=self.serializeProject(projectEl);
+            if(override) amendment.projectOverrides.push(override);
         });
 
-        // Images (base64)
-        document.querySelectorAll('img[src^="data:"]').forEach(function(img){
-            var selector=self.getUniqueSelector(img);
-            amendment.images.push({selector:selector,src:img.src,alt:img.alt||''});
-        });
-
-        // Stickers — new only
+        // Stickers — all new ones (not loaded from amendments)
         document.querySelectorAll('.ed-sticker').forEach(function(s){
             if(s.dataset.amendmentLoaded==='true')return;
             var si=s.querySelector('img');
@@ -1070,33 +911,14 @@ class LiveEditor{
             });
         });
 
-        // Dividers — new only
-        document.querySelectorAll('.ed-divider').forEach(function(d){
-            if(d.dataset.amendmentLoaded==='true')return;
-            amendment.dividers.push({
-                parentSelector:self.getUniqueSelector(d.parentElement),
-                styles:d.getAttribute('style')||''
+        // Also keep stickers from loaded amendments
+        if(window.LOADED_AMENDMENTS&&window.LOADED_AMENDMENTS.stickers){
+            Object.values(window.LOADED_AMENDMENTS.stickers).forEach(function(s){
+                amendment.stickers.push(s);
             });
-        });
+        }
 
-        // Links — new only
-        document.querySelectorAll('.ed-link-block').forEach(function(l){
-            if(l.dataset.amendmentLoaded==='true')return;
-            var a=l.querySelector('a');
-            amendment.links.push({
-                parentSelector:self.getUniqueSelector(l.parentElement),
-                text:a?a.textContent:'',
-                href:a?a.href:'#',
-                className:a?a.className:'btn',
-                target:a?a.target:'_blank'
-            });
-        });
-
-        var total=amendment.textChanges.length+amendment.newElements.length+
-            amendment.stickers.length+amendment.dividers.length+
-            amendment.links.length+amendment.images.length+
-            (amendment.projectOrder?1:0);
-
+        var total=amendment.projectOverrides.length+amendment.stickers.length+(amendment.projectOrder?1:0);
         if(total===0){this.setStatus('📭 No changes to export');return;}
 
         var now=new Date();
@@ -1109,7 +931,131 @@ class LiveEditor{
         URL.revokeObjectURL(url);
 
         this.downloadUpdatedManifest(filename);
-        this.setStatus('📄 Exported '+total+' changes → '+filename);
+        this.setStatus('📄 Exported '+amendment.projectOverrides.length+' projects → '+filename);
+    }
+
+    // ── Reads current DOM state of a project into a PROJECTS-compatible object ──
+    serializeProject(projectEl){
+        var pid=projectEl.dataset.projectId;
+        if(!pid)return null;
+
+        // Get header text values from DOM
+        var titleEl=projectEl.querySelector('.bproject-header-text h3');
+        var taglineEl=projectEl.querySelector('.bproject-tagline');
+
+        // Get meta values
+        var metaLabels=Array.from(projectEl.querySelectorAll('.bm-label'));
+        var metaValues=Array.from(projectEl.querySelectorAll('.bm-value'));
+        var meta={};
+        metaLabels.forEach(function(lbl,i){
+            var key=lbl.textContent.toLowerCase().trim();
+            var val=metaValues[i]?metaValues[i].textContent.trim():'';
+            meta[key]=val;
+        });
+
+        // Get tags
+        var tags=[];
+        projectEl.querySelectorAll('.bproject-tags span').forEach(function(t){
+            tags.push(t.textContent.trim());
+        });
+
+        // Serialize content from DOM
+        var content=[];
+        var contentEl=projectEl.querySelector('.bproject-content');
+        if(contentEl){
+            Array.from(contentEl.children).forEach(function(child){
+                var block=self.serializeContentBlock(child);
+                if(block)content.push(block);
+            });
+        }
+
+        // Find original project for thumbnail/icon/num
+        var original=null;
+        if(typeof PROJECTS!=='undefined'){
+            for(var i=0;i<PROJECTS.length;i++){if(PROJECTS[i].id===pid){original=PROJECTS[i];break;}}
+        }
+
+        return {
+            id:pid,
+            num:original?original.num:'',
+            title:titleEl?titleEl.textContent.trim():(original?original.title:''),
+            short:original?original.short:'',
+            tagline:taglineEl?taglineEl.textContent.trim():(original?original.tagline:''),
+            role:meta['role']||(original?original.role:''),
+            team:meta['team']||(original?original.team:''),
+            engine:meta['engine']||(original?original.engine:''),
+            timeframe:meta['timeline']||meta['timeframe']||(original?original.timeframe:''),
+            tags:tags.length?tags:(original?original.tags:[]),
+            thumbnail:original?original.thumbnail:'',
+            icon:original?original.icon:'',
+            links:original?original.links:[],
+            content:content
+        };
+    }
+
+    serializeContentBlock(el){
+        var tag=el.tagName.toLowerCase();
+        var cls=el.className||'';
+
+        // Skip editor UI elements
+        if(cls.includes('bproject-stickers')||cls.includes('ed-sticker')) return null;
+
+        // Heading
+        if(tag==='h4'||cls.includes('bp-heading')){
+            return{type:'heading',text:el.innerHTML};
+        }
+
+        // Text paragraph
+        if(tag==='p'&&(cls.includes('bp-text')||cls.includes('bp-caption')||cls.includes('whisper'))){
+            return{type:'text',text:el.innerHTML,className:cls.replace(/\bed-\S+/g,'').trim()};
+        }
+
+        // Blockquote
+        if(tag==='blockquote'||cls.includes('bp-quote')){
+            var p=el.querySelector('p');
+            var cite=el.querySelector('cite');
+            return{type:'quote',text:p?p.innerHTML:'',author:cite?cite.textContent.replace(/^—\s*/,''):''};
+        }
+
+        // Figure / image
+        if(tag==='figure'||cls.includes('bp-figure')){
+            var img=el.querySelector('img');
+            var cap=el.querySelector('figcaption');
+            var sizeClass=cls.includes('bp-img-small')?'small':cls.includes('bp-img-medium')?'medium':'full';
+            return{type:'image',src:img?img.src:'',caption:cap?cap.textContent:'',size:sizeClass};
+        }
+
+        // Divider
+        if(cls.includes('ed-divider')){
+            return{type:'divider',styles:el.getAttribute('style')||''};
+        }
+
+        // Link block
+        if(cls.includes('ed-link-block')){
+            var a=el.querySelector('a');
+            return{type:'link',text:a?a.textContent:'',href:a?a.href:'',className:a?a.className:'btn'};
+        }
+
+        // Gallery
+        if(cls.includes('bp-gallery')){
+            var imgs=[];
+            el.querySelectorAll('.bp-gallery-item').forEach(function(item){
+                var i=item.querySelector('img');
+                var c=item.querySelector('figcaption');
+                imgs.push({src:i?i.src:'',caption:c?c.textContent:''});
+            });
+            return{type:'gallery',images:imgs};
+        }
+
+        // Columns
+        if(cls.includes('bp-columns')){
+            var cols=el.querySelectorAll('.bp-col');
+            var left=cols[0]&&cols[0].firstElementChild?this.serializeContentBlock(cols[0].firstElementChild):null;
+            var right=cols[1]&&cols[1].firstElementChild?this.serializeContentBlock(cols[1].firstElementChild):null;
+            return{type:'columns',left:left,right:right};
+        }
+
+        return null;
     }
 
     downloadUpdatedManifest(newFilename){
@@ -1118,9 +1064,9 @@ class LiveEditor{
             var xhr=new XMLHttpRequest();
             xhr.open('GET','./js/amendments/manifest.json',false);
             xhr.send(null);
-            if(xhr.status===200) currentList=JSON.parse(xhr.responseText);
+            if(xhr.status===200)currentList=JSON.parse(xhr.responseText);
         }catch(e){}
-        if(currentList.indexOf(newFilename)===-1) currentList.push(newFilename);
+        if(currentList.indexOf(newFilename)===-1)currentList.push(newFilename);
         currentList.sort();
         var blob=new Blob([JSON.stringify(currentList,null,2)],{type:'application/json'});
         var url=URL.createObjectURL(blob);

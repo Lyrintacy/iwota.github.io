@@ -185,6 +185,14 @@ class BasementManager{
             case 'columns':return'<div class="bp-columns"><div class="bp-col">'+(block.left?this.renderContentBlock(block.left):'')+'</div><div class="bp-col">'+(block.right?this.renderContentBlock(block.right):'')+'</div></div>';
             case 'quote':return'<blockquote class="bp-quote"><p>"'+(block.text||'')+'"</p>'+(block.author?'<cite>— '+block.author+'</cite>':'')+'</blockquote>';
             case 'video':return'<div class="bp-video"><iframe src="'+(block.src||'')+'" frameborder="0" allowfullscreen></iframe></div>';
+            // Add these cases to your existing renderContentBlock switch:
+case 'divider':
+    return '<div class="ed-divider" style="' + (block.styles||'width:100%;height:2px;background:linear-gradient(90deg,var(--pri),var(--gold),var(--acc));border-radius:2px;margin:24px auto;') + '"></div>';
+
+case 'link':
+    return '<div class="ed-link-block" style="margin:16px 0;">'+
+        '<a href="' + (block.href||'#') + '" target="_blank" rel="noopener" class="' + (block.className||'btn') + '">' +
+        (block.text||'Link') + '</a></div>';
             default:return'';
         }
     }
