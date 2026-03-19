@@ -936,127 +936,127 @@ class LiveEditor{
 
     // ── Reads current DOM state of a project into a PROJECTS-compatible object ──
     serializeProject(projectEl){
-        var pid=projectEl.dataset.projectId;
-        if(!pid)return null;
+    var self = this; // ← ADD THIS
+    var pid = projectEl.dataset.projectId;
+    if(!pid) return null;
 
-        // Get header text values from DOM
-        var titleEl=projectEl.querySelector('.bproject-header-text h3');
-        var taglineEl=projectEl.querySelector('.bproject-tagline');
+    var titleEl = projectEl.querySelector('.bproject-header-text h3');
+    var taglineEl = projectEl.querySelector('.bproject-tagline');
 
-        // Get meta values
-        var metaLabels=Array.from(projectEl.querySelectorAll('.bm-label'));
-        var metaValues=Array.from(projectEl.querySelectorAll('.bm-value'));
-        var meta={};
-        metaLabels.forEach(function(lbl,i){
-            var key=lbl.textContent.toLowerCase().trim();
-            var val=metaValues[i]?metaValues[i].textContent.trim():'';
-            meta[key]=val;
+    var metaLabels = Array.from(projectEl.querySelectorAll('.bm-label'));
+    var metaValues = Array.from(projectEl.querySelectorAll('.bm-value'));
+    var meta = {};
+    metaLabels.forEach(function(lbl, i){
+        var key = lbl.textContent.toLowerCase().trim();
+        var val = metaValues[i] ? metaValues[i].textContent.trim() : '';
+        meta[key] = val;
+    });
+
+    var tags = [];
+    projectEl.querySelectorAll('.bproject-tags span').forEach(function(t){
+        tags.push(t.textContent.trim());
+    });
+
+    var content = [];
+    var contentEl = projectEl.querySelector('.bproject-content');
+    if(contentEl){
+        Array.from(contentEl.children).forEach(function(child){
+            var block = self.serializeContentBlock(child); // ← now works
+            if(block) content.push(block);
         });
-
-        // Get tags
-        var tags=[];
-        projectEl.querySelectorAll('.bproject-tags span').forEach(function(t){
-            tags.push(t.textContent.trim());
-        });
-
-        // Serialize content from DOM
-        var content=[];
-        var contentEl=projectEl.querySelector('.bproject-content');
-        if(contentEl){
-            Array.from(contentEl.children).forEach(function(child){
-                var block=self.serializeContentBlock(child);
-                if(block)content.push(block);
-            });
-        }
-
-        // Find original project for thumbnail/icon/num
-        var original=null;
-        if(typeof PROJECTS!=='undefined'){
-            for(var i=0;i<PROJECTS.length;i++){if(PROJECTS[i].id===pid){original=PROJECTS[i];break;}}
-        }
-
-        return {
-            id:pid,
-            num:original?original.num:'',
-            title:titleEl?titleEl.textContent.trim():(original?original.title:''),
-            short:original?original.short:'',
-            tagline:taglineEl?taglineEl.textContent.trim():(original?original.tagline:''),
-            role:meta['role']||(original?original.role:''),
-            team:meta['team']||(original?original.team:''),
-            engine:meta['engine']||(original?original.engine:''),
-            timeframe:meta['timeline']||meta['timeframe']||(original?original.timeframe:''),
-            tags:tags.length?tags:(original?original.tags:[]),
-            thumbnail:original?original.thumbnail:'',
-            icon:original?original.icon:'',
-            links:original?original.links:[],
-            content:content
-        };
     }
 
-    serializeContentBlock(el){
-        var tag=el.tagName.toLowerCase();
-        var cls=el.className||'';
-
-        // Skip editor UI elements
-        if(cls.includes('bproject-stickers')||cls.includes('ed-sticker')) return null;
-
-        // Heading
-        if(tag==='h4'||cls.includes('bp-heading')){
-            return{type:'heading',text:el.innerHTML};
+    var original = null;
+    if(typeof PROJECTS !== 'undefined'){
+        for(var i = 0; i < PROJECTS.length; i++){
+            if(PROJECTS[i].id === pid){ original = PROJECTS[i]; break; }
         }
-
-        // Text paragraph
-        if(tag==='p'&&(cls.includes('bp-text')||cls.includes('bp-caption')||cls.includes('whisper'))){
-            return{type:'text',text:el.innerHTML,className:cls.replace(/\bed-\S+/g,'').trim()};
-        }
-
-        // Blockquote
-        if(tag==='blockquote'||cls.includes('bp-quote')){
-            var p=el.querySelector('p');
-            var cite=el.querySelector('cite');
-            return{type:'quote',text:p?p.innerHTML:'',author:cite?cite.textContent.replace(/^—\s*/,''):''};
-        }
-
-        // Figure / image
-        if(tag==='figure'||cls.includes('bp-figure')){
-            var img=el.querySelector('img');
-            var cap=el.querySelector('figcaption');
-            var sizeClass=cls.includes('bp-img-small')?'small':cls.includes('bp-img-medium')?'medium':'full';
-            return{type:'image',src:img?img.src:'',caption:cap?cap.textContent:'',size:sizeClass};
-        }
-
-        // Divider
-        if(cls.includes('ed-divider')){
-            return{type:'divider',styles:el.getAttribute('style')||''};
-        }
-
-        // Link block
-        if(cls.includes('ed-link-block')){
-            var a=el.querySelector('a');
-            return{type:'link',text:a?a.textContent:'',href:a?a.href:'',className:a?a.className:'btn'};
-        }
-
-        // Gallery
-        if(cls.includes('bp-gallery')){
-            var imgs=[];
-            el.querySelectorAll('.bp-gallery-item').forEach(function(item){
-                var i=item.querySelector('img');
-                var c=item.querySelector('figcaption');
-                imgs.push({src:i?i.src:'',caption:c?c.textContent:''});
-            });
-            return{type:'gallery',images:imgs};
-        }
-
-        // Columns
-        if(cls.includes('bp-columns')){
-            var cols=el.querySelectorAll('.bp-col');
-            var left=cols[0]&&cols[0].firstElementChild?this.serializeContentBlock(cols[0].firstElementChild):null;
-            var right=cols[1]&&cols[1].firstElementChild?this.serializeContentBlock(cols[1].firstElementChild):null;
-            return{type:'columns',left:left,right:right};
-        }
-
-        return null;
     }
+
+    return {
+        id: pid,
+        num: original ? original.num : '',
+        title: titleEl ? titleEl.textContent.trim() : (original ? original.title : ''),
+        short: original ? original.short : '',
+        tagline: taglineEl ? taglineEl.textContent.trim() : (original ? original.tagline : ''),
+        role: meta['role'] || (original ? original.role : ''),
+        team: meta['team'] || (original ? original.team : ''),
+        engine: meta['engine'] || (original ? original.engine : ''),
+        timeframe: meta['timeline'] || meta['timeframe'] || (original ? original.timeframe : ''),
+        tags: tags.length ? tags : (original ? original.tags : []),
+        thumbnail: original ? original.thumbnail : '',
+        icon: original ? original.icon : '',
+        links: original ? original.links : [],
+        content: content
+    };
+}
+
+serializeContentBlock(el){
+    var self = this; // ← ADD THIS too for columns
+    var tag = el.tagName.toLowerCase();
+    var cls = el.className || '';
+
+    // Skip editor UI elements
+    if(cls.includes('bproject-stickers') || cls.includes('ed-sticker')) return null;
+
+    // Heading
+    if(tag === 'h4' || cls.includes('bp-heading')){
+        return { type:'heading', text:el.innerHTML };
+    }
+
+    // Text paragraph
+    if(tag === 'p' && (cls.includes('bp-text') || cls.includes('bp-caption') || cls.includes('whisper'))){
+        return { type:'text', text:el.innerHTML, className:cls.replace(/\bed-\S+/g,'').trim() };
+    }
+
+    // Blockquote / quote
+    if(tag === 'blockquote' || cls.includes('bp-quote')){
+        var p = el.querySelector('p');
+        var cite = el.querySelector('cite');
+        return { type:'quote', text:p?p.innerHTML:'', author:cite?cite.textContent.replace(/^—\s*/,''):'' };
+    }
+
+    // Figure / image
+    if(tag === 'figure' || cls.includes('bp-figure')){
+        var img = el.querySelector('img');
+        var cap = el.querySelector('figcaption');
+        var size = cls.includes('bp-img-small') ? 'small' : cls.includes('bp-img-medium') ? 'medium' : 'full';
+        return { type:'image', src:img?img.src:'', caption:cap?cap.textContent:'', size:size };
+    }
+
+    // Divider
+    if(cls.includes('ed-divider')){
+        return { type:'divider', styles:el.getAttribute('style')||'' };
+    }
+
+    // Link block
+    if(cls.includes('ed-link-block')){
+        var a = el.querySelector('a');
+        return { type:'link', text:a?a.textContent:'', href:a?a.href:'', className:a?a.className:'btn' };
+    }
+
+    // Gallery
+    if(cls.includes('bp-gallery')){
+        var imgs = [];
+        el.querySelectorAll('.bp-gallery-item').forEach(function(item){
+            var i = item.querySelector('img');
+            var c = item.querySelector('figcaption');
+            imgs.push({ src:i?i.src:'', caption:c?c.textContent:'' });
+        });
+        return { type:'gallery', images:imgs };
+    }
+
+    // Columns
+    if(cls.includes('bp-columns')){
+        var cols = el.querySelectorAll('.bp-col');
+        var left  = cols[0] && cols[0].firstElementChild ? self.serializeContentBlock(cols[0].firstElementChild) : null;
+        var right = cols[1] && cols[1].firstElementChild ? self.serializeContentBlock(cols[1].firstElementChild) : null;
+        return { type:'columns', left:left, right:right };
+    }
+
+    return null;
+}
+
 
     downloadUpdatedManifest(newFilename){
         var currentList=[];
