@@ -17,6 +17,10 @@ var config = {
   contentFont: "'Bitcount Prop Double', bitcount",
   uiFont: "'Space Mono', monospace",
 
+   // Paste your Web3Forms access key here
+  // Get one free at https://web3forms.com (no account needed)
+  contactFormKey: 'a901a13b-f6a8-4b07-9775-b2a945019aae',
+
   // ---- COLORS ----
   background: '#1a1a24',
   floorCenter: '#0c0c18',
