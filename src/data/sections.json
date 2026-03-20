@@ -1,0 +1,26 @@
+[
+  {
+    "id": "intro",
+    "name": "Welcome",
+    "color": "#6366f1",
+    "gif": "https://media.giphy.com/media/l0HlBO7eyXzSZkJri/giphy.gif"
+  },
+  {
+    "id": "projects",
+    "name": "Projects",
+    "color": "#ec4899",
+    "gif": "https://media.giphy.com/media/3oKIPnAiaMCJ8dO8Hu/giphy.gif"
+  },
+  {
+    "id": "skills",
+    "name": "Skills",
+    "color": "#14b8a6",
+    "gif": "https://media.giphy.com/media/26tn33aiTi1jkl6H6/giphy.gif"
+  },
+  {
+    "id": "contact",
+    "name": "Contact",
+    "color": "#f59e0b",
+    "gif": "https://media.giphy.com/media/3o7aD2saalBwwftBIY/giphy.gif"
+  }
+]
