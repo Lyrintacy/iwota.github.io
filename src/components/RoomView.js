@@ -225,9 +225,15 @@ function gridSegColor(nx, ny, glowSources) {
 }
 
 function drawRoom(ctx, rX, rY, rW, rH, sColor, now, glowSources) {
+  // Floor
   var fg = ctx.createRadialGradient(rX + rW / 2, rY + rH / 2, 10, rX + rW / 2, rY + rH / 2, rW * 0.7);
-  fg.addColorStop(0, config.floorCenter); fg.addColorStop(0.5, config.floorMid); fg.addColorStop(1, config.floorEdge);
-  ctx.fillStyle = fg; ctx.fillRect(rX, rY, rW, rH);
+  fg.addColorStop(0, config.floorCenter);
+  fg.addColorStop(0.5, config.floorMid);
+  fg.addColorStop(1, config.floorEdge);
+  ctx.fillStyle = fg;
+  ctx.fillRect(rX, rY, rW, rH);
+
+  // Grid
   ctx.lineWidth = 1;
   for (var vx = rX + GRID_SIZE; vx < rX + rW; vx += GRID_SIZE) {
     var svx = Math.floor(vx) + 0.5;
@@ -245,38 +251,100 @@ function drawRoom(ctx, rX, rY, rW, rH, sColor, now, glowSources) {
       ctx.beginPath(); ctx.moveTo(hx, shy); ctx.lineTo(hSegEnd, shy); ctx.stroke();
     }
   }
+
   var d = WALL_DEPTH;
+
+  // ---- TOP WALL ----
+  // Gradient: outer (far from floor) → inner (touching floor)
   var gt = ctx.createLinearGradient(0, rY - d, 0, rY);
-  gt.addColorStop(0, config.wallOuter); gt.addColorStop(0.3, config.wallMidDark);
-  gt.addColorStop(0.7, config.wallMidBright); gt.addColorStop(1, config.wallInner);
-  ctx.fillStyle = gt; ctx.beginPath(); ctx.moveTo(rX - d, rY - d); ctx.lineTo(rX + rW + d, rY - d);
-  ctx.lineTo(rX + rW, rY); ctx.lineTo(rX, rY); ctx.closePath(); ctx.fill();
-  ctx.strokeStyle = sColor + '20'; ctx.lineWidth = 0.5; ctx.stroke();
+  gt.addColorStop(0, config.wallOuter);
+  gt.addColorStop(0.3, config.wallMidDark);
+  gt.addColorStop(0.7, config.wallMidBright);
+  gt.addColorStop(1, config.wallInner);
+  ctx.fillStyle = gt;
+  ctx.beginPath();
+  ctx.moveTo(rX - d, rY - d);
+  ctx.lineTo(rX + rW + d, rY - d);
+  ctx.lineTo(rX + rW, rY);
+  ctx.lineTo(rX, rY);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = sColor + '20';
+  ctx.lineWidth = 0.5;
+  ctx.stroke();
+
+  // ---- BOTTOM WALL ----
+  // Gradient: inner (touching floor) → outer (far from floor)
   var gb = ctx.createLinearGradient(0, rY + rH, 0, rY + rH + d);
-  gb.addColorStop(0, config.wallInner); gb.addColorStop(0.3, config.wallMidBright);
-  gb.addColorStop(0.7, config.wallMidDark); gb.addColorStop(1, config.wallOuter);
-  ctx.fillStyle = gb; ctx.beginPath(); ctx.moveTo(rX, rY + rH); ctx.lineTo(rX + rW, rY + rH);
-  ctx.lineTo(rX + rW + d, rY + rH + d); ctx.lineTo(rX - d, rY + rH + d); ctx.closePath(); ctx.fill();
-  ctx.strokeStyle = sColor + '20'; ctx.stroke();
+  gb.addColorStop(0, config.wallInner);
+  gb.addColorStop(0.3, config.wallMidBright);
+  gb.addColorStop(0.7, config.wallMidDark);
+  gb.addColorStop(1, config.wallOuter);
+  ctx.fillStyle = gb;
+  ctx.beginPath();
+  ctx.moveTo(rX, rY + rH);
+  ctx.lineTo(rX + rW, rY + rH);
+  ctx.lineTo(rX + rW + d, rY + rH + d);
+  ctx.lineTo(rX - d, rY + rH + d);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = sColor + '20';
+  ctx.stroke();
+
+  // ---- LEFT WALL ----
+  // Gradient: outer (far from floor) → inner (touching floor)
   var gl = ctx.createLinearGradient(rX - d, 0, rX, 0);
-  gl.addColorStop(0, config.wallOuter); gl.addColorStop(0.3, '#3a3a50');
-  gl.addColorStop(0.7, '#555570'); gl.addColorStop(1, '#707088');
-  ctx.fillStyle = gl; ctx.beginPath(); ctx.moveTo(rX - d, rY - d); ctx.lineTo(rX, rY);
-  ctx.lineTo(rX, rY + rH); ctx.lineTo(rX - d, rY + rH + d); ctx.closePath(); ctx.fill();
-  ctx.strokeStyle = sColor + '20'; ctx.stroke();
+  gl.addColorStop(0, config.wallOuter);
+  gl.addColorStop(0.3, config.wallMidDark);
+  gl.addColorStop(0.7, config.wallMidBright);
+  gl.addColorStop(1, config.wallInner);
+  ctx.fillStyle = gl;
+  ctx.beginPath();
+  ctx.moveTo(rX - d, rY - d);
+  ctx.lineTo(rX, rY);
+  ctx.lineTo(rX, rY + rH);
+  ctx.lineTo(rX - d, rY + rH + d);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = sColor + '20';
+  ctx.stroke();
+
+  // ---- RIGHT WALL ----
+  // Gradient: inner (touching floor) → outer (far from floor)
   var gr = ctx.createLinearGradient(rX + rW, 0, rX + rW + d, 0);
-  gr.addColorStop(0, '#707088'); gr.addColorStop(0.3, '#555570');
-  gr.addColorStop(0.7, '#3a3a50'); gr.addColorStop(1, config.wallOuter);
-  ctx.fillStyle = gr; ctx.beginPath(); ctx.moveTo(rX + rW, rY); ctx.lineTo(rX + rW + d, rY - d);
-  ctx.lineTo(rX + rW + d, rY + rH + d); ctx.lineTo(rX + rW, rY + rH); ctx.closePath(); ctx.fill();
-  ctx.strokeStyle = sColor + '20'; ctx.stroke();
-  ctx.strokeStyle = sColor + '45'; ctx.lineWidth = 1.5; ctx.strokeRect(rX, rY, rW, rH);
-  ctx.strokeStyle = 'rgba(255,255,255,0.06)'; ctx.lineWidth = 1; ctx.strokeRect(rX + 1, rY + 1, rW - 2, rH - 2);
+  gr.addColorStop(0, config.wallInner);
+  gr.addColorStop(0.3, config.wallMidBright);
+  gr.addColorStop(0.7, config.wallMidDark);
+  gr.addColorStop(1, config.wallOuter);
+  ctx.fillStyle = gr;
+  ctx.beginPath();
+  ctx.moveTo(rX + rW, rY);
+  ctx.lineTo(rX + rW + d, rY - d);
+  ctx.lineTo(rX + rW + d, rY + rH + d);
+  ctx.lineTo(rX + rW, rY + rH);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = sColor + '20';
+  ctx.stroke();
+
+  // Room border
+  ctx.strokeStyle = sColor + '45';
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(rX, rY, rW, rH);
+
+  // Inner edge highlight
+  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(rX + 1, rY + 1, rW - 2, rH - 2);
+
+  // Corner accents
   var corners = [[rX, rY], [rX + rW, rY], [rX, rY + rH], [rX + rW, rY + rH]];
   for (var c = 0; c < corners.length; c++) {
     var cg = ctx.createRadialGradient(corners[c][0], corners[c][1], 0, corners[c][0], corners[c][1], 35);
-    cg.addColorStop(0, sColor + '30'); cg.addColorStop(1, 'transparent');
-    ctx.fillStyle = cg; ctx.fillRect(corners[c][0] - 35, corners[c][1] - 35, 70, 70);
+    cg.addColorStop(0, sColor + '30');
+    cg.addColorStop(1, 'transparent');
+    ctx.fillStyle = cg;
+    ctx.fillRect(corners[c][0] - 35, corners[c][1] - 35, 70, 70);
   }
 }
 

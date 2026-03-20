@@ -22,16 +22,16 @@ var config = {
   contactFormKey: 'a901a13b-f6a8-4b07-9775-b2a945019aae',
 
   // ---- COLORS ----
-  background: '#1a1a24',
-  floorCenter: '#0c0c18',
-  floorMid: '#08080f',
-  floorEdge: '#04040a',
+  background: '#28232e',
+  floorCenter: '#1f1f2e',
+  floorMid: '#272733',
+  floorEdge: '#181822',
 
-  // Wall gradient (inner = near floor, outer = far edge)
-  wallInner: '#808098',
-  wallMidBright: '#606078',
-  wallMidDark: '#404058',
-  wallOuter: '#2a2a3a',
+  // Wall gradient (inner =a near floor, outer = far edge)
+  wallInner: '#18181f',
+  wallMidBright: '#404058',
+  wallMidDark: '#606078',
+  wallOuter: '#8b8098',
 
   // Character
   headColor: '#eaeaf6',
