@@ -22,6 +22,12 @@ export var defaultSections = [
     "name": "Contact",
     "color": "#f59e0b",
     "gif": ""
+  },
+  {
+    "id": "section_1774032023479",
+    "name": "New Section",
+    "color": "#888888",
+    "gif": ""
   }
 ];
 
@@ -35,7 +41,8 @@ export var defaultRooms = [
         "id": "e1",
         "type": "text",
         "content": "Welcome to My World",
-        "x": 0.5, "y": 0.22,
+        "x": 0.5,
+        "y": 0.22,
         "fontSize": 2.4,
         "color": "#ffffff",
         "fontWeight": "bold"
@@ -43,18 +50,22 @@ export var defaultRooms = [
       {
         "id": "e2",
         "type": "text",
-        "content": "I build experiences that live between art and code.\nNavigate with WASD or Arrow keys, or just scroll.",
-        "x": 0.5, "y": 0.42,
+        "content": "I build experiences that live between art and code.\nNavigate with WASD / Arrow keys, or just scroll.",
+        "x": 0.5,
+        "y": 0.42,
         "fontSize": 0.95,
         "color": "#9090b8",
         "maxWidth": 440
       },
       {
-        "id": "e3",
+        "id": "el_1774031908529_s6ig",
         "type": "image",
-        "src": "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExcDd6MW02OWl4dXR2M2JlZjZhZXBiOWtqZnFlcjF4aTBuZ2d6YzRyMiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0HlBO7eyXzSZkJri/giphy.gif",
-        "x": 0.5, "y": 0.7,
-        "width": 180, "height": 120
+        "x": 0.3,
+        "y": 0.8,
+        "color": "#6366f1",
+        "src": "/images/IMG_3586.JPEG",
+        "width": 150,
+        "height": 200
       }
     ]
   },
@@ -66,8 +77,9 @@ export var defaultRooms = [
       {
         "id": "e4",
         "type": "text",
-        "content": "Creative Developer",
-        "x": 0.5, "y": 0.2,
+        "content": "Creative Developerdsdads",
+        "x": 0.5,
+        "y": 0.2,
         "fontSize": 1.9,
         "color": "#ffffff",
         "fontWeight": "bold"
@@ -76,7 +88,8 @@ export var defaultRooms = [
         "id": "e5",
         "type": "text",
         "content": "Specializing in immersive web experiences, interactive installations, and generative art. Every pixel has a purpose.",
-        "x": 0.5, "y": 0.42,
+        "x": 0.5,
+        "y": 0.42,
         "fontSize": 0.85,
         "color": "#a0a0c8",
         "maxWidth": 400
@@ -84,11 +97,21 @@ export var defaultRooms = [
       {
         "id": "e6",
         "type": "link",
-        "content": "View GitHub Profile",
+        "content": "View GitHub Profile →",
         "url": "https://github.com",
-        "x": 0.5, "y": 0.65,
+        "x": 0.5,
+        "y": 0.65,
         "fontSize": 1.1,
         "color": "#6366f1"
+      },
+      {
+        "id": "el_1774032044697_r6j3",
+        "type": "text",
+        "x": 0.5,
+        "y": 0.5,
+        "fontSize": 1.6,
+        "color": "#6366f1",
+        "content": "New text"
       }
     ]
   },
@@ -101,7 +124,8 @@ export var defaultRooms = [
         "id": "e7",
         "type": "text",
         "content": "Nebula Engine",
-        "x": 0.5, "y": 0.18,
+        "x": 0.5,
+        "y": 0.18,
         "fontSize": 1.8,
         "color": "#ec4899",
         "fontWeight": "bold"
@@ -109,19 +133,30 @@ export var defaultRooms = [
       {
         "id": "e8",
         "type": "text",
-        "content": "Real-time particle system with WebGL. Millions of particles, GPU-accelerated physics, custom shaders for volumetric effects.",
-        "x": 0.5, "y": 0.38,
+        "content": "Real-time particle system with WebGL.\nMillions of particles, GPU-accelerated physics, custom shaders for volumetric effects.",
+        "x": 0.5,
+        "y": 0.38,
         "fontSize": 0.82,
         "color": "#c0a0c8",
         "maxWidth": 400
       },
       {
+        "id": "e9",
+        "type": "image",
+        "src": "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExaW5kMTZvOHVrNjRvcnp6a3d5Z2ppMjE5a3I3eWFxcXJtNmVtMmg5YyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3oKIPnAiaMCJ8dO8Hu/giphy.gif",
+        "x": 0.3,
+        "y": 0.65,
+        "width": 160,
+        "height": 110
+      },
+      {
         "id": "e10",
         "type": "link",
-        "content": "Live Demo",
+        "content": "Live Demo →",
         "url": "https://example.com",
-        "x": 0.5, "y": 0.65,
-        "fontSize": 1.0,
+        "x": 0.72,
+        "y": 0.65,
+        "fontSize": 1,
         "color": "#ec4899"
       }
     ]
@@ -135,7 +170,8 @@ export var defaultRooms = [
         "id": "e11",
         "type": "text",
         "content": "SoundScape",
-        "x": 0.5, "y": 0.18,
+        "x": 0.5,
+        "y": 0.18,
         "fontSize": 1.8,
         "color": "#ec4899",
         "fontWeight": "bold"
@@ -144,7 +180,8 @@ export var defaultRooms = [
         "id": "e12",
         "type": "text",
         "content": "Audio visualization that transforms music into 3D terrain. Web Audio API meets procedural generation.",
-        "x": 0.5, "y": 0.4,
+        "x": 0.5,
+        "y": 0.4,
         "fontSize": 0.82,
         "color": "#c0a0c8",
         "maxWidth": 400
@@ -152,10 +189,11 @@ export var defaultRooms = [
       {
         "id": "e13",
         "type": "link",
-        "content": "Experience It",
+        "content": "Experience It →",
         "url": "https://example.com",
-        "x": 0.5, "y": 0.62,
-        "fontSize": 1.0,
+        "x": 0.5,
+        "y": 0.62,
+        "fontSize": 1,
         "color": "#ec4899"
       }
     ]
@@ -169,7 +207,8 @@ export var defaultRooms = [
         "id": "e14",
         "type": "text",
         "content": "Technical Stack",
-        "x": 0.5, "y": 0.15,
+        "x": 0.5,
+        "y": 0.15,
         "fontSize": 1.7,
         "color": "#14b8a6",
         "fontWeight": "bold"
@@ -177,8 +216,9 @@ export var defaultRooms = [
       {
         "id": "e15",
         "type": "text",
-        "content": "React / Three.js / WebGL / GLSL\nTypeScript / Node.js / Python / Rust\nFigma / Blender / After Effects",
-        "x": 0.5, "y": 0.4,
+        "content": "React · Three.js · WebGL · GLSL\nTypeScript · Node.js · Python · Rust\nFigma · Blender · After Effects",
+        "x": 0.5,
+        "y": 0.4,
         "fontSize": 0.9,
         "color": "#80c8b8",
         "maxWidth": 400
@@ -186,9 +226,10 @@ export var defaultRooms = [
       {
         "id": "e16",
         "type": "text",
-        "content": "The best interface is one you can walk through.",
-        "x": 0.5, "y": 0.68,
-        "fontSize": 1.0,
+        "content": "\"The best interface is one you can walk through.\"",
+        "x": 0.5,
+        "y": 0.68,
+        "fontSize": 1,
         "color": "#14b8a6",
         "fontStyle": "italic"
       }
@@ -202,9 +243,10 @@ export var defaultRooms = [
       {
         "id": "e17",
         "type": "text",
-        "content": "Lets Build Something",
-        "x": 0.5, "y": 0.18,
-        "fontSize": 2.0,
+        "content": "Let's Build Something",
+        "x": 0.5,
+        "y": 0.18,
+        "fontSize": 2,
         "color": "#f59e0b",
         "fontWeight": "bold"
       },
@@ -212,7 +254,8 @@ export var defaultRooms = [
         "id": "e18",
         "type": "text",
         "content": "Open to collaborations, commissions, and interesting conversations about the future of the web.",
-        "x": 0.5, "y": 0.38,
+        "x": 0.5,
+        "y": 0.38,
         "fontSize": 0.85,
         "color": "#c8b080",
         "maxWidth": 400
@@ -220,27 +263,30 @@ export var defaultRooms = [
       {
         "id": "e19",
         "type": "link",
-        "content": "Email",
-        "url": "mailto:oskar@iwota.com",
-        "x": 0.3, "y": 0.58,
+        "content": "Email →",
+        "url": "mailto:hello@example.com",
+        "x": 0.3,
+        "y": 0.58,
         "fontSize": 1.1,
         "color": "#f59e0b"
       },
       {
         "id": "e20",
         "type": "link",
-        "content": "Twitter",
+        "content": "Twitter →",
         "url": "https://twitter.com",
-        "x": 0.7, "y": 0.58,
+        "x": 0.7,
+        "y": 0.58,
         "fontSize": 1.1,
         "color": "#f59e0b"
       },
       {
         "id": "e21",
         "type": "link",
-        "content": "LinkedIn",
+        "content": "LinkedIn →",
         "url": "https://linkedin.com",
-        "x": 0.5, "y": 0.72,
+        "x": 0.5,
+        "y": 0.72,
         "fontSize": 1.1,
         "color": "#f59e0b"
       }
