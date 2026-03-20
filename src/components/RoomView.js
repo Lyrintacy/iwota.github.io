@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 import useStore from '../store/useStore';
+import config from '../config';
 
 var WALL_DEPTH = 58;
 var DOOR_W = 80;
@@ -146,7 +147,7 @@ export default function RoomView() {
 
     // Character dimensions
     var HEAD_W = 20;
-    var HEAD_H = 14;
+    var HEAD_H = 15;
     var BODY_W = 12;
     var BODY_H = 8;
     var LEG_W = 4;
@@ -209,7 +210,7 @@ export default function RoomView() {
 
     // Room info
     ctx.fillStyle = 'rgba(255,255,255,0.15)';
-    ctx.font = '10px "Space Mono", monospace';
+    ctx.font = '10px "Concert One", sans-serif';
     ctx.textAlign = 'left';
     ctx.fillText((ci + 1) + ' / ' + rooms.length, rX + 10, rY + rH - 10);
 
@@ -565,7 +566,7 @@ function ElementRenderer(props) {
         transform: 'translate(-50%,-50%) skewX(' + skew + 'deg)',
         color: el.color || '#fff',
         fontSize: ((el.fontSize || 1) * 16) + 'px',
-        fontFamily: "'Space Mono', monospace",
+        fontFamily: config.contentFont,
         fontWeight: el.fontWeight || 'normal',
         fontStyle: el.fontStyle || 'normal',
         letterSpacing: ls + 'px',
@@ -648,7 +649,7 @@ function LinkEl(props) {
       style: {
         color: color,
         fontSize: ((el.fontSize || 1) * 16) + 'px',
-        fontFamily: "'Space Mono', monospace",
+        fontFamily: config.contentFont,
         textDecoration: 'none', letterSpacing: ls + 'px',
         borderBottom: '2px solid ' + color + '50',
         paddingBottom: 3, cursor: 'pointer',

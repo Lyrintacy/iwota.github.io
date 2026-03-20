@@ -146,7 +146,6 @@ var useStore = create(function(set, get) {
       set({ playerPos: newPos, playerTarget: newPos });
     },
 
-    // Door transition with fade
     navigateViaDoor: function(direction) {
       var s = get();
       if (s.isMapTransitioning || s.doorCooldown) return;
@@ -156,7 +155,6 @@ var useStore = create(function(set, get) {
 
       set({ doorCooldown: true, doorFadeOpacity: 0 });
 
-      // Fade to black
       var fadeOutStart = Date.now();
       var fadeOutDuration = 180;
       var fadeInDuration = 250;
@@ -169,7 +167,6 @@ var useStore = create(function(set, get) {
         if (p < 1) {
           requestAnimationFrame(animateFadeOut);
         } else {
-          // Switch room at peak black
           var startPos = direction === 1
             ? { x: 0.5, y: 0.82 }
             : { x: 0.5, y: 0.2 };
@@ -180,7 +177,6 @@ var useStore = create(function(set, get) {
             playerTarget: startPos,
           });
 
-          // Fade back in
           var fadeInStart = Date.now();
           var animateFadeIn = function() {
             var elapsed2 = Date.now() - fadeInStart;
@@ -262,6 +258,14 @@ var useStore = create(function(set, get) {
         for (var i = 0; i < elements.length; i++) {
           if (elements[i].id === elementId) {
             for (var k in updates) elements[i][k] = updates[k];
+
+            // Auto-prefix image src if it's just a filename
+            if (elements[i].type === 'image' && elements[i].src) {
+              var src = elements[i].src;
+              if (src && src.indexOf('/') === -1 && src.indexOf('http') === -1) {
+                elements[i].src = '/images/' + src;
+              }
+            }
             break;
           }
         }
@@ -273,7 +277,16 @@ var useStore = create(function(set, get) {
     addRoomElement: function(roomIndex, element) {
       set(function(s) {
         var rooms = JSON.parse(JSON.stringify(s.rooms));
-        rooms[roomIndex].elements.push(element);
+        var el = JSON.parse(JSON.stringify(element));
+
+        // Auto-prefix image src
+        if (el.type === 'image' && el.src) {
+          if (el.src.indexOf('/') === -1 && el.src.indexOf('http') === -1) {
+            el.src = '/images/' + el.src;
+          }
+        }
+
+        rooms[roomIndex].elements.push(el);
         saveData(rooms, s.sections);
         return { rooms: rooms };
       });
@@ -376,29 +389,60 @@ var useStore = create(function(set, get) {
       });
     },
 
+    // ---- EXPORT: generates a complete defaultData.js file ----
     exportJSON: function() {
       var s = get();
-      var data = JSON.stringify({ rooms: s.rooms, sections: s.sections }, null, 2);
-      var blob = new Blob([data], { type: 'application/json' });
+
+      var lines = [];
+      lines.push('export var defaultSections = ' + JSON.stringify(s.sections, null, 2) + ';');
+      lines.push('');
+      lines.push('export var defaultRooms = ' + JSON.stringify(s.rooms, null, 2) + ';');
+
+      var content = lines.join('\n');
+      var blob = new Blob([content], { type: 'text/javascript' });
       var url = URL.createObjectURL(blob);
       var a = document.createElement('a');
-      a.href = url; a.download = 'portfolio-data.json'; a.click();
+      a.href = url;
+      a.download = 'defaultData.js';
+      a.click();
       URL.revokeObjectURL(url);
-      get().setNotification('Exported portfolio-data.json');
+      get().setNotification('Exported defaultData.js — replace src/data/defaultData.js with it');
     },
 
     importJSON: function(file) {
       var reader = new FileReader();
       reader.onload = function(e) {
         try {
-          var data = JSON.parse(e.target.result);
-          if (data.rooms && data.sections) {
+          var text = e.target.result;
+          var data;
+
+          // Try parsing as JSON first (old format)
+          try {
+            data = JSON.parse(text);
+          } catch (jsonErr) {
+            // Try parsing as JS module (new format)
+            var sectionsMatch = text.match(/defaultSections\s*=\s*(\[[\s\S]*?\]);/);
+            var roomsMatch = text.match(/defaultRooms\s*=\s*(\[[\s\S]*?\]);/);
+
+            if (sectionsMatch && roomsMatch) {
+              /* eslint-disable no-eval */
+              data = {
+                sections: eval('(' + sectionsMatch[1] + ')'),
+                rooms: eval('(' + roomsMatch[1] + ')'),
+              };
+              /* eslint-enable no-eval */
+            }
+          }
+
+          if (data && data.rooms && data.sections) {
             set({ rooms: data.rooms, sections: data.sections, currentRoomIndex: 0 });
             saveData(data.rooms, data.sections);
             get().setNotification('Imported successfully');
+          } else {
+            get().setNotification('Could not parse file');
           }
         } catch (err) {
-          get().setNotification('Invalid JSON file');
+          get().setNotification('Import failed: ' + err.message);
         }
       };
       reader.readAsText(file);

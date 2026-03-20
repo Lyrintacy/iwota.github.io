@@ -1,7 +1,11 @@
 import React, { useRef, useState, useEffect } from 'react';
 import useStore from '../store/useStore';
+import config from '../config';
 
-export default function MapPanel() {
+export default function MapPanel(props) {
+  var isMobile = props.isMobile;
+  var onClose = props.onClose;
+
   var rooms = useStore(function(s) { return s.rooms; });
   var sections = useStore(function(s) { return s.sections; });
   var currentRoomIndex = useStore(function(s) { return s.currentRoomIndex; });
@@ -37,47 +41,49 @@ export default function MapPanel() {
     return result;
   }, [rooms, sections]);
 
+  var handleRoomClick = function(ri) {
+    navigateViaMap(ri);
+    if (isMobile && onClose) onClose();
+  };
+
+  var panelWidth = isMobile ? 180 : 130;
+
   return (
     <div
       onMouseEnter={function() { setMapHovered(true); }}
       onMouseLeave={function() { setMapHovered(false); }}
       onWheel={function(e) { e.stopPropagation(); }}
       style={{
-        width: 130, minWidth: 130, height: '100vh',
-        background: mapHovered ? 'rgba(12,12,28,0.98)' : 'rgba(10,10,20,0.96)',
+        width: panelWidth, minWidth: panelWidth, height: '100%',
+        background: isMobile ? 'rgba(10,10,22,0.98)' : (mapHovered ? 'rgba(12,12,28,0.98)' : 'rgba(10,10,20,0.96)'),
         borderLeft: '1px solid ' + (mapHovered ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.05)'),
         display: 'flex', flexDirection: 'column',
-        transition: 'all 0.25s', position: 'relative', zIndex: 200,
+        transition: 'all 0.25s', position: 'relative',
         overflow: 'visible',
       }}
     >
+      {/* Header */}
       <div style={{
         padding: '14px 10px', borderBottom: '1px solid rgba(255,255,255,0.06)',
-        textAlign: 'center',
+        textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        gap: 8,
       }}>
         <div style={{
           fontSize: 10, color: 'rgba(255,255,255,0.45)',
-          fontFamily: "'Space Mono', monospace",
+          fontFamily: config.uiFont,
           textTransform: 'uppercase', letterSpacing: 3,
         }}>MAP</div>
         <div style={{
           fontSize: 8, color: 'rgba(255,255,255,0.2)',
-          fontFamily: "'Space Mono', monospace", marginTop: 3,
-        }}>{rooms.length} rooms</div>
+          fontFamily: config.uiFont,
+        }}>({rooms.length})</div>
       </div>
 
-      {mapHovered && (
-        <div style={{
-          position: 'absolute', top: 48, left: '50%', transform: 'translateX(-50%)',
-          fontSize: 8, color: 'rgba(255,255,255,0.3)',
-          fontFamily: "'Space Mono', monospace", whiteSpace: 'nowrap',
-          background: 'rgba(8,8,18,0.9)', padding: '2px 8px', borderRadius: 3, zIndex: 5,
-        }}>scroll map</div>
-      )}
-
+      {/* Nodes */}
       <div ref={scrollRef} style={{
         flex: 1, overflowY: 'auto', overflowX: 'visible',
         padding: '22px 0', scrollbarWidth: 'none',
+        WebkitOverflowScrolling: 'touch',
       }}>
         <style>{'div::-webkit-scrollbar{width:0}'}</style>
 
@@ -115,7 +121,7 @@ export default function MapPanel() {
                   )}
                   <div style={{
                     fontSize: 9, color: sec ? sec.color : '#888',
-                    fontFamily: "'Space Mono', monospace",
+                    fontFamily: config.uiFont,
                     textTransform: 'uppercase', letterSpacing: 1,
                     maxWidth: 100, wordBreak: 'break-word', lineHeight: 1.3,
                     margin: '0 auto', fontWeight: 'bold',
@@ -147,9 +153,9 @@ export default function MapPanel() {
 
                 <div
                   data-ri={ri}
-                  onMouseEnter={function() { setHovered(ri); }}
-                  onMouseLeave={function() { setHovered(-1); }}
-                  onClick={function() { navigateViaMap(ri); }}
+                  onMouseEnter={function() { if (!isMobile) setHovered(ri); }}
+                  onMouseLeave={function() { if (!isMobile) setHovered(-1); }}
+                  onClick={function() { handleRoomClick(ri); }}
                   style={{
                     width: sz, height: sz, borderRadius: 7,
                     background: cur ? c + 'cc' : past ? c + '28' : 'rgba(255,255,255,0.05)',
@@ -164,7 +170,7 @@ export default function MapPanel() {
                   <span style={{
                     fontSize: cur ? 13 : 11, fontWeight: cur ? 700 : 400,
                     color: cur ? '#fff' : past ? c + '90' : 'rgba(255,255,255,0.3)',
-                    fontFamily: "'Space Mono', monospace",
+                    fontFamily: config.uiFont,
                   }}>{ri + 1}</span>
 
                   {cur ? <div style={{
@@ -172,17 +178,17 @@ export default function MapPanel() {
                     borderRadius: '50%', background: c, boxShadow: '0 0 8px ' + c,
                   }} /> : null}
 
-                  {/* Tooltip - positioned LEFT of the map panel entirely */}
-                  {hov ? (
+                  {/* Tooltip - only on desktop */}
+                  {hov && !isMobile ? (
                     <div style={{
                       position: 'fixed',
-                      right: 145,
+                      right: panelWidth + 15,
                       padding: '5px 12px',
                       background: 'rgba(5,5,15,0.95)',
                       border: '1px solid ' + c + '50',
                       borderRadius: 5,
                       fontSize: 11, color: '#ddd',
-                      fontFamily: "'Space Mono', monospace",
+                      fontFamily: config.uiFont,
                       whiteSpace: 'nowrap', pointerEvents: 'none',
                       zIndex: 999,
                       boxShadow: '0 2px 12px rgba(0,0,0,0.5)',
@@ -201,7 +207,7 @@ export default function MapPanel() {
       }}>
         <div style={{
           fontSize: 8, color: 'rgba(255,255,255,0.2)',
-          fontFamily: "'Space Mono', monospace",
+          fontFamily: config.uiFont,
         }}>click to jump</div>
       </div>
     </div>
