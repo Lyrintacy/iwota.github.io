@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useCallback, useState, useMemo } from 'react';
+import React, { useRef, useEffect, useCallback, useState } from 'react';
 import useStore from '../store/useStore';
 import config from '../config';
 
@@ -50,18 +50,11 @@ export default function RoomView(props) {
     var rY = (h - rH) / 2;
 
     var glowSources = [];
-    glowSources.push({
-      nx: playerPos.x, ny: playerPos.y,
-      color: sColor, radius: 0.18, intensity: 1.0
-    });
+    glowSources.push({ nx: playerPos.x, ny: playerPos.y, color: sColor, radius: 0.18, intensity: 1.0 });
     for (var ei = 0; ei < room.elements.length; ei++) {
       var elem = room.elements[ei];
-      glowSources.push({
-        nx: elem.x, ny: elem.y,
-        color: elem.color || sColor,
-        radius: elem.type === 'image' ? 0.14 : 0.13,
-        intensity: 0.7
-      });
+      glowSources.push({ nx: elem.x, ny: elem.y, color: elem.color || sColor,
+        radius: elem.type === 'image' ? 0.14 : 0.13, intensity: 0.7 });
     }
 
     drawRoom(ctx, rX, rY, rW, rH, sColor, now, glowSources);
@@ -70,8 +63,7 @@ export default function RoomView(props) {
     var canBack = ci > 0;
 
     if (canBack) {
-      drawDoor(ctx, rX + rW / 2 - DOOR_W / 2, rY + rH - DOOR_H,
-        DOOR_W, DOOR_H, config.entranceDoorColor, now, false);
+      drawDoor(ctx, rX + rW / 2 - DOOR_W / 2, rY + rH - DOOR_H, DOOR_W, DOOR_H, config.entranceDoorColor, now, false);
     }
     if (canFwd) {
       var ed = exitRect(room.exitDirection, rX, rY, rW, rH);
@@ -86,18 +78,15 @@ export default function RoomView(props) {
       var moved = false;
       var npx = px;
       var npy = py;
-
       if (keysPressed['w'] || keysPressed['arrowup']) { npy -= playerSpeed; moved = true; }
       if (keysPressed['s'] || keysPressed['arrowdown']) { npy += playerSpeed; moved = true; }
       if (keysPressed['a'] || keysPressed['arrowleft']) { npx -= playerSpeed; moved = true; }
       if (keysPressed['d'] || keysPressed['arrowright']) { npx += playerSpeed; moved = true; }
-
       if (moved) {
         npx = Math.max(0.01, Math.min(0.99, npx));
         npy = Math.max(0.01, Math.min(0.99, npy));
         useStore.getState().movePlayerDirect({ x: npx, y: npy });
-        px = npx;
-        py = npy;
+        px = npx; py = npy;
       }
     }
 
@@ -105,7 +94,6 @@ export default function RoomView(props) {
       var scrX = rX + px * rW;
       var scrY = rY + py * rH;
       var hitPad = 18;
-
       if (canFwd) {
         var exR = exitRect(room.exitDirection, rX, rY, rW, rH);
         if (scrX > exR.x - hitPad && scrX < exR.x + exR.w + hitPad &&
@@ -113,7 +101,6 @@ export default function RoomView(props) {
           useStore.getState().navigateViaDoor(1);
         }
       }
-
       if (canBack) {
         var entX1 = rX + rW / 2 - DOOR_W / 2;
         var entX2 = entX1 + DOOR_W;
@@ -125,65 +112,39 @@ export default function RoomView(props) {
       }
     }
 
-    // Character drawing
+    // Character
     var plx = rX + px * rW;
     var ply = rY + py * rH;
 
     var lg = ctx.createRadialGradient(plx, ply - 6, 0, plx, ply - 6, 80);
-    lg.addColorStop(0, sColor + '16');
-    lg.addColorStop(0.4, sColor + '08');
-    lg.addColorStop(1, 'transparent');
-    ctx.fillStyle = lg;
-    ctx.fillRect(plx - 80, ply - 86, 160, 160);
+    lg.addColorStop(0, sColor + '16'); lg.addColorStop(0.4, sColor + '08'); lg.addColorStop(1, 'transparent');
+    ctx.fillStyle = lg; ctx.fillRect(plx - 80, ply - 86, 160, 160);
 
     var HEAD_W = 20, HEAD_H = 14, BODY_W = 12, BODY_H = 8;
     var LEG_W = 4, LEG_H = 5, LEG_GAP = 4;
-    var legY = ply + 7;
-    var bodyY = ply - 1;
-    var headY = ply - 12;
-    var bodyX = plx - BODY_W / 2;
-    var headX = plx - HEAD_W / 2;
-    var lLegX = plx - LEG_GAP / 2 - LEG_W;
-    var rLegX = plx + LEG_GAP / 2;
+    var legY = ply + 7, bodyY2 = ply - 1, headY2 = ply - 12;
+    var bodyX2 = plx - BODY_W / 2, headX2 = plx - HEAD_W / 2;
+    var lLegX = plx - LEG_GAP / 2 - LEG_W, rLegX = plx + LEG_GAP / 2;
 
     ctx.fillStyle = 'rgba(0,0,0,0.15)';
-    ctx.beginPath();
-    ctx.ellipse(plx, legY + LEG_H + 2, 8, 2.5, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.fillStyle = config.legColor;
-    ctx.fillRect(lLegX, legY, LEG_W, LEG_H);
-    ctx.fillRect(rLegX, legY, LEG_W, LEG_H);
-
-    ctx.fillStyle = config.bodyColor;
-    ctx.fillRect(bodyX, bodyY, BODY_W, BODY_H);
-
-    ctx.fillStyle = sColor + '45';
-    ctx.fillRect(bodyX, bodyY + 3, BODY_W, 2);
-
-    ctx.fillStyle = config.headColor;
-    ctx.fillRect(headX, headY, HEAD_W, HEAD_H);
-
-    ctx.strokeStyle = sColor + '30';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(headX + 0.5, headY + 0.5, HEAD_W - 1, HEAD_H - 1);
-
-    var eyeSize = 6, eyeGap = 2, eyeY2 = headY + 5;
+    ctx.beginPath(); ctx.ellipse(plx, legY + LEG_H + 2, 8, 2.5, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = config.legColor; ctx.fillRect(lLegX, legY, LEG_W, LEG_H); ctx.fillRect(rLegX, legY, LEG_W, LEG_H);
+    ctx.fillStyle = config.bodyColor; ctx.fillRect(bodyX2, bodyY2, BODY_W, BODY_H);
+    ctx.fillStyle = sColor + '45'; ctx.fillRect(bodyX2, bodyY2 + 3, BODY_W, 2);
+    ctx.fillStyle = config.headColor; ctx.fillRect(headX2, headY2, HEAD_W, HEAD_H);
+    ctx.strokeStyle = sColor + '30'; ctx.lineWidth = 1;
+    ctx.strokeRect(headX2 + 0.5, headY2 + 0.5, HEAD_W - 1, HEAD_H - 1);
+    var eyeSize = 6, eyeGap2 = 2, eyeY2 = headY2 + 5;
     ctx.fillStyle = config.eyeColor;
-    ctx.fillRect(plx - eyeGap / 2 - eyeSize, eyeY2, eyeSize, eyeSize);
-    ctx.fillRect(plx + eyeGap / 2, eyeY2, eyeSize, eyeSize);
-
+    ctx.fillRect(plx - eyeGap2 / 2 - eyeSize, eyeY2, eyeSize, eyeSize);
+    ctx.fillRect(plx + eyeGap2 / 2, eyeY2, eyeSize, eyeSize);
     ctx.fillStyle = sColor + '22';
-    ctx.fillRect(headX + 2, eyeY2 + eyeSize, 3, 2);
-    ctx.fillRect(headX + HEAD_W - 5, eyeY2 + eyeSize, 3, 2);
+    ctx.fillRect(headX2 + 2, eyeY2 + eyeSize, 3, 2);
+    ctx.fillRect(headX2 + HEAD_W - 5, eyeY2 + eyeSize, 3, 2);
 
-    ctx.fillStyle = 'rgba(255,255,255,0.15)';
-    ctx.font = '10px "Concert One", sans-serif';
-    ctx.textAlign = 'left';
-    ctx.fillText((ci + 1) + ' / ' + rooms.length, rX + 10, rY + rH - 10);
-
-    ctx.fillStyle = sColor + '60';
-    ctx.textAlign = 'center';
+    ctx.fillStyle = 'rgba(255,255,255,0.15)'; ctx.font = '10px "Concert One", sans-serif';
+    ctx.textAlign = 'left'; ctx.fillText((ci + 1) + ' / ' + rooms.length, rX + 10, rY + rH - 10);
+    ctx.fillStyle = sColor + '60'; ctx.textAlign = 'center';
     ctx.fillText(section.name.toUpperCase(), w / 2, rY - WALL_DEPTH + 16);
 
     if (canFwd) {
@@ -194,12 +155,9 @@ export default function RoomView(props) {
       var curDist = Math.sqrt(Math.pow(px - exitNX, 2) + Math.pow(py - exitNY, 2));
       var progress = Math.max(0, Math.min(1, 1 - curDist / startDist));
       if (progress > 0.05) {
-        var bW = rW * 0.3, bH2 = 3;
-        var bX = (w - bW) / 2, bY2 = rY + rH + WALL_DEPTH + 14;
-        ctx.fillStyle = 'rgba(255,255,255,0.04)';
-        ctx.fillRect(bX, bY2, bW, bH2);
-        ctx.fillStyle = sColor + '70';
-        ctx.fillRect(bX, bY2, bW * progress, bH2);
+        var bW = rW * 0.3, bH2 = 3, bX = (w - bW) / 2, bY2 = rY + rH + WALL_DEPTH + 14;
+        ctx.fillStyle = 'rgba(255,255,255,0.04)'; ctx.fillRect(bX, bY2, bW, bH2);
+        ctx.fillStyle = sColor + '70'; ctx.fillRect(bX, bY2, bW * progress, bH2);
       }
     }
 
@@ -208,15 +166,12 @@ export default function RoomView(props) {
 
   useEffect(function() {
     var resize = function() {
-      var c = containerRef.current;
-      var cv = canvasRef.current;
+      var c = containerRef.current; var cv = canvasRef.current;
       if (!c || !cv) return;
       var r = c.getBoundingClientRect();
       var dpr = window.devicePixelRatio || 1;
-      cv.width = r.width * dpr;
-      cv.height = r.height * dpr;
-      cv.style.width = r.width + 'px';
-      cv.style.height = r.height + 'px';
+      cv.width = r.width * dpr; cv.height = r.height * dpr;
+      cv.style.width = r.width + 'px'; cv.style.height = r.height + 'px';
       cv.getContext('2d').scale(dpr, dpr);
       sizeRef.current = { w: r.width, h: r.height };
     };
@@ -238,12 +193,10 @@ export default function RoomView(props) {
   );
 }
 
-// ---- HELPERS ----
+// ---- DRAWING HELPERS (unchanged) ----
 
 function findSec(sections, id) {
-  for (var i = 0; i < sections.length; i++) {
-    if (sections[i].id === id) return sections[i];
-  }
+  for (var i = 0; i < sections.length; i++) { if (sections[i].id === id) return sections[i]; }
   return { color: '#6366f1', name: '?', id: id };
 }
 
@@ -256,28 +209,16 @@ function exitRect(dir, rX, rY, rW, rH) {
 
 function gridSegColor(nx, ny, glowSources) {
   var baseAlpha = config.gridBaseAlpha;
-  var bestStrength = 0;
-  var bestColor = null;
-
+  var bestStrength = 0; var bestColor = null;
   for (var i = 0; i < glowSources.length; i++) {
-    var g = glowSources[i];
-    var dx = nx - g.nx;
-    var dy = ny - g.ny;
+    var g = glowSources[i]; var dx = nx - g.nx; var dy = ny - g.ny;
     var dist = Math.sqrt(dx * dx + dy * dy);
-    if (dist < g.radius) {
-      var strength = (1 - dist / g.radius) * g.intensity;
-      if (strength > bestStrength) {
-        bestStrength = strength;
-        bestColor = g.color;
-      }
-    }
+    if (dist < g.radius) { var strength = (1 - dist / g.radius) * g.intensity;
+      if (strength > bestStrength) { bestStrength = strength; bestColor = g.color; } }
   }
-
   if (bestStrength > 0.01 && bestColor) {
     var alpha = Math.min(baseAlpha + bestStrength * 0.2, 0.25);
-    var alphaInt = Math.floor(alpha * 255);
-    var hex = alphaInt.toString(16);
-    if (hex.length < 2) hex = '0' + hex;
+    var hex = Math.floor(alpha * 255).toString(16); if (hex.length < 2) hex = '0' + hex;
     return bestColor + hex;
   }
   return 'rgba(255,255,255,' + baseAlpha + ')';
@@ -285,12 +226,8 @@ function gridSegColor(nx, ny, glowSources) {
 
 function drawRoom(ctx, rX, rY, rW, rH, sColor, now, glowSources) {
   var fg = ctx.createRadialGradient(rX + rW / 2, rY + rH / 2, 10, rX + rW / 2, rY + rH / 2, rW * 0.7);
-  fg.addColorStop(0, config.floorCenter);
-  fg.addColorStop(0.5, config.floorMid);
-  fg.addColorStop(1, config.floorEdge);
-  ctx.fillStyle = fg;
-  ctx.fillRect(rX, rY, rW, rH);
-
+  fg.addColorStop(0, config.floorCenter); fg.addColorStop(0.5, config.floorMid); fg.addColorStop(1, config.floorEdge);
+  ctx.fillStyle = fg; ctx.fillRect(rX, rY, rW, rH);
   ctx.lineWidth = 1;
   for (var vx = rX + GRID_SIZE; vx < rX + rW; vx += GRID_SIZE) {
     var svx = Math.floor(vx) + 0.5;
@@ -308,43 +245,33 @@ function drawRoom(ctx, rX, rY, rW, rH, sColor, now, glowSources) {
       ctx.beginPath(); ctx.moveTo(hx, shy); ctx.lineTo(hSegEnd, shy); ctx.stroke();
     }
   }
-
   var d = WALL_DEPTH;
   var gt = ctx.createLinearGradient(0, rY - d, 0, rY);
   gt.addColorStop(0, config.wallOuter); gt.addColorStop(0.3, config.wallMidDark);
   gt.addColorStop(0.7, config.wallMidBright); gt.addColorStop(1, config.wallInner);
-  ctx.fillStyle = gt;
-  ctx.beginPath(); ctx.moveTo(rX - d, rY - d); ctx.lineTo(rX + rW + d, rY - d);
+  ctx.fillStyle = gt; ctx.beginPath(); ctx.moveTo(rX - d, rY - d); ctx.lineTo(rX + rW + d, rY - d);
   ctx.lineTo(rX + rW, rY); ctx.lineTo(rX, rY); ctx.closePath(); ctx.fill();
   ctx.strokeStyle = sColor + '20'; ctx.lineWidth = 0.5; ctx.stroke();
-
   var gb = ctx.createLinearGradient(0, rY + rH, 0, rY + rH + d);
   gb.addColorStop(0, config.wallInner); gb.addColorStop(0.3, config.wallMidBright);
   gb.addColorStop(0.7, config.wallMidDark); gb.addColorStop(1, config.wallOuter);
-  ctx.fillStyle = gb;
-  ctx.beginPath(); ctx.moveTo(rX, rY + rH); ctx.lineTo(rX + rW, rY + rH);
+  ctx.fillStyle = gb; ctx.beginPath(); ctx.moveTo(rX, rY + rH); ctx.lineTo(rX + rW, rY + rH);
   ctx.lineTo(rX + rW + d, rY + rH + d); ctx.lineTo(rX - d, rY + rH + d); ctx.closePath(); ctx.fill();
   ctx.strokeStyle = sColor + '20'; ctx.stroke();
-
   var gl = ctx.createLinearGradient(rX - d, 0, rX, 0);
   gl.addColorStop(0, config.wallOuter); gl.addColorStop(0.3, '#3a3a50');
   gl.addColorStop(0.7, '#555570'); gl.addColorStop(1, '#707088');
-  ctx.fillStyle = gl;
-  ctx.beginPath(); ctx.moveTo(rX - d, rY - d); ctx.lineTo(rX, rY);
+  ctx.fillStyle = gl; ctx.beginPath(); ctx.moveTo(rX - d, rY - d); ctx.lineTo(rX, rY);
   ctx.lineTo(rX, rY + rH); ctx.lineTo(rX - d, rY + rH + d); ctx.closePath(); ctx.fill();
   ctx.strokeStyle = sColor + '20'; ctx.stroke();
-
   var gr = ctx.createLinearGradient(rX + rW, 0, rX + rW + d, 0);
   gr.addColorStop(0, '#707088'); gr.addColorStop(0.3, '#555570');
   gr.addColorStop(0.7, '#3a3a50'); gr.addColorStop(1, config.wallOuter);
-  ctx.fillStyle = gr;
-  ctx.beginPath(); ctx.moveTo(rX + rW, rY); ctx.lineTo(rX + rW + d, rY - d);
+  ctx.fillStyle = gr; ctx.beginPath(); ctx.moveTo(rX + rW, rY); ctx.lineTo(rX + rW + d, rY - d);
   ctx.lineTo(rX + rW + d, rY + rH + d); ctx.lineTo(rX + rW, rY + rH); ctx.closePath(); ctx.fill();
   ctx.strokeStyle = sColor + '20'; ctx.stroke();
-
   ctx.strokeStyle = sColor + '45'; ctx.lineWidth = 1.5; ctx.strokeRect(rX, rY, rW, rH);
   ctx.strokeStyle = 'rgba(255,255,255,0.06)'; ctx.lineWidth = 1; ctx.strokeRect(rX + 1, rY + 1, rW - 2, rH - 2);
-
   var corners = [[rX, rY], [rX + rW, rY], [rX, rY + rH], [rX + rW, rY + rH]];
   for (var c = 0; c < corners.length; c++) {
     var cg = ctx.createRadialGradient(corners[c][0], corners[c][1], 0, corners[c][0], corners[c][1], 35);
@@ -360,8 +287,7 @@ function drawDoor(ctx, x, y, w, h, color, now, isExit) {
   ctx.fillStyle = glow; ctx.fillRect(x - 18, y - 18, w + 36, h + 36);
   ctx.fillStyle = isExit ? color + '80' : color + '35'; ctx.fillRect(x, y, w, h);
   var p = (Math.sin(now * 0.003) + 1) * 0.5;
-  var ph = Math.floor(25 + p * 40).toString(16);
-  if (ph.length < 2) ph = '0' + ph;
+  var ph = Math.floor(25 + p * 40).toString(16); if (ph.length < 2) ph = '0' + ph;
   ctx.fillStyle = isExit ? color + ph : color + '12'; ctx.fillRect(x + 2, y + 2, w - 4, h - 4);
 }
 
@@ -373,9 +299,9 @@ function drawArrow(ctx, dir, rect, color) {
   else ctx.fillText('\u25B2', rect.x + rect.w / 2, rect.y - 14);
 }
 
-// =============================================
-// HTML CONTENT OVERLAY — with per-letter physics
-// =============================================
+// =============================================================
+// CONTENT OVERLAY — text avoids images, player parts text
+// =============================================================
 
 function ContentOverlay(props) {
   var containerRef = props.containerRef;
@@ -411,45 +337,42 @@ function ContentOverlay(props) {
   var rX = (size.w - rW) / 2;
   var rY = (size.h - rH) / 2;
 
-  // Collect image positions for text avoidance
-  var imageElements = [];
+  // Collect image bounding boxes for text avoidance
+  var imageBounds = [];
   for (var i = 0; i < room.elements.length; i++) {
-    if (room.elements[i].type === 'image') {
-      imageElements.push(room.elements[i]);
+    var el = room.elements[i];
+    if (el.type === 'image') {
+      var imgW = el.width || 150;
+      var imgH = el.height || 100;
+      var imgSX = rX + el.x * rW;
+      var imgSY = rY + el.y * rH;
+      imageBounds.push({
+        left: imgSX - imgW / 2 - 20,
+        right: imgSX + imgW / 2 + 20,
+        top: imgSY - imgH / 2 - 20,
+        bottom: imgSY + imgH / 2 + 20,
+        cx: imgSX,
+        cy: imgSY,
+      });
     }
   }
 
   return React.createElement('div', {
     style: { position: 'absolute', inset: 0, pointerEvents: 'none' }
   }, room.elements.map(function(el) {
-    // Calculate text offset to avoid overlapping images
-    var avoidOffX = 0;
-    var avoidOffY = 0;
-    if (el.type === 'text' || el.type === 'link') {
-      for (var im = 0; im < imageElements.length; im++) {
-        var img = imageElements[im];
-        var dx = el.x - img.x;
-        var dy = el.y - img.y;
-        var dist = Math.sqrt(dx * dx + dy * dy);
-        var avoidRadius = 0.18;
-        if (dist < avoidRadius && dist > 0.001) {
-          var force = (1 - dist / avoidRadius) * 0.08;
-          var angle = Math.atan2(dy, dx);
-          avoidOffX += Math.cos(angle) * force * rW;
-          avoidOffY += Math.sin(angle) * force * rH;
-        }
-      }
-    }
-
     return React.createElement(ElementRenderer, {
       key: el.id, el: el,
       rX: rX, rY: rY, rW: rW, rH: rH,
       playerPos: playerPos, sectionColor: section.color,
       showEditor: showEditor, isMobile: isMobile,
-      avoidOffX: avoidOffX, avoidOffY: avoidOffY,
+      imageBounds: imageBounds,
     });
   }));
 }
+
+// =============================================================
+// ELEMENT RENDERER — routes to correct component
+// =============================================================
 
 function ElementRenderer(props) {
   var el = props.el;
@@ -458,38 +381,57 @@ function ElementRenderer(props) {
   var sectionColor = props.sectionColor;
   var showEditor = props.showEditor;
   var isMobile = props.isMobile;
-  var avoidOffX = props.avoidOffX || 0;
-  var avoidOffY = props.avoidOffY || 0;
+  var imageBounds = props.imageBounds;
 
-  var sx = rX + el.x * rW + avoidOffX;
-  var sy = rY + el.y * rH + avoidOffY;
-  var dx = el.x - playerPos.x;
-  var dy = el.y - playerPos.y;
-  var dist = Math.sqrt(dx * dx + dy * dy);
-  var radius = 0.15;
-  var near = dist < radius && !showEditor;
+  var sx = rX + el.x * rW;
+  var sy = rY + el.y * rH;
+
+  // Calculate avoidance offset from images
+  var avoidX = 0, avoidY = 0;
+  if (el.type === 'text' || el.type === 'link') {
+    for (var ib = 0; ib < imageBounds.length; ib++) {
+      var b = imageBounds[ib];
+      var dx = sx - b.cx;
+      var dy = sy - b.cy;
+      var dist = Math.sqrt(dx * dx + dy * dy);
+      var avoidR = Math.max(b.right - b.left, b.bottom - b.top) * 0.7;
+
+      if (dist < avoidR && dist > 1) {
+        var force = Math.pow(1 - dist / avoidR, 1.5) * 60;
+        var angle = Math.atan2(dy, dx);
+        avoidX += Math.cos(angle) * force;
+        avoidY += Math.sin(angle) * force;
+      }
+    }
+  }
+
+  sx += avoidX;
+  sy += avoidY;
 
   if (el.type === 'text') {
-    return React.createElement(TextWithLetterPhysics, {
-      el: el, sx: sx, sy: sy, near: near,
+    return React.createElement(SplittableText, {
+      el: el, sx: sx, sy: sy,
       playerPos: playerPos, rX: rX, rY: rY, rW: rW, rH: rH,
-      sectionColor: sectionColor, radius: radius,
+      sectionColor: sectionColor, showEditor: showEditor,
     });
   }
 
   if (el.type === 'image') {
+    var imgDx = el.x - playerPos.x;
+    var imgDy = el.y - playerPos.y;
+    var imgDist = Math.sqrt(imgDx * imgDx + imgDy * imgDy);
     var imgOp = 1;
-    var imgOffX = 0, imgOffY = 0;
-    if (near) {
-      var force = 1 - dist / radius;
-      imgOp = 0.25 + (1 - force) * 0.75;
-      var angle = Math.atan2(dy, dx);
-      imgOffX = Math.cos(angle) * force * 15;
-      imgOffY = Math.sin(angle) * force * 12;
+    var imgPushX = 0, imgPushY = 0;
+    if (imgDist < 0.14 && !showEditor) {
+      var f = 1 - imgDist / 0.14;
+      imgOp = 0.3 + (1 - f) * 0.7;
+      var a = Math.atan2(imgDy, imgDx);
+      imgPushX = Math.cos(a) * f * 12;
+      imgPushY = Math.sin(a) * f * 10;
     }
     return React.createElement('div', {
       style: {
-        position: 'absolute', left: sx + imgOffX, top: sy + imgOffY,
+        position: 'absolute', left: rX + el.x * rW + imgPushX, top: rY + el.y * rH + imgPushY,
         transform: 'translate(-50%,-50%)', pointerEvents: 'auto',
       }
     }, React.createElement('img', {
@@ -504,45 +446,42 @@ function ElementRenderer(props) {
   }
 
   if (el.type === 'link') {
-    return React.createElement(LinkEl, {
-      key: el.id, el: el, sx: sx, sy: sy,
-      near: near, playerPos: playerPos,
-      rX: rX, rY: rY, rW: rW, rH: rH,
-      sectionColor: sectionColor, radius: radius, isMobile: isMobile,
+    return React.createElement(SplittableLink, {
+      el: el, sx: sx, sy: sy,
+      playerPos: playerPos, rX: rX, rY: rY, rW: rW, rH: rH,
+      sectionColor: sectionColor, showEditor: showEditor, isMobile: isMobile,
     });
   }
 
   return null;
 }
 
-// =============================================
-// TEXT WITH PER-LETTER PHYSICS
-// =============================================
+// =============================================================
+// SPLITTABLE TEXT — player parts text like Moses parts the sea
+// =============================================================
 
-function TextWithLetterPhysics(props) {
+function SplittableText(props) {
   var el = props.el;
   var sx = props.sx, sy = props.sy;
-  var near = props.near;
   var playerPos = props.playerPos;
   var rX = props.rX, rY = props.rY, rW = props.rW, rH = props.rH;
   var sectionColor = props.sectionColor;
-  var radius = props.radius;
+  var showEditor = props.showEditor;
 
   var fontSize = (el.fontSize || 1) * 16;
-  var charWidth = fontSize * 0.62;
-  var lineHeight = fontSize * 1.6;
   var content = el.content || '';
   var color = el.color || '#fff';
+  var maxWidth = el.maxWidth || 520;
 
-  // Split into lines
-  var lines = content.split('\n');
-
-  // Player screen position
   var playerSX = rX + playerPos.x * rW;
   var playerSY = rY + playerPos.y * rH;
 
-  // If player is NOT near, render as normal text (performance)
-  if (!near) {
+  var pDist = Math.sqrt(Math.pow(sx - playerSX, 2) + Math.pow(sy - playerSY, 2));
+  var interactRadius = 90;
+  var isNear = pDist < interactRadius + fontSize * 3 && !showEditor;
+
+  // When far away, render as normal text
+  if (!isNear) {
     return React.createElement('div', {
       style: {
         position: 'absolute', left: sx, top: sy,
@@ -553,236 +492,266 @@ function TextWithLetterPhysics(props) {
         fontWeight: el.fontWeight || 'normal',
         fontStyle: el.fontStyle || 'normal',
         textAlign: 'center',
-        maxWidth: el.maxWidth ? el.maxWidth + 'px' : '520px',
+        maxWidth: maxWidth + 'px',
         lineHeight: 1.6,
         userSelect: 'text', pointerEvents: 'auto', cursor: 'text',
-        textShadow: '0 0 8px ' + (color) + '30',
-        whiteSpace: el.maxWidth ? 'pre-wrap' : 'nowrap',
+        textShadow: '0 0 8px ' + color + '25',
+        whiteSpace: 'pre-wrap',
+        wordBreak: 'break-word',
       }
     }, content);
   }
 
-  // Player IS near — render per-letter with physics
-  var letterElements = [];
-  var totalHeight = lines.length * lineHeight;
-  var startY = sy - totalHeight / 2;
+  // Near — render per-word with displacement
+  var charW = fontSize * 0.58;
+  var lineH = fontSize * 1.6;
+  var lines = wrapText(content, maxWidth, charW);
+  var totalH = lines.length * lineH;
+  var startY = sy - totalH / 2;
+  var elements = [];
 
   for (var li = 0; li < lines.length; li++) {
-    var line = lines[li];
-    var lineW = line.length * charWidth;
-    var lineStartX = sx - lineW / 2;
-    var lineY = startY + li * lineHeight + lineHeight / 2;
+    var words = lines[li].split(/(\s+)/);
+    var lineW = lines[li].length * charW;
+    var cursorX = sx - lineW / 2;
+    var lineY2 = startY + li * lineH + lineH / 2;
 
-    for (var ci = 0; ci < line.length; ci++) {
-      var ch = line[ci];
-      var letterX = lineStartX + ci * charWidth + charWidth / 2;
-      var letterY = lineY;
+    for (var wi = 0; wi < words.length; wi++) {
+      var word = words[wi];
+      if (!word) continue;
 
-      // Distance from this specific letter to player
-      var ldx = letterX - playerSX;
-      var ldy = letterY - playerSY;
-      var lDist = Math.sqrt(ldx * ldx + ldy * ldy);
+      var wordW = word.length * charW;
+      var wordCX = cursorX + wordW / 2;
+      var wordCY = lineY2;
 
-      var letterRadius = 70;
-      var offX = 0, offY = 0, rot = 0, opacity = 1, scale = 1;
+      // Distance from word center to player
+      var wdx = wordCX - playerSX;
+      var wdy = wordCY - playerSY;
+      var wDist = Math.sqrt(wdx * wdx + wdy * wdy);
 
-      if (lDist < letterRadius) {
-        var force = 1 - lDist / letterRadius;
-        force = force * force; // Quadratic falloff — sharper near center
-        var lAngle = Math.atan2(ldy, ldx);
+      var offX = 0, offY = 0, opacity = 1;
 
-        offX = Math.cos(lAngle) * force * 35;
-        offY = Math.sin(lAngle) * force * 30;
-        rot = (Math.random() - 0.5) * force * 8;
-        opacity = 0.4 + (1 - force) * 0.6;
-        scale = 1 + force * 0.15;
+      if (wDist < interactRadius) {
+        var force = 1 - wDist / interactRadius;
+        force = force * force * force; // Cubic — very smooth, strong near center
+
+        // Push word away from player — "parting" effect
+        // Mostly horizontal so text splits left/right
+        var pushAngle = Math.atan2(wdy, wdx);
+        var horizBias = 1.8; // Push more horizontally
+        var pushX = Math.cos(pushAngle) * force * 55 * horizBias;
+        var pushY = Math.sin(pushAngle) * force * 35;
+
+        offX = pushX;
+        offY = pushY;
+        opacity = 0.35 + (1 - force) * 0.65;
       }
 
-      letterElements.push(
-        React.createElement('span', {
-          key: li + '-' + ci,
-          style: {
-            display: 'inline-block',
-            position: 'absolute',
-            left: letterX + offX,
-            top: letterY + offY,
-            transform: 'translate(-50%,-50%) rotate(' + rot + 'deg) scale(' + scale + ')',
-            color: color,
-            fontSize: fontSize + 'px',
-            fontFamily: config.contentFont,
-            fontWeight: el.fontWeight || 'normal',
-            fontStyle: el.fontStyle || 'normal',
-            opacity: opacity,
-            textShadow: '0 0 ' + (8 + (1 - opacity) * 20) + 'px ' + color + '50',
-            transition: 'none',
-            willChange: 'transform',
-            pointerEvents: 'none',
-            userSelect: 'none',
-            whiteSpace: 'pre',
-          }
-        }, ch === ' ' ? '\u00A0' : ch)
-      );
+      var isSpace = word.trim() === '';
+
+      if (!isSpace) {
+        elements.push(
+          React.createElement('span', {
+            key: li + '-' + wi,
+            style: {
+              position: 'absolute',
+              left: wordCX + offX,
+              top: wordCY + offY,
+              transform: 'translate(-50%,-50%)',
+              color: color,
+              fontSize: fontSize + 'px',
+              fontFamily: config.contentFont,
+              fontWeight: el.fontWeight || 'normal',
+              fontStyle: el.fontStyle || 'normal',
+              opacity: opacity,
+              textShadow: opacity < 0.9
+                ? '0 0 ' + (15 + (1 - opacity) * 15) + 'px ' + (sectionColor) + '50'
+                : '0 0 8px ' + color + '25',
+              whiteSpace: 'pre',
+              pointerEvents: 'none',
+              userSelect: 'none',
+              transition: 'none',
+              willChange: 'transform, opacity',
+            }
+          }, word)
+        );
+      }
+
+      cursorX += wordW;
     }
   }
 
   return React.createElement('div', {
-    style: {
-      position: 'absolute',
-      left: 0, top: 0,
-      width: '100%', height: '100%',
-      pointerEvents: 'none',
-    }
-  }, letterElements);
+    style: { position: 'absolute', left: 0, top: 0, width: '100%', height: '100%', pointerEvents: 'none' }
+  }, elements);
 }
 
-// =============================================
-// LINK ELEMENT
-// =============================================
+// =============================================================
+// SPLITTABLE LINK — same parting effect + clickable
+// =============================================================
 
-function LinkEl(props) {
-  var el = props.el, sx = props.sx, sy = props.sy;
-  var near = props.near;
+function SplittableLink(props) {
+  var el = props.el;
+  var sx = props.sx, sy = props.sy;
   var playerPos = props.playerPos;
   var rX = props.rX, rY = props.rY, rW = props.rW, rH = props.rH;
   var sectionColor = props.sectionColor;
-  var radius = props.radius;
+  var showEditor = props.showEditor;
   var isMobile = props.isMobile;
 
   var wasNearRef = useRef(false);
+  var color = el.color || sectionColor;
+  var fontSize = (el.fontSize || 1) * 16;
+  var content = el.content || '';
+  var charW = fontSize * 0.58;
+
+  var playerSX = rX + playerPos.x * rW;
+  var playerSY = rY + playerPos.y * rH;
+  var pDist = Math.sqrt(Math.pow(sx - playerSX, 2) + Math.pow(sy - playerSY, 2));
+  var interactRadius = 80;
+  var isNear = pDist < interactRadius && !showEditor;
 
   useEffect(function() {
-    if (near && !wasNearRef.current) {
+    if (isNear && !wasNearRef.current) {
       useStore.getState().setHoveredLink(el);
-    } else if (!near && wasNearRef.current) {
+    } else if (!isNear && wasNearRef.current) {
       var cur = useStore.getState().hoveredLink;
-      if (cur && cur.id === el.id) {
-        useStore.getState().setHoveredLink(null);
-      }
+      if (cur && cur.id === el.id) useStore.getState().setHoveredLink(null);
     }
-    wasNearRef.current = near;
+    wasNearRef.current = isNear;
   });
 
   useEffect(function() {
     return function() {
       var cur = useStore.getState().hoveredLink;
-      if (cur && cur.id === el.id) {
-        useStore.getState().setHoveredLink(null);
-      }
+      if (cur && cur.id === el.id) useStore.getState().setHoveredLink(null);
     };
   }, [el.id]);
 
-  var color = el.color || sectionColor;
-  var fontSize = (el.fontSize || 1) * 16;
-  var content = el.content || '';
-  var charWidth = fontSize * 0.62;
-
-  var playerSX = rX + playerPos.x * rW;
-  var playerSY = rY + playerPos.y * rH;
-
-  // Normal rendering when not near
-  if (!near) {
+  // Not near: normal render
+  if (!isNear) {
     return React.createElement('div', {
-      style: {
-        position: 'absolute', left: sx, top: sy,
-        transform: 'translate(-50%,-50%)', pointerEvents: 'auto',
-      }
+      style: { position: 'absolute', left: sx, top: sy, transform: 'translate(-50%,-50%)', pointerEvents: 'auto' }
     },
       React.createElement('a', {
         href: el.url, target: '_blank', rel: 'noopener noreferrer',
         onClick: function(e) { e.stopPropagation(); },
         style: {
-          color: color,
-          fontSize: fontSize + 'px',
-          fontFamily: config.contentFont,
-          textDecoration: 'none',
-          borderBottom: '2px solid ' + color + '50',
-          paddingBottom: 3, cursor: 'pointer',
-          textShadow: '0 0 12px ' + color + '40',
+          color: color, fontSize: fontSize + 'px', fontFamily: config.contentFont,
+          textDecoration: 'none', borderBottom: '2px solid ' + color + '50',
+          paddingBottom: 3, cursor: 'pointer', textShadow: '0 0 12px ' + color + '40',
           whiteSpace: 'nowrap',
         }
       }, content)
     );
   }
 
-  // Per-letter physics for links too
-  var linkW = content.length * charWidth;
-  var startX = sx - linkW / 2;
-  var letterElements = [];
+  // Near: per-word parting
+  var words = content.split(/(\s+)/);
+  var totalW = content.length * charW;
+  var cursorX = sx - totalW / 2;
+  var elements = [];
 
-  for (var ci = 0; ci < content.length; ci++) {
-    var ch = content[ci];
-    var letterX = startX + ci * charWidth + charWidth / 2;
-    var letterY = sy;
+  for (var wi = 0; wi < words.length; wi++) {
+    var word = words[wi];
+    if (!word) continue;
+    var wordW = word.length * charW;
+    var wordCX = cursorX + wordW / 2;
 
-    var ldx = letterX - playerSX;
-    var ldy = letterY - playerSY;
-    var lDist = Math.sqrt(ldx * ldx + ldy * ldy);
+    var wdx = wordCX - playerSX;
+    var wdy = sy - playerSY;
+    var wDist = Math.sqrt(wdx * wdx + wdy * wdy);
 
-    var letterRadius = 65;
-    var offX = 0, offY = 0, rot = 0, opacity = 1;
+    var offX = 0, offY = 0, opacity = 1;
 
-    if (lDist < letterRadius) {
-      var force = 1 - lDist / letterRadius;
-      force = force * force;
-      var lAngle = Math.atan2(ldy, ldx);
-      offX = Math.cos(lAngle) * force * 30;
-      offY = Math.sin(lAngle) * force * 25;
-      rot = (Math.random() - 0.5) * force * 6;
-      opacity = 0.5 + (1 - force) * 0.5;
+    if (wDist < interactRadius) {
+      var force = 1 - wDist / interactRadius;
+      force = force * force * force;
+      var pushAngle = Math.atan2(wdy, wdx);
+      offX = Math.cos(pushAngle) * force * 50 * 1.8;
+      offY = Math.sin(pushAngle) * force * 30;
+      opacity = 0.4 + (1 - force) * 0.6;
     }
 
-    letterElements.push(
-      React.createElement('span', {
-        key: ci,
-        style: {
-          display: 'inline-block',
-          position: 'absolute',
-          left: letterX + offX,
-          top: letterY + offY,
-          transform: 'translate(-50%,-50%) rotate(' + rot + 'deg)',
-          color: color,
-          fontSize: fontSize + 'px',
-          fontFamily: config.contentFont,
-          opacity: opacity,
-          textShadow: '0 0 ' + (12 + (1 - opacity) * 15) + 'px ' + color + '60',
-          pointerEvents: 'none',
-          userSelect: 'none',
-          whiteSpace: 'pre',
-        }
-      }, ch === ' ' ? '\u00A0' : ch)
-    );
+    if (word.trim() !== '') {
+      elements.push(
+        React.createElement('span', {
+          key: wi,
+          style: {
+            position: 'absolute', left: wordCX + offX, top: sy + offY,
+            transform: 'translate(-50%,-50%)',
+            color: color, fontSize: fontSize + 'px', fontFamily: config.contentFont,
+            opacity: opacity,
+            textShadow: opacity < 0.9
+              ? '0 0 ' + (15 + (1 - opacity) * 12) + 'px ' + color + '60'
+              : '0 0 12px ' + color + '40',
+            whiteSpace: 'pre', pointerEvents: 'none', userSelect: 'none',
+          }
+        }, word)
+      );
+    }
+    cursorX += wordW;
   }
 
   return React.createElement('div', {
     style: { position: 'absolute', left: 0, top: 0, width: '100%', height: '100%', pointerEvents: 'none' }
   },
-    letterElements,
-    // Clickable invisible link on top
+    elements,
+    // Invisible clickable link overlay
     React.createElement('a', {
       href: el.url, target: '_blank', rel: 'noopener noreferrer',
       onClick: function(e) { e.stopPropagation(); },
       style: {
         position: 'absolute',
-        left: sx - linkW / 2 - 10,
+        left: sx - totalW / 2 - 10,
         top: sy - fontSize / 2 - 5,
-        width: linkW + 20,
+        width: totalW + 20,
         height: fontSize + 10,
-        pointerEvents: 'auto',
-        cursor: 'pointer',
-        zIndex: 10,
+        pointerEvents: 'auto', cursor: 'pointer', zIndex: 10,
       }
     }),
-    // "Press SPACE" tooltip — not on mobile
+    // Tooltip
     !isMobile ? React.createElement('div', {
       style: {
-        position: 'absolute', left: sx, top: sy + fontSize / 2 + 15,
+        position: 'absolute', left: sx, top: sy + fontSize / 2 + 18,
         transform: 'translateX(-50%)',
         padding: '4px 12px', background: 'rgba(0,0,0,0.85)',
-        border: '1px solid ' + color + '40',
-        borderRadius: 4, fontSize: 10, color: '#bbb',
-        fontFamily: config.uiFont, whiteSpace: 'nowrap',
-        pointerEvents: 'none',
+        border: '1px solid ' + color + '40', borderRadius: 4,
+        fontSize: 10, color: '#bbb', fontFamily: config.uiFont,
+        whiteSpace: 'nowrap', pointerEvents: 'none',
       }
     }, 'Press SPACE to open') : null
   );
+}
+
+// =============================================================
+// TEXT WRAPPING HELPER — simulates word wrap
+// =============================================================
+
+function wrapText(text, maxWidth, charWidth) {
+  var paragraphs = text.split('\n');
+  var allLines = [];
+
+  for (var p = 0; p < paragraphs.length; p++) {
+    var para = paragraphs[p];
+    if (para === '') { allLines.push(''); continue; }
+
+    var words = para.split(' ');
+    var currentLine = '';
+
+    for (var w = 0; w < words.length; w++) {
+      var testLine = currentLine ? currentLine + ' ' + words[w] : words[w];
+      var testWidth = testLine.length * charWidth;
+
+      if (testWidth > maxWidth && currentLine) {
+        allLines.push(currentLine);
+        currentLine = words[w];
+      } else {
+        currentLine = testLine;
+      }
+    }
+    if (currentLine) allLines.push(currentLine);
+  }
+
+  return allLines;
 }
