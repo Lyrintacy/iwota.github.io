@@ -22,21 +22,21 @@ var config = {
   contactFormKey: 'a901a13b-f6a8-4b07-9775-b2a945019aae',
 
   // ---- COLORS ----
-  background: '#28232e',
-  floorCenter: '#1f1f2e',
-  floorMid: '#272733',
-  floorEdge: '#181822',
+  background: '#151524',
+  floorCenter: '#161515',
+  floorMid: '#0e0c0e',
+  floorEdge: '#000000',
 
   // Wall gradient (inner =a near floor, outer = far edge)
-  wallInner: '#18181f',
-  wallMidBright: '#404058',
-  wallMidDark: '#606078',
-  wallOuter: '#8b8098',
+  wallInner: '#5a424ec4',
+  wallMidBright: '#6b7675',
+  wallMidDark: '#535960',
+  wallOuter: '#41454cc4',
 
   // Character
-  headColor: '#eaeaf6',
-  bodyColor: '#d0d0e0',
-  legColor: '#b0b0c4',
+  headColor: '#f6eaea',
+  bodyColor: '#e0d0d0',
+  legColor: '#c4b0b0',
   eyeColor: '#111',
 
   // Grid
