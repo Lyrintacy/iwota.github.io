@@ -454,6 +454,7 @@ function ElementRenderer(props) {
   var sx = rX + el.x * rW;
   var sy = rY + el.y * rH;
 
+
   // Calculate avoidance offset from images
   var avoidX = 0, avoidY = 0;
   if (el.type === 'text' || el.type === 'link') {
@@ -481,9 +482,10 @@ function ElementRenderer(props) {
       el: el, sx: sx, sy: sy,
       playerPos: playerPos, rX: rX, rY: rY, rW: rW, rH: rH,
       sectionColor: sectionColor, showEditor: showEditor,
+      isMobile: isMobile,
     });
   }
-
+  
   if (el.type === 'image') {
     var imgDx = el.x - playerPos.x;
     var imgDy = el.y - playerPos.y;
@@ -535,6 +537,7 @@ function SplittableText(props) {
   var rX = props.rX, rY = props.rY, rW = props.rW, rH = props.rH;
   var sectionColor = props.sectionColor;
   var showEditor = props.showEditor;
+  var isMobile = props.isMobile;
 
   var fontSize = (el.fontSize || 1) * 16;
   var content = el.content || '';
@@ -548,7 +551,46 @@ function SplittableText(props) {
   var interactRadius = 90;
   var isNear = pDist < interactRadius + fontSize * 3 && !showEditor;
 
-  // When far away, render as normal text
+  // ---- MOBILE: simple push-away, no splitting ----
+  if (isMobile) {
+    var dx = sx - playerSX;
+    var dy = sy - playerSY;
+    var dist = Math.sqrt(dx * dx + dy * dy);
+    var mobileRadius = 80;
+    var offX = 0, offY = 0, opacity = 1;
+
+    if (dist < mobileRadius && dist > 1 && !showEditor) {
+      var force = 1 - dist / mobileRadius;
+      force = force * force;
+      var angle = Math.atan2(dy, dx);
+      offX = Math.cos(angle) * force * 30;
+      offY = Math.sin(angle) * force * 25;
+      opacity = 0.5 + (1 - force) * 0.5;
+    }
+
+    return React.createElement('div', {
+      style: {
+        position: 'absolute', left: sx + offX, top: sy + offY,
+        transform: 'translate(-50%,-50%)',
+        color: color,
+        fontSize: fontSize + 'px',
+        fontFamily: config.contentFont,
+        fontWeight: el.fontWeight || 'normal',
+        fontStyle: el.fontStyle || 'normal',
+        textAlign: 'center',
+        maxWidth: maxWidth + 'px',
+        lineHeight: 1.6,
+        userSelect: 'text', pointerEvents: 'auto', cursor: 'text',
+        textShadow: '0 0 8px ' + color + '25',
+        whiteSpace: 'pre-wrap',
+        wordBreak: 'break-word',
+        opacity: opacity,
+        transition: 'opacity 0.15s',
+      }
+    }, content);
+  }
+
+  // ---- DESKTOP: not near = normal text ----
   if (!isNear) {
     return React.createElement('div', {
       style: {
@@ -570,7 +612,7 @@ function SplittableText(props) {
     }, content);
   }
 
-  // Near — render per-word with displacement
+  // ---- DESKTOP: near = per-word parting ----
   var charW = fontSize * 0.58;
   var lineH = fontSize * 1.6;
   var lines = wrapText(content, maxWidth, charW);
@@ -592,27 +634,21 @@ function SplittableText(props) {
       var wordCX = cursorX + wordW / 2;
       var wordCY = lineY2;
 
-      // Distance from word center to player
       var wdx = wordCX - playerSX;
       var wdy = wordCY - playerSY;
       var wDist = Math.sqrt(wdx * wdx + wdy * wdy);
 
-      var offX = 0, offY = 0, opacity = 1;
+      var wOffX = 0, wOffY = 0, wOpacity = 1;
 
       if (wDist < interactRadius) {
-        var force = 1 - wDist / interactRadius;
-        force = force * force * force; // Cubic — very smooth, strong near center
+        var wForce = 1 - wDist / interactRadius;
+        wForce = wForce * wForce * wForce;
 
-        // Push word away from player — "parting" effect
-        // Mostly horizontal so text splits left/right
         var pushAngle = Math.atan2(wdy, wdx);
-        var horizBias = 1.8; // Push more horizontally
-        var pushX = Math.cos(pushAngle) * force * 55 * horizBias;
-        var pushY = Math.sin(pushAngle) * force * 35;
-
-        offX = pushX;
-        offY = pushY;
-        opacity = 0.35 + (1 - force) * 0.65;
+        var horizBias = 1.8;
+        wOffX = Math.cos(pushAngle) * wForce * 55 * horizBias;
+        wOffY = Math.sin(pushAngle) * wForce * 35;
+        wOpacity = 0.35 + (1 - wForce) * 0.65;
       }
 
       var isSpace = word.trim() === '';
@@ -623,22 +659,21 @@ function SplittableText(props) {
             key: li + '-' + wi,
             style: {
               position: 'absolute',
-              left: wordCX + offX,
-              top: wordCY + offY,
+              left: wordCX + wOffX,
+              top: wordCY + wOffY,
               transform: 'translate(-50%,-50%)',
               color: color,
               fontSize: fontSize + 'px',
               fontFamily: config.contentFont,
               fontWeight: el.fontWeight || 'normal',
               fontStyle: el.fontStyle || 'normal',
-              opacity: opacity,
-              textShadow: opacity < 0.9
-                ? '0 0 ' + (15 + (1 - opacity) * 15) + 'px ' + (sectionColor) + '50'
+              opacity: wOpacity,
+              textShadow: wOpacity < 0.9
+                ? '0 0 ' + (15 + (1 - wOpacity) * 15) + 'px ' + sectionColor + '50'
                 : '0 0 8px ' + color + '25',
               whiteSpace: 'pre',
               pointerEvents: 'none',
               userSelect: 'none',
-              transition: 'none',
               willChange: 'transform, opacity',
             }
           }, word)
@@ -653,7 +688,6 @@ function SplittableText(props) {
     style: { position: 'absolute', left: 0, top: 0, width: '100%', height: '100%', pointerEvents: 'none' }
   }, elements);
 }
-
 // =============================================================
 // SPLITTABLE LINK — same parting effect + clickable
 // =============================================================

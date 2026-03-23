@@ -27,7 +27,6 @@ export default function App() {
   var showMap = showMapState[0];
   var setShowMap = showMapState[1];
 
-  // Track window size
   useEffect(function() {
     var handleResize = function() {
       setIsMobile(window.innerWidth < 768);
@@ -36,7 +35,6 @@ export default function App() {
     return function() { window.removeEventListener('resize', handleResize); };
   }, []);
 
-  // Entry fade
   useEffect(function() {
     if (!hasEntered) {
       var start = Date.now();
@@ -50,7 +48,6 @@ export default function App() {
     }
   }, []);
 
-  // Touch handling for mobile scroll
   var touchStartRef = React.useRef(null);
 
   var handleTouchStart = useCallback(function(e) {
@@ -66,7 +63,6 @@ export default function App() {
     if (useStore.getState().isMapTransitioning) return;
 
     var dy = touchStartRef.current.y - e.touches[0].clientY;
-    // Swipe up = positive dy = scroll forward
     if (Math.abs(dy) > 3) {
       e.preventDefault();
       scrollMovePlayer(dy * 2.5);
@@ -152,16 +148,12 @@ export default function App() {
       overflow: 'hidden',
       fontFamily: config.contentFont,
     }}>
-      {/* Header */}
-      <Header isMobile={isMobile} />
+      <Header isMobile={isMobile} onMapToggle={function() { setShowMap(!showMap); }} showMap={showMap} />
 
-      {/* Main area */}
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden', position: 'relative' }}>
-        {/* Room */}
         <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
           <RoomView isMobile={isMobile} />
 
-          {/* Door fade */}
           {doorFadeOpacity > 0 && (
             <div style={{
               position: 'absolute', inset: 0,
@@ -170,7 +162,6 @@ export default function App() {
             }} />
           )}
 
-          {/* Map fade */}
           {mapFadeOpacity > 0 && (
             <div style={{
               position: 'absolute', inset: 0,
@@ -180,7 +171,6 @@ export default function App() {
             }} />
           )}
 
-          {/* Entry fade */}
           {entryFade > 0 && (
             <div style={{
               position: 'absolute', inset: 0,
@@ -190,7 +180,6 @@ export default function App() {
             }} />
           )}
 
-          {/* HUD - hide on mobile */}
           {!isMobile && (
             <div style={{
               position: 'absolute', bottom: 14, left: 14, zIndex: 50,
@@ -213,25 +202,6 @@ export default function App() {
             </div>
           )}
 
-          {/* Mobile map toggle button */}
-          {isMobile && (
-            <button
-              onClick={function() { setShowMap(!showMap); }}
-              style={{
-                position: 'absolute', bottom: 16, right: 16, zIndex: 300,
-                width: 44, height: 44, borderRadius: 22,
-                background: showMap ? 'rgba(99,102,241,0.3)' : 'rgba(0,0,0,0.5)',
-                border: '1px solid ' + (showMap ? 'rgba(99,102,241,0.5)' : 'rgba(255,255,255,0.12)'),
-                color: '#fff', fontSize: 18,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                backdropFilter: 'blur(8px)',
-              }}
-            >
-              {showMap ? '\u2715' : '\u2630'}
-            </button>
-          )}
-
-          {/* Mobile swipe hint */}
           {isMobile && !showMap && (
             <div style={{
               position: 'absolute', bottom: 16, left: 16, zIndex: 50,
@@ -247,7 +217,6 @@ export default function App() {
           )}
         </div>
 
-        {/* Map - desktop always visible, mobile toggleable */}
         {(!isMobile || showMap) && (
           <div style={{
             position: isMobile ? 'absolute' : 'relative',
@@ -258,7 +227,6 @@ export default function App() {
           </div>
         )}
 
-        {/* Mobile map backdrop */}
         {isMobile && showMap && (
           <div
             onClick={function() { setShowMap(false); }}
