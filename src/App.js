@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, useState } from 'react';
+import React, { useEffect, useCallback, useState, useRef } from 'react';
 import RoomView from './components/RoomView';
 import MapPanel from './components/MapPanel';
 import EditorPanel from './components/EditorPanel';
@@ -27,6 +27,10 @@ export default function App() {
   var showMap = showMapState[0];
   var setShowMap = showMapState[1];
 
+  // Track if touch is on map panel
+  var touchOnMapRef = useRef(false);
+  var touchStartRef = useRef(null);
+
   useEffect(function() {
     var handleResize = function() {
       setIsMobile(window.innerWidth < 768);
@@ -48,19 +52,38 @@ export default function App() {
     }
   }, []);
 
-  var touchStartRef = React.useRef(null);
-
   var handleTouchStart = useCallback(function(e) {
-    if (useStore.getState().mapHovered) return;
-    if (useStore.getState().showEditor) return;
-    touchStartRef.current = { y: e.touches[0].clientY, x: e.touches[0].clientX };
+    // Check if touch started on map, header, or modal
+    var target = e.target;
+    var isOnUI = false;
+    var node = target;
+    while (node) {
+      if (node.getAttribute && (
+        node.getAttribute('data-map-panel') === 'true' ||
+        node.getAttribute('data-header') === 'true' ||
+        node.getAttribute('data-modal') === 'true'
+      )) {
+        isOnUI = true;
+        break;
+      }
+      node = node.parentElement;
+    }
+
+    touchOnMapRef.current = isOnUI;
+
+    if (!isOnUI) {
+      if (useStore.getState().showEditor) return;
+      touchStartRef.current = { y: e.touches[0].clientY, x: e.touches[0].clientX };
+    }
   }, []);
 
   var handleTouchMove = useCallback(function(e) {
+    // If touch started on UI, don't move player
+    if (touchOnMapRef.current) return;
     if (!touchStartRef.current) return;
-    if (useStore.getState().mapHovered) return;
     if (useStore.getState().showEditor) return;
     if (useStore.getState().isMapTransitioning) return;
+    if (useStore.getState().doorCooldown) return;
 
     var dy = touchStartRef.current.y - e.touches[0].clientY;
     if (Math.abs(dy) > 3) {
@@ -72,6 +95,7 @@ export default function App() {
 
   var handleTouchEnd = useCallback(function() {
     touchStartRef.current = null;
+    touchOnMapRef.current = false;
   }, []);
 
   var handleKeyDown = useCallback(function(e) {
@@ -141,6 +165,19 @@ export default function App() {
     };
   }, [handleKeyDown, handleKeyUp, handleWheel, handleTouchStart, handleTouchMove, handleTouchEnd]);
 
+  // Close map after navigating on mobile
+  var handleMapNavigate = useCallback(function() {
+    if (isMobile) {
+      // Delay closing so the fade transition starts first
+      setTimeout(function() {
+        setShowMap(false);
+        // Reset touch state
+        touchStartRef.current = null;
+        touchOnMapRef.current = false;
+      }, 100);
+    }
+  }, [isMobile]);
+
   return (
     <div style={{
       width: '100vw', height: '100vh',
@@ -148,12 +185,22 @@ export default function App() {
       overflow: 'hidden',
       fontFamily: config.contentFont,
     }}>
-      <Header isMobile={isMobile} onMapToggle={function() { setShowMap(!showMap); }} showMap={showMap} />
+      {/* Header — always on top */}
+      <div data-header="true" style={{ position: 'relative', zIndex: 500, flexShrink: 0 }}>
+        <Header
+          isMobile={isMobile}
+          onMapToggle={function() { setShowMap(!showMap); }}
+          showMap={showMap}
+        />
+      </div>
 
+      {/* Main area */}
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden', position: 'relative' }}>
+        {/* Room */}
         <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
           <RoomView isMobile={isMobile} />
 
+          {/* Door fade */}
           {doorFadeOpacity > 0 && (
             <div style={{
               position: 'absolute', inset: 0,
@@ -162,6 +209,7 @@ export default function App() {
             }} />
           )}
 
+          {/* Map teleport fade */}
           {mapFadeOpacity > 0 && (
             <div style={{
               position: 'absolute', inset: 0,
@@ -171,6 +219,7 @@ export default function App() {
             }} />
           )}
 
+          {/* Entry fade */}
           {entryFade > 0 && (
             <div style={{
               position: 'absolute', inset: 0,
@@ -180,6 +229,7 @@ export default function App() {
             }} />
           )}
 
+          {/* HUD - desktop only */}
           {!isMobile && (
             <div style={{
               position: 'absolute', bottom: 14, left: 14, zIndex: 50,
@@ -202,6 +252,7 @@ export default function App() {
             </div>
           )}
 
+          {/* Mobile swipe hint */}
           {isMobile && !showMap && (
             <div style={{
               position: 'absolute', bottom: 16, left: 16, zIndex: 50,
@@ -217,18 +268,28 @@ export default function App() {
           )}
         </div>
 
+        {/* Map panel — desktop always, mobile when toggled */}
         {(!isMobile || showMap) && (
-          <div style={{
-            position: isMobile ? 'absolute' : 'relative',
-            right: 0, top: 0, bottom: 0,
-            zIndex: isMobile ? 400 : 200,
-          }}>
-            <MapPanel isMobile={isMobile} onClose={function() { setShowMap(false); }} />
+          <div
+            data-map-panel="true"
+            style={{
+              position: isMobile ? 'absolute' : 'relative',
+              right: 0, top: 0, bottom: 0,
+              zIndex: isMobile ? 400 : 200,
+            }}
+          >
+            <MapPanel
+              isMobile={isMobile}
+              onClose={function() { setShowMap(false); }}
+              onNavigate={handleMapNavigate}
+            />
           </div>
         )}
 
+        {/* Mobile map backdrop */}
         {isMobile && showMap && (
           <div
+            data-map-panel="true"
             onClick={function() { setShowMap(false); }}
             style={{
               position: 'absolute', inset: 0,

@@ -5,6 +5,7 @@ import config from '../config';
 export default function MapPanel(props) {
   var isMobile = props.isMobile;
   var onClose = props.onClose;
+  var onNavigate = props.onNavigate;
 
   var rooms = useStore(function(s) { return s.rooms; });
   var sections = useStore(function(s) { return s.sections; });
@@ -43,16 +44,21 @@ export default function MapPanel(props) {
 
   var handleRoomClick = function(ri) {
     navigateViaMap(ri);
-    if (isMobile && onClose) onClose();
+    // Tell parent we navigated (for mobile close)
+    if (onNavigate) onNavigate();
   };
 
   var panelWidth = isMobile ? 180 : 130;
 
   return (
     <div
-      onMouseEnter={function() { setMapHovered(true); }}
-      onMouseLeave={function() { setMapHovered(false); }}
+      data-map-panel="true"
+      onMouseEnter={function() { if (!isMobile) setMapHovered(true); }}
+      onMouseLeave={function() { if (!isMobile) setMapHovered(false); }}
       onWheel={function(e) { e.stopPropagation(); }}
+      onTouchStart={function(e) { e.stopPropagation(); }}
+      onTouchMove={function(e) { e.stopPropagation(); }}
+      onTouchEnd={function(e) { e.stopPropagation(); }}
       style={{
         width: panelWidth, minWidth: panelWidth, height: '100%',
         background: isMobile ? 'rgba(10,10,22,0.98)' : (mapHovered ? 'rgba(12,12,28,0.98)' : 'rgba(10,10,20,0.96)'),
@@ -60,13 +66,14 @@ export default function MapPanel(props) {
         display: 'flex', flexDirection: 'column',
         transition: 'all 0.25s', position: 'relative',
         overflow: 'visible',
+        touchAction: 'pan-y',
       }}
     >
       {/* Header */}
       <div style={{
         padding: '14px 10px', borderBottom: '1px solid rgba(255,255,255,0.06)',
         textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        gap: 8,
+        gap: 8, flexShrink: 0,
       }}>
         <div style={{
           fontSize: 10, color: 'rgba(255,255,255,0.45)',
@@ -77,6 +84,23 @@ export default function MapPanel(props) {
           fontSize: 8, color: 'rgba(255,255,255,0.2)',
           fontFamily: config.uiFont,
         }}>({rooms.length})</div>
+
+        {/* Close button — mobile only */}
+        {isMobile && (
+          <button
+            onClick={function() { if (onClose) onClose(); }}
+            style={{
+              position: 'absolute', right: 8, top: 10,
+              width: 28, height: 28, borderRadius: 14,
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              color: '#888', fontSize: 14,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
+          >
+            {'\u00D7'}
+          </button>
+        )}
       </div>
 
       {/* Nodes */}
@@ -84,6 +108,7 @@ export default function MapPanel(props) {
         flex: 1, overflowY: 'auto', overflowX: 'visible',
         padding: '22px 0', scrollbarWidth: 'none',
         WebkitOverflowScrolling: 'touch',
+        touchAction: 'pan-y',
       }}>
         <style>{'div::-webkit-scrollbar{width:0}'}</style>
 
@@ -178,7 +203,7 @@ export default function MapPanel(props) {
                     borderRadius: '50%', background: c, boxShadow: '0 0 8px ' + c,
                   }} /> : null}
 
-                  {/* Tooltip - only on desktop */}
+                  {/* Tooltip - desktop only */}
                   {hov && !isMobile ? (
                     <div style={{
                       position: 'fixed',
@@ -203,7 +228,7 @@ export default function MapPanel(props) {
 
       <div style={{
         padding: '10px', borderTop: '1px solid rgba(255,255,255,0.04)',
-        textAlign: 'center',
+        textAlign: 'center', flexShrink: 0,
       }}>
         <div style={{
           fontSize: 8, color: 'rgba(255,255,255,0.2)',
