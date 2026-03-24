@@ -28,6 +28,12 @@ export var defaultSections = [
     "name": "New Section",
     "color": "#888888",
     "gif": ""
+  },
+  {
+    "id": "section_1774382680242",
+    "name": "FaraFrog: Devil Game",
+    "color": "#ff4625",
+    "gif": "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExbG8xbmU2cHNmMmpvbDNvMmYwZXJmNGVtbGVoeGRjc3hnMGo3dnRhYyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/B9hanOflu8zfc86uiL/giphy.gif"
   }
 ];
 
@@ -112,6 +118,179 @@ export var defaultRooms = [
         "fontSize": 1.6,
         "color": "#6366f1",
         "content": "New text"
+      }
+    ]
+  },
+  {
+    "id": "room_1774382960404",
+    "section": "section_1774382680242",
+    "exitDirection": "top",
+    "elements": [
+      {
+        "id": "e_1774382960404",
+        "type": "text",
+        "content": "\nFara-Frog; Devil Game",
+        "x": 0.5,
+        "y": 0.1,
+        "fontSize": 1.8,
+        "color": "#ffffff",
+        "fontWeight": "bold"
+      },
+      {
+        "id": "el_1774383058047_5tea",
+        "type": "text",
+        "x": 0.5,
+        "y": 0.6,
+        "fontSize": 1.5,
+        "color": "#ff4625",
+        "content": "Simple procedural environment that gives a lot of fun and infinite gameplay"
+      },
+      {
+        "id": "el_1774383407520_4pb9",
+        "type": "link",
+        "x": 0.5,
+        "y": 0.875,
+        "fontSize": 1,
+        "color": "#e71212",
+        "content": "Itch.io Page",
+        "url": "https://oskarwota.itch.io/farafrog-devil-game"
+      },
+      {
+        "id": "el_1774384835942_sky3",
+        "type": "text",
+        "x": 0.5,
+        "y": 0.35,
+        "fontSize": 1,
+        "color": "#f4b075",
+        "content": "Team: Solo   Role: Designer   Developer Time: 1 Week   Engine: Unity"
+      },
+      {
+        "id": "el_1774385221525_iglt",
+        "type": "text",
+        "x": 0.5,
+        "y": 0.25,
+        "fontSize": 3,
+        "color": "#ffffff",
+        "content": "|"
+      },
+      {
+        "id": "el_1774385453094_x2r6",
+        "type": "text",
+        "x": 0.5,
+        "y": 0.45,
+        "fontSize": 3,
+        "color": "#ffffff",
+        "content": "|"
+      }
+    ]
+  },
+  {
+    "id": "room_1774383978068",
+    "section": "section_1774382680242",
+    "exitDirection": "left",
+    "elements": [
+      {
+        "id": "el_1774383986689_4clh",
+        "type": "text",
+        "x": 0.5,
+        "y": 0.5,
+        "fontSize": 1,
+        "color": "#ff4625",
+        "content": "Fara Frog is a week-long project, taking from the arcade genre, trying to make a very simple game be player infinitely. \nMaking the procedural generation part of the gameplay, focussing it on the obstacles that procedurally generate with the level. d\n\nCustom score system encourages completing the levels as fast as possible. Starting with the full points that decrease over time wanting to complete the level before point run out.\nThe start points for the level are also procedurally generated, scaling with the amount and type of specific obstacles on the map."
+      }
+    ]
+  },
+  {
+    "id": "room_1774384081972",
+    "section": "section_1774382680242",
+    "exitDirection": "top",
+    "elements": [
+      {
+        "id": "el_1774384089888_ykv8",
+        "type": "text",
+        "x": 0.5,
+        "y": 0.3,
+        "fontSize": 1,
+        "color": "#ff4625",
+        "content": "The Design Principle was the procedurally generated level, should have quite low restrictions, keeping its simplicity, which also makes some levels unfair. \nAdding some additional rules to ensure completion, like no shooting tiles within 3 tiles form the spawn (with projectiles having lifetime of 3) to have at least one spawn tile where player can evade all the projectiles. "
+      },
+      {
+        "id": "el_1774384223518_ev7l",
+        "type": "image",
+        "x": 0.5,
+        "y": 0.7,
+        "color": "#ff4625",
+        "src": "https://media.giphy.com/media/B9hanOflu8zfc86uiL/giphy.gif",
+        "width": 350,
+        "height": 200
+      }
+    ]
+  },
+  {
+    "id": "room_1774384285417",
+    "section": "section_1774382680242",
+    "exitDirection": "right",
+    "elements": [
+      {
+        "id": "e_1774384285417",
+        "type": "text",
+        "content": "Procedural Generation:",
+        "x": 0.5,
+        "y": 0.3,
+        "fontSize": 1.8,
+        "color": "#ffffff",
+        "fontWeight": "bold"
+      },
+      {
+        "id": "el_1774384304778_iqpf",
+        "type": "text",
+        "x": 0.5,
+        "y": 0.5,
+        "fontSize": 1,
+        "color": "#ff4625",
+        "content": "The level generation for this project is propably one of the simplest I've done, but also efectively entertaining and showcasing  quite a lot of diverse challanges.\n\nThe first step is Defining a path using a random walk, weighted to do random range of turns, and setting the first tile at the bottom as spawn tile and last one at the top as the final tile. "
+      }
+    ]
+  },
+  {
+    "id": "room_1774384373497",
+    "section": "section_1774382680242",
+    "exitDirection": "left",
+    "elements": [
+      {
+        "id": "el_1774384385448_90go",
+        "type": "text",
+        "x": 0.5,
+        "y": 0.5,
+        "fontSize": 1,
+        "color": "#ff4625",
+        "content": "Then filling the remaining space with the pool of 'obstacle tiles':\n\nRocket tile that picks one random floor tile and puts a marker there that shoots on trigger enter with a player. \nSpinning saw that then pick a random distance to spawn a saw and move it around the tile. \nSaw on the line that if has a pair and cna draw a line form one tile to the pair tile that crosses the path then creates a line with a saw traversing front and back. \nKey tiles, for each key tile it creates one lock on the final tile that opens on tiger enter with corresponding key. If key tile is not adjacent to the path tile then it despawns.  "
+      }
+    ]
+  },
+  {
+    "id": "room_1774384697272",
+    "section": "section_1774382680242",
+    "exitDirection": "top",
+    "elements": [
+      {
+        "id": "e_1774384697272",
+        "type": "text",
+        "content": "How to count score:",
+        "x": 0.5,
+        "y": 0.2,
+        "fontSize": 1.8,
+        "color": "#ffffff",
+        "fontWeight": "bold"
+      },
+      {
+        "id": "el_1774384721499_exft",
+        "type": "text",
+        "x": 0.5,
+        "y": 0.5,
+        "fontSize": 1,
+        "color": "#ff4625",
+        "content": "Time spent on a level will decrease the multiplier by 0.1 for each second from max x1.5 (apply this multiplies at the end)\n\nUnlocking each door gives +250\nIf rift in the level, then later on count +888\nFor each saw add +100\nFor each explosion triggered +50\n\nEach party hat gives you +1000 (this as only thing applied after the multiplier)"
       }
     ]
   },
