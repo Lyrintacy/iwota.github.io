@@ -716,32 +716,54 @@ export default function Editor({
                 </details>
               ))}
               <div className="add-buttons">
-                {["content", "projects", "contact", "ending"].map((type) => (
-                  <button
-                    key={type}
-                    onClick={() =>
-                      update({
-                        ...current,
-                        sections: [
-                          ...current.sections,
-                          {
-                            id: uid("section"),
-                            type,
-                            title: "New section",
-                            eyebrow: "FIELD NOTES",
-                            intro: "",
-                            tocImage: "",
-                            blocks:
-                              type === "content" ? [newBlock("text")] : [],
-                            ...(type === "projects" ? { projectIds: [] } : {}),
-                          },
-                        ],
-                      })
-                    }
-                  >
-                    + {label(type)}
-                  </button>
-                ))}
+                {["content", "projects", "contact", "ending", "scene"].map(
+                  (type) => (
+                    <button
+                      key={type}
+                      onClick={() =>
+                        update({
+                          ...current,
+                          sections: [
+                            ...current.sections,
+                            {
+                              id: uid("section"),
+                              type,
+                              title: "New section",
+                              eyebrow: "FIELD NOTES",
+                              intro: "",
+                              tocImage: "",
+                              blocks:
+                                type === "content" ? [newBlock("text")] : [],
+                              ...(type === "projects"
+                                ? { projectIds: [] }
+                                : {}),
+                              ...(type === "scene"
+                                ? {
+                                    scene: {
+                                      background: "primary",
+                                      minHeight: 900,
+                                      borders: {
+                                        enabled: true,
+                                        left: "",
+                                        right: "",
+                                        width: 140,
+                                        mobileWidth: 48,
+                                        speed: 0.5,
+                                        leftDirection: "up",
+                                        rightDirection: "down",
+                                      },
+                                    },
+                                  }
+                                : {}),
+                            },
+                          ],
+                        })
+                      }
+                    >
+                      + {label(type)}
+                    </button>
+                  ),
+                )}
               </div>
               {scope !== "main" && (
                 <button

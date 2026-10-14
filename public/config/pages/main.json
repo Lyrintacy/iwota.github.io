@@ -2,22 +2,49 @@
   "id": "main",
   "title": "The field guide",
   "theme": {},
-  "visuals": {},
+  "visuals": {
+    "hero": "images/profile.JPEG",
+    "roof": "images/ui/Roof.png",
+    "leftBorder": "images/ui/LeftBorder.png",
+    "rightBorder": "images/ui/RightBorder.png"
+  },
   "hero": {
     "eyebrow": "A FIELD GUIDE TO PLAYFUL WORLDS",
     "firstName": "OSKAR",
     "lastName": "WOTA",
     "subtitle": "Game designer. Developer.\nEnthusiast of the wonderfully strange.",
-    "description": "I turn curious ideas into worlds worth getting lost in.\nCome on in. There\u2019s plenty to explore.",
+    "description": "I turn curious ideas into worlds worth getting lost in.\nCome on in. There’s plenty to explore.",
     "button": "Explore my work",
     "note": "SCROLL TO VENTURE FURTHER",
-    "artLabel": "FIG. 001 \u2014 THE POINT OF ENTRY",
+    "artLabel": "FIG. 001 — THE POINT OF ENTRY",
     "artAlt": "A hand-drawn stone portal on a floating island, with a tiny wanderer climbing toward a strange new world",
-    "artNote": "there\u2019s a whole world\non the other side.",
+    "artNote": "there’s a whole world\non the other side.",
     "artCaption": "A LITTLE STRANGE. A LOT OF POSSIBILITY.",
-    "roofNote": "THE GOOD STUFF IS JUST BELOW"
+    "roofNote": "THE GOOD STUFF IS JUST BELOW",
+    "artMode": "photo"
   },
   "sections": [
+    {
+      "id": "stage",
+      "type": "scene",
+      "title": "The stage",
+      "eyebrow": "01 / BLANK FOR NOW",
+      "scene": {
+        "background": "primary",
+        "minHeight": 900,
+        "borders": {
+          "enabled": true,
+          "left": "",
+          "right": "",
+          "width": 140,
+          "mobileWidth": 48,
+          "speed": 0.5,
+          "leftDirection": "up",
+          "rightDirection": "down"
+        }
+      },
+      "blocks": []
+    },
     {
       "id": "about",
       "type": "content",
@@ -30,7 +57,7 @@
           "id": "about-copy",
           "type": "text",
           "mode": "paragraph",
-          "text": "Hey, I\u2019m **Oskar**. I build experiences that live between **art and code** \u2014 with a soft spot for playful systems, procedural worlds, and the little details that make a game feel alive."
+          "text": "Hey, I’m **Oskar**. I build experiences that live between **art and code** — with a soft spot for playful systems, procedural worlds, and the little details that make a game feel alive."
         },
         {
           "id": "about-copy-2",
@@ -68,7 +95,7 @@
       "title": "Inside the workshop",
       "eyebrow": "03 / HOW I THINK & MAKE",
       "tocImage": "art/nebula.svg",
-      "intro": "Good games start\nwith \u201cwhat if?\u201d",
+      "intro": "Good games start\nwith “what if?”",
       "blocks": [
         {
           "id": "process-text",
@@ -80,7 +107,7 @@
           "id": "process-list",
           "type": "text",
           "mode": "pointed",
-          "text": "**Explore** \u2014 find the feeling before the feature list.\n**Prototype** \u2014 turn the question into something playable.\n**Iterate** \u2014 let the game surprise you."
+          "text": "**Explore** — find the feeling before the feature list.\n**Prototype** — turn the question into something playable.\n**Iterate** — let the game surprise you."
         },
         {
           "id": "tools",

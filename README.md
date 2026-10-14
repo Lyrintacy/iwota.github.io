@@ -31,6 +31,7 @@ public/config/
     soundscape.json      # original demo content, explicitly labeled
 public/art/              # original replaceable vector illustrations
 public/images/           # original supplied photographs, GIF and game screenshot
+public/images/ui/        # drop Roof.png, LeftBorder.png, RightBorder.png here (see README.txt)
 src/components/          # chrome, content, portals, contact and editor
 src/lib/                 # configuration validation, grid layout, export, hooks, art
 src/data/                # preserved old content for reference; not loaded by the new site

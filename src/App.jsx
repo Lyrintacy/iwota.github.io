@@ -18,6 +18,7 @@ import {
 import { ContentSection } from "./components/Content.jsx";
 import ProjectGrid from "./components/ProjectGrid.jsx";
 import Contact from "./components/Contact.jsx";
+import { Scene } from "./components/Scene.jsx";
 const Editor = lazy(() => import("./components/Editor.jsx"));
 const route = () =>
   window.location.hash.replace(/^#\/?/, "").split("/")[0] || "main";
@@ -114,12 +115,10 @@ function Portfolio({ initial }) {
   }, [pageId]);
   const jump = useCallback(
     (id) => {
-      document
-        .getElementById(id)
-        ?.scrollIntoView({
-          behavior: reduced ? "instant" : "smooth",
-          block: "start",
-        });
+      document.getElementById(id)?.scrollIntoView({
+        behavior: reduced ? "instant" : "smooth",
+        block: "start",
+      });
       window.history.replaceState(null, "", `#/${pageId}/${id}`);
     },
     [pageId, reduced],
@@ -197,13 +196,15 @@ function Portfolio({ initial }) {
         onClose={() => setContentsOpen(false)}
         onJump={jump}
       />
-      <Borders
-        global={global}
-        visuals={visuals}
-        startRef={world}
-        reduced={reduced}
-        pageId={pageId}
-      />
+      {global.layout.sharedBorders && (
+        <Borders
+          global={global}
+          visuals={visuals}
+          startRef={world}
+          reduced={reduced}
+          pageId={pageId}
+        />
+      )}
       <main tabIndex={-1}>
         {pageId === "main" ? (
           <>
@@ -241,7 +242,9 @@ function Portfolio({ initial }) {
                   <span>↘</span>
                 </button>
               </div>
-              <div className="hero-art">
+              <div
+                className={`hero-art ${page.hero.artMode === "photo" ? "is-photo" : ""}`}
+              >
                 <span className="art-coordinate">
                   {page.hero.artLabel || ""}
                 </span>
@@ -369,6 +372,13 @@ function Portfolio({ initial }) {
                   </button>
                 </div>
               </section>
+            ) : section.type === "scene" ? (
+              <Scene
+                key={section.id}
+                section={section}
+                visuals={visuals}
+                reduced={reduced}
+              />
             ) : (
               <ContentSection
                 key={section.id}

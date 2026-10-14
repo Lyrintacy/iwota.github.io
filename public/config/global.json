@@ -11,6 +11,7 @@
   "theme": {
     "primary": "#151814",
     "secondary": "#20251d",
+    "tertiary": "#c3adf2",
     "accent": "#d5ed81",
     "text": "#eeeee3",
     "muted": "#a5ab9c",
@@ -28,7 +29,8 @@
     "mobileBorderWidth": 32,
     "borderSpeed": 0.28,
     "gridBreakpoint": 850,
-    "headerCompactHeight": 76
+    "headerCompactHeight": 76,
+    "sharedBorders": false
   },
   "visuals": {
     "hero": "art/hero.svg",
@@ -70,6 +72,6 @@
     "accessKey": "a901a13b-f6a8-4b07-9775-b2a945019aae",
     "subject": "A new message from your portfolio",
     "heading": "Got a world in mind?",
-    "text": "A strange idea, a new adventure, or just a hello. I\u2019d love to hear it."
+    "text": "A strange idea, a new adventure, or just a hello. I’d love to hear it."
   }
 }

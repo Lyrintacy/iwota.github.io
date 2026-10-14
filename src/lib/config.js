@@ -22,6 +22,7 @@ const color = text.regex(/^#[0-9a-f]{6}$/i, "Use a six-digit hex color");
 const theme = z.object({
   primary: color,
   secondary: color,
+  tertiary: color,
   accent: color,
   text: color,
   muted: color,
@@ -47,6 +48,21 @@ const insets = z.tuple([
   z.number().min(0),
   z.number().min(0),
 ]);
+const sceneBorders = z.object({
+  enabled: z.boolean(),
+  left: url,
+  right: url,
+  width: z.number().min(0).max(600),
+  mobileWidth: z.number().min(0).max(300),
+  speed: z.number().min(0).max(3),
+  leftDirection: z.enum(["up", "down"]),
+  rightDirection: z.enum(["up", "down"]),
+});
+const scene = z.object({
+  background: z.enum(["primary", "secondary", "tertiary"]),
+  minHeight: z.number().min(0).max(4000),
+  borders: sceneBorders,
+});
 const block = z
   .object({
     id,
@@ -84,12 +100,13 @@ const block = z
 const section = z
   .object({
     id,
-    type: z.enum(["content", "projects", "contact", "ending"]),
+    type: z.enum(["content", "projects", "contact", "ending", "scene"]),
     title: text,
     eyebrow: text.optional(),
     intro: text.optional(),
     tocImage: url.optional(),
     projectIds: z.array(id).optional(),
+    scene: scene.optional(),
     blocks: z.array(block),
   })
   .strict();
@@ -115,6 +132,7 @@ export const pageSchema = z
         artNote: text.optional(),
         artCaption: text.optional(),
         roofNote: text.optional(),
+        artMode: z.enum(["illustration", "photo"]).optional(),
       })
       .optional(),
     project: z
@@ -158,6 +176,7 @@ export const globalSchema = z
       borderSpeed: z.number().min(0).max(2),
       gridBreakpoint: z.number().min(600).max(1600),
       headerCompactHeight: z.number().min(64).max(130),
+      sharedBorders: z.boolean(),
     }),
     visuals,
     motion: z.object({

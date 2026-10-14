@@ -89,6 +89,9 @@ The array order is the page order and contents-rail order. The main hero is the 
 - **`projects`**: `title`, `intro`, `eyebrow`, `projectIds`, `blocks: []`. Renders interactive portals.
 - **`contact`**: `title`, `eyebrow`, `blocks: []`. Renders the global contact form over the high-priority ending artwork.
 - **`ending`**: `title`, `eyebrow`, `blocks: []`. Fades to black and shows the return-to-main action above the ending illustration.
+- **`scene`**: `title`, `eyebrow`, `blocks`, plus a `scene` object: `background` (`primary`/`secondary`/`tertiary` palette token), `minHeight` (px), and `borders` `{ enabled, left, right, width, mobileWidth, speed, leftDirection, rightDirection }`. Empty `left`/`right` inherit `visuals.leftBorder`/`rightBorder`. Two long PNG borders repeat vertically and scroll: the left moves `up` and the right moves `down` while scrolling down, and both reverse when scrolling up. Blocks are not rendered yet; the stage is blank by design.
+
+Palette tokens are now `primary`, `secondary`, `tertiary`, `accent`, `text`, `muted`, and `line`. The hero name uses `tertiary` with `accent` underlines. `hero.artMode` may be `illustration` (default) or `photo`. `layout.sharedBorders` controls the old page-wide border overlay; it is off in the current design, since the scene owns its borders.
 
 Project/contact/ending sections use their dedicated renderer, not arbitrary content blocks. Put additional text/media in an adjacent content section.
 
