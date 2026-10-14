@@ -1,21 +1,32 @@
 {
-  "name": "room-portfolio",
-  "version": "1.0.0",
+  "name": "iwota-field-guide",
+  "version": "2.0.0",
   "private": true,
   "homepage": ".",
   "dependencies": {
+    "@fontsource/barlow-condensed": "^5.3.0",
+    "@fontsource/space-grotesk": "^5.3.0",
+    "@fontsource/space-mono": "^5.3.0",
+    "jszip": "^3.10.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-scripts": "5.0.1",
-    "zustand": "^4.4.7",
-    "uuid": "^9.0.0"
+    "zod": "^3.25.76"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build"
+    "start": "vite --host 0.0.0.0",
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "test": "node --test tests/config.test.js",
+    "test:e2e": "playwright test",
+    "package:itch": "npm run build && node scripts/package-itch.js"
   },
-  "browserslist": {
-    "production": [">0.2%", "not dead", "not op_mini all"],
-    "development": ["last 1 chrome version"]
-  }
+  "devDependencies": {
+    "@playwright/test": "^1.64.0",
+    "@sparticuz/chromium": "^153.0.0",
+    "@vitejs/plugin-react": "^4.7.0",
+    "prettier": "^3.9.10",
+    "vite": "^6.4.4"
+  },
+  "type": "module"
 }

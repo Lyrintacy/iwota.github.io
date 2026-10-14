@@ -1,0 +1,75 @@
+{
+  "version": 1,
+  "identity": {
+    "name": "Oskar Wota",
+    "monogram": "OW",
+    "role": "Game designer & developer",
+    "email": "oskar@iwota.com",
+    "availability": "Always curious. Always creating.",
+    "location": "Somewhere between art & code"
+  },
+  "theme": {
+    "primary": "#151814",
+    "secondary": "#20251d",
+    "accent": "#d5ed81",
+    "text": "#eeeee3",
+    "muted": "#a5ab9c",
+    "line": "#373d30"
+  },
+  "fonts": {
+    "display": "Barlow Condensed",
+    "body": "Space Grotesk",
+    "mono": "Space Mono"
+  },
+  "layout": {
+    "contentWidth": 1100,
+    "mediaOffset": 100,
+    "borderWidth": 95,
+    "mobileBorderWidth": 32,
+    "borderSpeed": 0.28,
+    "gridBreakpoint": 850,
+    "headerCompactHeight": 76
+  },
+  "visuals": {
+    "hero": "art/hero.svg",
+    "roof": "art/roof.svg",
+    "leftBorder": "art/border.svg",
+    "rightBorder": "art/border.svg",
+    "ending": "art/ending.svg",
+    "portal": "art/portal.svg",
+    "cardFrame": "art/card-frame.svg"
+  },
+  "motion": {
+    "enabled": true,
+    "duration": 850,
+    "tilt": 9,
+    "deviceTilt": true,
+    "effects": {
+      "shake": true,
+      "flash": true,
+      "wobble": false
+    }
+  },
+  "featured": ["farafrog", "nebula", "soundscape"],
+  "socials": [
+    {
+      "label": "itch.io",
+      "url": "https://oskarwota.itch.io"
+    },
+    {
+      "label": "LinkedIn",
+      "url": ""
+    },
+    {
+      "label": "CV",
+      "url": ""
+    }
+  ],
+  "contact": {
+    "endpoint": "https://api.web3forms.com/submit",
+    "accessKey": "a901a13b-f6a8-4b07-9775-b2a945019aae",
+    "subject": "A new message from your portfolio",
+    "heading": "Got a world in mind?",
+    "text": "A strange idea, a new adventure, or just a hello. I\u2019d love to hear it."
+  }
+}

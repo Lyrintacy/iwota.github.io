@@ -1,0 +1,82 @@
+{
+  "id": "soundscape",
+  "title": "SoundScape",
+  "subtitle": "Sound becomes landscape",
+  "demo": true,
+  "theme": {
+    "accent": "#edae88"
+  },
+  "visuals": {},
+  "project": {
+    "index": 3,
+    "team": "Not specified",
+    "timeframe": "Not specified",
+    "engine": "Web Audio",
+    "role": "Demo content",
+    "thumbnail": "art/soundscape.svg",
+    "preview": "",
+    "description": "An experiment at the intersection of audio and generative terrain. Retained demo content, ready for your work.",
+    "url": "",
+    "tags": ["Demo project", "Web Audio"],
+    "effects": {
+      "shake": true,
+      "flash": true,
+      "wobble": false
+    },
+    "cardSlice": [24, 24, 24, 24],
+    "headerEffects": {
+      "shake": true,
+      "flash": false,
+      "wobble": false
+    }
+  },
+  "sections": [
+    {
+      "id": "overview",
+      "type": "content",
+      "title": "Sound becomes landscape",
+      "eyebrow": "01 / PROJECT NOTES",
+      "tocImage": "art/soundscape.svg",
+      "intro": "A space for your\nnext adventure.",
+      "blocks": [
+        {
+          "id": "demo-notice",
+          "type": "text",
+          "mode": "paragraph",
+          "text": "**Demo project from the original site.** This is a template, not a verified shipped project. Replace the title, team details, media, and notes in the F2 editor or in this tab\u2019s JSON file."
+        },
+        {
+          "id": "original",
+          "type": "text",
+          "mode": "paragraph",
+          "text": "Audio visualization that transforms music into 3D terrain. Web Audio API meets procedural generation."
+        },
+        {
+          "id": "art",
+          "type": "media",
+          "kind": "image",
+          "src": "art/soundscape.svg",
+          "alt": "Decorative concept illustration for this demo project",
+          "caption": "Placeholder illustration \u2014 replace with your project media.",
+          "maxWidth": 800,
+          "maxHeight": 500,
+          "align": "center",
+          "margin": [24, 0, 24, 0],
+          "slice": {
+            "mode": "none",
+            "insets": [24, 24, 24, 24],
+            "repeat": "stretch"
+          }
+        }
+      ]
+    },
+    {
+      "id": "return",
+      "type": "ending",
+      "title": "Until the next adventure.",
+      "eyebrow": "END OF EXPEDITION",
+      "tocImage": "art/portal.svg",
+      "blocks": []
+    }
+  ]
+}

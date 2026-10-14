@@ -1,0 +1,165 @@
+{
+  "id": "farafrog",
+  "title": "FaraFrog",
+  "subtitle": "Devil Game",
+  "demo": false,
+  "theme": {
+    "accent": "#d5ed81"
+  },
+  "visuals": {},
+  "project": {
+    "index": 1,
+    "team": "Solo",
+    "timeframe": "1 week",
+    "engine": "Unity",
+    "role": "Designer & developer",
+    "thumbnail": "images/Screenshot 2026-03-03 150906.png",
+    "preview": "images/FaraFrogGifPortfolio.gif",
+    "description": "A tiny frog. An unfair world. One more try. Procedurally generated arcade chaos, built in a week.",
+    "url": "https://oskarwota.itch.io/farafrog-devil-game",
+    "tags": ["Arcade", "Procedural", "Solo project"],
+    "effects": {
+      "shake": true,
+      "flash": true,
+      "wobble": false
+    },
+    "cardSlice": [24, 24, 24, 24],
+    "headerEffects": {
+      "shake": true,
+      "flash": false,
+      "wobble": false
+    }
+  },
+  "sections": [
+    {
+      "id": "overview",
+      "type": "content",
+      "title": "Simple rules. Infinite trouble.",
+      "eyebrow": "01 / THE IDEA",
+      "tocImage": "images/Screenshot 2026-03-03 150906.png",
+      "intro": "An arcade world\nthat won\u2019t sit still.",
+      "blocks": [
+        {
+          "id": "summary",
+          "type": "text",
+          "mode": "paragraph",
+          "text": "**FaraFrog: Devil Game** is a week-long project built around a simple question: how much variety can you get from a few procedural rules? The obstacles change with every level. The goal stays simple: get through it, fast."
+        },
+        {
+          "id": "gameplay",
+          "type": "media",
+          "kind": "image",
+          "src": "images/FaraFrogGifPortfolio.gif",
+          "alt": "FaraFrog animated title screen with the frog and Devil Game logo",
+          "caption": "FaraFrog: Devil Game \u2014 the original title-screen animation.",
+          "maxWidth": 760,
+          "maxHeight": 480,
+          "align": "stretch",
+          "margin": [24, 0, 24, 0],
+          "slice": {
+            "mode": "none",
+            "insets": [24, 24, 24, 24],
+            "repeat": "stretch"
+          },
+          "effects": {
+            "shake": false,
+            "flash": false,
+            "wobble": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "generation",
+      "type": "content",
+      "title": "Making room for the unexpected",
+      "eyebrow": "02 / PROCEDURAL GENERATION",
+      "tocImage": "images/FaraFrogGifPortfolio.gif",
+      "intro": "A random walk.\nA very real challenge.",
+      "blocks": [
+        {
+          "id": "generation-header",
+          "type": "text",
+          "mode": "big",
+          "text": "First, find a path."
+        },
+        {
+          "id": "generation-text",
+          "type": "text",
+          "mode": "paragraph",
+          "text": "Level generation starts with a **weighted random walk**, with a random range of turns. The first tile at the bottom becomes the spawn; the last tile at the top becomes the exit. The remaining space is filled from a pool of obstacle tiles."
+        },
+        {
+          "id": "obstacles",
+          "type": "text",
+          "mode": "pointed",
+          "text": "**Rocket tiles** pick a random floor tile, place a marker, and fire when the player triggers it.\n**Spinning saws** orbit their tile at a randomly chosen distance.\n**Paired saw tiles** create a traversing saw when a line between them crosses the path.\n**Keys and locks** add a lock at the exit for each key. Keys that are not adjacent to the path are removed."
+        },
+        {
+          "id": "fairness",
+          "type": "text",
+          "mode": "paragraph",
+          "text": "The rules deliberately leave room for difficult, sometimes unfair levels. One important safeguard: no shooting tiles within three tiles of spawn, so there is at least one safe place to evade the projectiles."
+        },
+        {
+          "id": "obstacle-preview",
+          "type": "media",
+          "kind": "image",
+          "src": "images/Screenshot 2026-03-03 150906.png",
+          "alt": "FaraFrog level showing a narrow path, saws, projectile tiles and the player frog",
+          "caption": "The generated path and obstacle tiles in a playable level.",
+          "maxWidth": 420,
+          "maxHeight": 850,
+          "align": "center",
+          "margin": [32, 0, 24, 0],
+          "slice": {
+            "mode": "none",
+            "insets": [24, 24, 24, 24],
+            "repeat": "stretch"
+          },
+          "effects": {
+            "shake": false,
+            "flash": false,
+            "wobble": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "scoring",
+      "type": "content",
+      "title": "A reason to go again",
+      "eyebrow": "03 / SCORING & MOMENTUM",
+      "tocImage": "images/Screenshot 2026-03-03 150906.png",
+      "intro": "Keep moving.\nKeep the multiplier.",
+      "blocks": [
+        {
+          "id": "score-description",
+          "type": "text",
+          "mode": "paragraph",
+          "text": "The score encourages fast completion. The multiplier starts at **\u00d71.5** and decreases by **0.1 each second**. Starting points scale with the number and type of obstacles."
+        },
+        {
+          "id": "score-points",
+          "type": "text",
+          "mode": "pointed",
+          "text": "Unlock a door: **+250**\nA rift in the level: **+888**\nEach saw: **+100**\nEach triggered explosion: **+50**\nParty hats: **+1,000**, applied after the multiplier"
+        },
+        {
+          "id": "play",
+          "type": "text",
+          "mode": "paragraph",
+          "text": "[Play FaraFrog on itch.io \u2197](https://oskarwota.itch.io/farafrog-devil-game)"
+        }
+      ]
+    },
+    {
+      "id": "return",
+      "type": "ending",
+      "title": "Until the next adventure.",
+      "eyebrow": "END OF EXPEDITION",
+      "tocImage": "art/portal.svg",
+      "blocks": []
+    }
+  ]
+}

@@ -21,3 +21,9 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Local tools and test output
+.venv/
+/test-results/
+/playwright-report/
+/artifacts/

@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "global": "global.json",
+  "pages": [
+    "pages/main.json",
+    "pages/farafrog.json",
+    "pages/nebula.json",
+    "pages/soundscape.json"
+  ]
+}
