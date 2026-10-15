@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "palette": [
+    "#ffffff",
+    "#f3f1ec",
+    "#c3adf2",
+    "#d5ed81",
+    "#151814",
+    "#6b6f66",
+    "#373d30"
+  ],
+  "roles": {
+    "background": 1,
+    "text": 5,
+    "secondary": 6,
+    "highlight": 3
+  }
+}
