@@ -2,11 +2,15 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   ANCHORS,
   COLORS,
+  DEFAULT_TEXT,
   ROLES,
   SIZE_UNITS,
   TYPES,
   UNITS,
+  formatAt,
+  mediaUrl,
   newItem,
+  toggleFormat,
   uid,
 } from "../lib/model.js";
 
@@ -18,6 +22,7 @@ const PIVOTS = [
   [0, 50], [50, 50], [100, 50],
   [0, 100], [50, 100], [100, 100],
 ];
+const TEXT_SIZE_LABELS = { body: "Body text", h1: "Heading 1", h2: "Heading 2", h3: "Heading 3" };
 
 function download(name, text) {
   const url = URL.createObjectURL(new Blob([text], { type: "application/json" }));
@@ -37,15 +42,39 @@ function Field({ label, children }) {
   );
 }
 
-function NumberField({ label, value, onChange, step = 1 }) {
+const parseNumber = (t) => (t.trim() === "" || t === "-" ? NaN : Number(t));
+
+// Free typing (the field can be empty while editing). The − button adds or
+// removes the minus sign at the start. Only valid numbers reach the config.
+function NumberField({ label, value, onChange }) {
+  const [text, setText] = useState(String(value ?? 0));
+  useEffect(() => {
+    if (parseNumber(text) !== value) setText(String(value ?? 0));
+  }, [value]);
+  const update = (t) => {
+    setText(t);
+    const n = parseNumber(t);
+    if (!Number.isNaN(n)) onChange(n);
+  };
   return (
     <Field label={label}>
-      <input
-        type="number"
-        step={step}
-        value={value ?? 0}
-        onChange={(e) => onChange(Number(e.target.value))}
-      />
+      <span className="num">
+        <input
+          type="text"
+          inputMode="decimal"
+          value={text}
+          onChange={(e) => update(e.target.value)}
+          onBlur={() => setText(String(value ?? 0))}
+        />
+        <button
+          type="button"
+          aria-label="Toggle minus sign"
+          title="Add or remove the minus sign"
+          onClick={() => update(text.startsWith("-") ? text.slice(1) : `-${text}`)}
+        >
+          −
+        </button>
+      </span>
     </Field>
   );
 }
@@ -123,42 +152,61 @@ function AxisFields({ title, axisValue = {}, labels, onChange }) {
   );
 }
 
-function TextEditor({ item, onChange }) {
+const FORMATS = [
+  ["bold", "Bold", (f) => f.bold],
+  ["italic", "Italic", (f) => f.italic],
+  ["s", "Secondary", (f) => f.colour === "secondary"],
+  ["h", "Highlight", (f) => f.colour === "highlight"],
+];
+
+function TextEditor({ item, onChange, setStatus }) {
   const ref = useRef(null);
-  // Wraps the selected text in markup, then restores the selection.
-  const wrap = (open, close) => {
+  const [sel, setSel] = useState({ s: 0, e: 0 });
+  const flags = formatAt(item.text, sel.s, sel.e);
+  const track = (el) => setSel({ s: el.selectionStart, e: el.selectionEnd });
+
+  // Press once to apply to the selection, press again to remove it.
+  const apply = (kind) => {
     const el = ref.current;
-    const { selectionStart: s, selectionEnd: e, value } = el;
-    const inner = value.slice(s, e) || "text";
-    onChange({ text: value.slice(0, s) + open + inner + close + value.slice(e) });
-    requestAnimationFrame(() => {
-      el.focus();
-      el.setSelectionRange(s + open.length, s + open.length + inner.length);
-    });
+    const r = toggleFormat(item.text, el.selectionStart, el.selectionEnd, kind);
+    if (!r) {
+      setStatus("Select some text first, then press a format button.");
+      return;
+    }
+    setStatus("");
+    onChange({ text: r.text });
+    setSel({ s: r.s, e: r.e });
+    requestAnimationFrame(() => el.setSelectionRange(r.s, r.e));
   };
-  const tools = [
-    ["Bold", "**", "**"],
-    ["Italic", "*", "*"],
-    ["Bold italic", "***", "***"],
-    ["Normal", "{n:", "}"],
-    ["Secondary", "{s:", "}"],
-    ["Highlight", "{h:", "}"],
-  ];
+
   return (
     <>
       <div className="toolbar">
-        {tools.map(([label, open, close]) => (
-          <button key={label} type="button" onClick={() => wrap(open, close)}>
+        {FORMATS.map(([kind, label, on]) => (
+          <button
+            key={kind}
+            type="button"
+            className={on(flags) ? "on" : ""}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => apply(kind)}
+          >
             {label}
           </button>
         ))}
+        <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => apply("n")}>
+          Clear colour
+        </button>
       </div>
-      <Field label="Text (select words, then press a button)">
+      <Field label="Text (select words, then press a format button)">
         <textarea
           ref={ref}
           rows={5}
           value={item.text}
-          onChange={(e) => onChange({ text: e.target.value })}
+          onChange={(e) => {
+            onChange({ text: e.target.value });
+            track(e.target);
+          }}
+          onSelect={(e) => track(e.target)}
         />
       </Field>
       <Select
@@ -183,6 +231,20 @@ function TextEditor({ item, onChange }) {
   );
 }
 
+function FilePath({ label, value, type, onChange, placeholder }) {
+  const url = mediaUrl({ type, file: value });
+  return (
+    <>
+      <Field label={label}>
+        <input placeholder={placeholder} value={value} onChange={(e) => onChange(e.target.value)} />
+      </Field>
+      <p className="hint">
+        {url ? <>Loads from <code>{url}</code></> : "Type folder/name, for example 0/profile."}
+      </p>
+    </>
+  );
+}
+
 export function Editor({
   site,
   page,
@@ -195,6 +257,7 @@ export function Editor({
   setSelectedId,
 }) {
   const [tab, setTab] = useState("page");
+  const [status, setStatus] = useState("");
   const [copied, setCopied] = useState("");
   const index = page.items.findIndex((i) => i.id === selectedId);
   const item = index >= 0 ? page.items[index] : null;
@@ -236,6 +299,8 @@ export function Editor({
   const setColour = (n, hex) =>
     setSite((s) => ({ ...s, palette: s.palette.map((c, i) => (i === n ? hex : c)) }));
   const setRole = (role, n) => setSite((s) => ({ ...s, roles: { ...s.roles, [role]: n } }));
+  const sizes = { ...DEFAULT_TEXT, ...(site.text || {}) };
+  const setSize = (key, px) => setSite((s) => ({ ...s, text: { ...sizes, [key]: px } }));
 
   const siteText = JSON.stringify(site, null, 2) + "\n";
   const pageText = JSON.stringify(page, null, 2) + "\n";
@@ -255,7 +320,7 @@ export function Editor({
         {draft && <span className="badge">Unsaved draft</span>}
       </header>
       <nav className="tabs">
-        {[["page", "Page"], ["palette", "Palette"], ["export", "Export"]].map(([id, label]) => (
+        {[["page", "Page"], ["general", "General"], ["export", "Export"]].map(([id, label]) => (
           <button key={id} className={tab === id ? "on" : ""} onClick={() => setTab(id)}>
             {label}
           </button>
@@ -291,7 +356,7 @@ export function Editor({
           {!item && <p className="hint">Select an item on the page or in this list to edit it.</p>}
 
           {item && (
-            <div className="details">
+            <div className="details" key={item.id}>
               <Field label="Name (for you)">
                 <input value={item.name} onChange={(e) => patch({ name: e.target.value })} />
               </Field>
@@ -302,16 +367,19 @@ export function Editor({
                 <button className="danger" onClick={remove}>Delete</button>
               </div>
 
-              {item.type === "text" && <TextEditor item={item} onChange={patch} />}
+              {item.type === "text" && (
+                <TextEditor item={item} onChange={patch} setStatus={setStatus} />
+              )}
+              {status && <p className="hint warn">{status}</p>}
               {(item.type === "image" || item.type === "gif") && (
                 <>
-                  <Field label="File path (put the file in public/images/)">
-                    <input
-                      placeholder="images/my-picture.png"
-                      value={item.src}
-                      onChange={(e) => patch({ src: e.target.value })}
-                    />
-                  </Field>
+                  <FilePath
+                    label="File (in public/images/, extension optional)"
+                    value={item.file}
+                    type={item.type}
+                    placeholder="0/profile"
+                    onChange={(file) => patch({ file })}
+                  />
                   <Field label="Description (alt text)">
                     <input value={item.alt} onChange={(e) => patch({ alt: e.target.value })} />
                   </Field>
@@ -325,16 +393,20 @@ export function Editor({
               )}
               {item.type === "video" && (
                 <>
-                  <Field label="File path (mp4 or webm in public/images/)">
-                    <input
-                      placeholder="images/clip.mp4"
-                      value={item.src}
-                      onChange={(e) => patch({ src: e.target.value })}
-                    />
-                  </Field>
-                  <Field label="Poster image (optional)">
-                    <input value={item.poster} onChange={(e) => patch({ poster: e.target.value })} />
-                  </Field>
+                  <FilePath
+                    label="File (in public/images/, extension optional)"
+                    value={item.file}
+                    type="video"
+                    placeholder="0/clip"
+                    onChange={(file) => patch({ file })}
+                  />
+                  <FilePath
+                    label="Poster image (optional)"
+                    value={item.poster}
+                    type="image"
+                    placeholder="0/poster"
+                    onChange={(poster) => patch({ poster })}
+                  />
                   {[["controls", "Show controls"], ["loop", "Loop"], ["autoplay", "Autoplay (muted)"]].map(
                     ([key, label]) => (
                       <label className="check" key={key}>
@@ -398,15 +470,26 @@ export function Editor({
         </div>
       )}
 
-      {tab === "palette" && (
+      {tab === "general" && (
         <div className="panel">
+          <h4>Text sizes (px, applies to every text item)</h4>
+          {Object.entries(TEXT_SIZE_LABELS).map(([key, label]) => (
+            <NumberField
+              key={key}
+              label={label}
+              value={sizes[key]}
+              onChange={(px) => setSize(key, px)}
+            />
+          ))}
+
+          <h4>Palette</h4>
           <p className="hint">
             Edit a hex value and the whole page updates. Roles choose which palette number is used for
             the background and text colours.
           </p>
           {site.palette.map((c, i) => (
             <div className="swatch" key={i}>
-              <span className="num">{i + 1}</span>
+              <span className="num-label">{i + 1}</span>
               <input
                 type="color"
                 value={c}
@@ -416,6 +499,7 @@ export function Editor({
               <HexField value={c} onValid={(hex) => setColour(i, hex)} />
             </div>
           ))}
+
           <h4>Roles</h4>
           {ROLES.map((role) => (
             <Select

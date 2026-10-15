@@ -1,8 +1,8 @@
 {
   "version": 1,
   "palette": [
+    "#1B0E1F",
     "#ffffff",
-    "#f3f1ec",
     "#c3adf2",
     "#d5ed81",
     "#151814",
@@ -11,8 +11,14 @@
   ],
   "roles": {
     "background": 1,
-    "text": 5,
+    "text": 2,
     "secondary": 6,
     "highlight": 3
+  },
+  "text": {
+    "body": 16,
+    "h1": 56,
+    "h2": 36,
+    "h3": 24
   }
 }

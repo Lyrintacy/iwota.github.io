@@ -1,4 +1,4 @@
-// Pure helpers: constraint -> CSS, text markup -> tokens, config validation.
+// Pure helpers: constraint -> CSS, text markup, toggling, media paths, validation.
 
 export const TYPES = ["text", "image", "gif", "video"];
 export const ANCHORS = ["start", "center", "end", "stretch"];
@@ -6,7 +6,9 @@ export const UNITS = ["px", "%"];
 export const SIZE_UNITS = ["px", "%", "auto"];
 export const COLORS = ["text", "secondary", "highlight"];
 export const ROLES = ["background", "text", "secondary", "highlight"];
+export const DEFAULT_TEXT = { body: 16, h1: 56, h2: 36, h3: 24 };
 const COLOR_CODE = { n: "text", s: "secondary", h: "highlight" };
+const DEFAULT_EXT = { image: "png", gif: "gif", video: "mp4" };
 
 export function uid(prefix) {
   return `${prefix}-${Math.random().toString(36).slice(2, 7)}`;
@@ -44,6 +46,98 @@ export function inlineTokens(text = "") {
   return out;
 }
 
+// --- Toggling formats on a selection --------------------------------------
+// Bold and italic are asterisk runs around the selection: * = italic,
+// ** = bold, *** = both. Toggling flips one bit of that run.
+const BOLD = 2,
+  ITALIC = 1;
+
+function asteriskRun(text, s, e) {
+  let i = s;
+  while (i > 0 && text[i - 1] === "*") i--;
+  let j = e;
+  while (j < text.length && text[j] === "*") j++;
+  return { before: s - i, after: j - e };
+}
+
+function enclosingColour(text, s, e) {
+  const re = /\{(n|s|h):([^{}]*)\}/g;
+  let m;
+  while ((m = re.exec(text))) {
+    const start = m.index,
+      end = start + m[0].length;
+    const cs = start + 3,
+      ce = end - 1;
+    if (s >= cs && e <= ce) return { start, end, cs, ce, code: m[1] };
+  }
+  return null;
+}
+
+/** Which formats apply to the current selection (for highlighting buttons). */
+export function formatAt(text = "", s = 0, e = 0) {
+  if (s === e) return { bold: false, italic: false, colour: null };
+  const r = asteriskRun(text, s, e);
+  const run = Math.min(r.before, r.after, 3);
+  const hit = enclosingColour(text, s, e);
+  return {
+    bold: !!(run & BOLD),
+    italic: !!(run & ITALIC),
+    colour: hit ? COLOR_CODE[hit.code] : null,
+  };
+}
+
+/**
+ * kind: "bold" | "italic" | "s" (secondary) | "h" (highlight) | "n" (clear colour).
+ * Returns the new text and selection, or null when nothing is selected or the
+ * selection would cross a colour boundary.
+ */
+export function toggleFormat(text, s, e, kind) {
+  if (s === e) return null;
+  if (kind === "bold" || kind === "italic") {
+    const r = asteriskRun(text, s, e);
+    const run = Math.min(r.before, r.after, 3);
+    const next = run ^ (kind === "bold" ? BOLD : ITALIC);
+    const stars = "*".repeat(next);
+    const mid = text.slice(s, e);
+    const ns = s - run + next;
+    return {
+      text: text.slice(0, s - run) + stars + mid + stars + text.slice(e + run),
+      s: ns,
+      e: ns + mid.length,
+    };
+  }
+  if (/[{}]/.test(text.slice(s, e))) return null;
+  const wrap = (code, t) => (code && t ? `{${code}:${t}}` : t);
+  const code = kind === "n" ? null : kind;
+  const hit = enclosingColour(text, s, e);
+  const mid = text.slice(s, e);
+
+  if (hit) {
+    // Toggle off when the same colour is already applied; otherwise switch.
+    const newCode = kind === "n" || hit.code === code ? null : code;
+    const pre = wrap(hit.code, text.slice(hit.cs, s));
+    const post = wrap(hit.code, text.slice(e, hit.ce));
+    const ns = hit.start + pre.length + (newCode ? 3 : 0);
+    return {
+      text:
+        text.slice(0, hit.start) +
+        pre +
+        wrap(newCode, mid) +
+        post +
+        text.slice(hit.end),
+      s: ns,
+      e: ns + mid.length,
+    };
+  }
+  if (!code) return { text, s, e };
+  return {
+    text: text.slice(0, s) + wrap(code, mid) + text.slice(e),
+    s: s + 3,
+    e: s + 3 + mid.length,
+  };
+}
+
+// --- Layout constraints -> CSS ----------------------------------------------
 const css = (value, unit) => `${Number(value) || 0}${unit === "%" ? "%" : "px"}`;
 
 // One axis. `lo`/`hi` are the CSS edges (left/right or top/bottom).
@@ -77,6 +171,21 @@ export function itemStyle(item) {
   };
 }
 
+// --- Media paths ------------------------------------------------------------
+/**
+ * "0/profile" -> "images/0/profile.png". The extension is optional; the default
+ * depends on the item type. Full http(s) URLs are used as they are.
+ */
+export function mediaUrl(item) {
+  let file = String(item?.file || "").trim().replace(/\\/g, "/").replace(/^\/+/, "");
+  if (!file) return "";
+  if (/^https?:\/\//i.test(file)) return file;
+  file = file.replace(/^images\//i, "");
+  if (!/\.[a-z0-9]+$/i.test(file.split("/").pop()))
+    file += `.${DEFAULT_EXT[item.type] || "png"}`;
+  return `images/${file}`;
+}
+
 export function newItem(type, id) {
   const item = {
     id,
@@ -95,13 +204,14 @@ export function newItem(type, id) {
       color: "text",
     });
   } else if (type === "video") {
-    Object.assign(item, { src: "", poster: "", controls: true, loop: false, autoplay: false });
+    Object.assign(item, { file: "", poster: "", controls: true, loop: false, autoplay: false });
   } else {
-    Object.assign(item, { src: "", alt: "", fit: "contain" });
+    Object.assign(item, { file: "", alt: "", fit: "contain" });
   }
   return item;
 }
 
+// --- Validation ---------------------------------------------------------------
 const hex = /^#[0-9a-f]{6}$/i;
 
 export function validateSite(site) {
@@ -117,6 +227,9 @@ export function validateSite(site) {
     if (!Number.isInteger(n) || n < 1 || n > 7)
       errors.push(`roles.${role} must be a palette number from 1 to 7`);
   }
+  for (const [key, value] of Object.entries(site?.text || {}))
+    if (!(DEFAULT_TEXT[key] !== undefined && value > 0))
+      errors.push(`text.${key} must be a size in px`);
   return errors;
 }
 
