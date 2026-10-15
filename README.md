@@ -12,7 +12,7 @@ public/images/                put your pictures, GIFs and videos here, then refe
 
 ## Workshop (F2)
 
-- **Page:** add Text / Image / GIF / Video items, select them (in the list or by clicking on the canvas), and set:
+- **Page:** set the page height. Add **sections** — background bands with a start height, a height, a background colour, a tiled texture (file, tile size, offset, rotation) and an overlay colour with opacity. Items always sit on top of every section. Add Text / Image / GIF / Video items, select them (in the list or by clicking on the canvas), and set:
   - **Horizontal and vertical constraints** — *Pin to* (Left, Centre, Right, or Left + right stretch), an *Offset* (px or % of the canvas), and a *Size*. Percent values keep the layout proportional when the window resizes.
   - **Pivot & rotation** — the point the item rotates around, and the angle.
   - **Text** — select words and press **Bold**, **Italic**, **Secondary**, or **Highlight**. Press again to turn it off (the button lights up while the selection has it). **Clear colour** removes the colour. Bold and italic combine. Heading level and alignment are per item.

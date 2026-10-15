@@ -233,6 +233,26 @@ export function validateSite(site) {
   return errors;
 }
 
+export function newSection(id, start = 0) {
+  return {
+    id,
+    name: "",
+    start,
+    height: 600,
+    background: 2,
+    texture: { file: "", size: 200, offsetX: 0, offsetY: 0, rotate: 0 },
+    overlay: { colour: 1, opacity: 0 },
+  };
+}
+
+/** The page grows to fit its sections when they extend below the canvas height. */
+export function pageHeight(page) {
+  return Math.max(
+    page.canvas.height,
+    ...(page.sections || []).map((s) => s.start + s.height),
+  );
+}
+
 export function validatePage(page) {
   if (!page || !Array.isArray(page.items)) return ["page.items must be a list"];
   const errors = [];
@@ -247,6 +267,17 @@ export function validatePage(page) {
     ids.add(item.id);
     if (item.type === "text" && typeof item.text !== "string")
       errors.push(`${where}: text items need text`);
+  });
+  const sectionIds = new Set();
+  (page.sections || []).forEach((section, i) => {
+    const where = `section ${i + 1}`;
+    if (!section.id || sectionIds.has(section.id))
+      errors.push(`${where}: missing or duplicate id`);
+    sectionIds.add(section.id);
+    if (!(section.start >= 0)) errors.push(`${where}: start must be 0 or more`);
+    if (!(section.height > 0)) errors.push(`${where}: height must be positive`);
+    if (!(section.background >= 1 && section.background <= 7))
+      errors.push(`${where}: background must be a palette number from 1 to 7`);
   });
   return errors;
 }
