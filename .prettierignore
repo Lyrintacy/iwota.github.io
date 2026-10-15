@@ -1,9 +1,3 @@
 node_modules
 build
 artifacts
-.venv
-src/data
-package-lock.json
-public/art
-playwright-report
-test-results
