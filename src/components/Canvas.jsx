@@ -1,5 +1,5 @@
 import React from "react";
-import { bandTop, inlineTokens, isBand, itemStyle, pageHeight } from "../lib/model.js";
+import { bandTop, inlineTokens, isBand, itemStyle, pageHeight, panPos } from "../lib/model.js";
 import { useMedia } from "../lib/media.js";
 
 function Text({ item }) {
@@ -51,6 +51,26 @@ function Media({ item }) {
   );
 }
 
+// Image masked to a ring of border widths; tiled or stretched per axis, optionally panning.
+function Animated({ item }) {
+  const media = useMedia("image", item.file);
+  const b = item.border || {};
+  const w = (v) => Math.max(0, Number(v) || 0);
+  const tile = Math.max(1, Number(item.tile) || 1);
+  return (
+    <div
+      className="media animated"
+      style={{
+        backgroundImage: media.url ? `url("${media.url}")` : undefined,
+        backgroundSize: `${item.repeatX ? `${tile}px` : "100%"} ${item.repeatY ? `${tile}px` : "100%"}`,
+        backgroundRepeat: `${item.repeatX ? "repeat" : "no-repeat"} ${item.repeatY ? "repeat" : "no-repeat"}`,
+        backgroundPosition: `${panPos(0, item.scrollX, item.speedX)} ${panPos(0, item.scrollY, item.speedY)}`,
+        padding: `${w(b.top)}px ${w(b.right)}px ${w(b.bottom)}px ${w(b.left)}px`,
+      }}
+    />
+  );
+}
+
 // Background band: colour, then a tiled texture, then an overlay colour.
 function BandBackground({ section, top, selected }) {
   const tex = section.texture || {};
@@ -71,7 +91,7 @@ function BandBackground({ section, top, selected }) {
           style={{
             backgroundImage: `url("${texture.url}")`,
             backgroundSize: `${Math.max(1, tex.size || 0)}px auto`,
-            backgroundPosition: `${tex.offsetX || 0}px ${tex.offsetY || 0}px`,
+            backgroundPosition: `${panPos(tex.offsetX, tex.scrollX, tex.speedX)} ${panPos(tex.offsetY, tex.scrollY, tex.speedY)}`,
             transform: `translate(-50%, -50%) rotate(${tex.rotate || 0}deg)`,
           }}
         />
@@ -114,7 +134,9 @@ export function Canvas({ page, editing, selectedId, onSelect, selectedSectionId 
           : undefined
       }
     >
-      {item.type === "text" ? <Text item={item} /> : <Media item={item} />}
+      {item.type === "text" && <Text item={item} />}
+      {item.type === "animated" && <Animated item={item} />}
+      {(item.type === "image" || item.type === "gif" || item.type === "video") && <Media item={item} />}
     </div>
   );
   return (

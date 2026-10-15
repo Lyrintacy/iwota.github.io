@@ -413,3 +413,14 @@ body {
   background: #2d6cdf;
   color: #fff;
 }
+
+/* Animated image: the image shows only inside the border ring (padding) */
+.animated {
+  box-sizing: border-box;
+  background-origin: border-box;
+  background-clip: border-box;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
