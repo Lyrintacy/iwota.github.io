@@ -41,6 +41,7 @@ export default function App() {
   const [notice, setNotice] = useState(initial.notice);
   const [editing, setEditing] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
+  const [selectedSectionId, setSelectedSectionId] = useState(null);
   const { site, page } = data;
 
   const draft = JSON.stringify(data) !== JSON.stringify(SAVED);
@@ -94,6 +95,7 @@ export default function App() {
         editing={editing}
         selectedId={selectedId}
         onSelect={setSelectedId}
+        selectedSectionId={selectedSectionId}
       />
       <button className="edit-toggle" onClick={() => setEditing((v) => !v)}>
         {editing ? "Close workshop" : "Workshop"} <kbd>F2</kbd>
@@ -109,6 +111,8 @@ export default function App() {
           onClose={() => setEditing(false)}
           selectedId={selectedId}
           setSelectedId={setSelectedId}
+          selectedSectionId={selectedSectionId}
+          setSelectedSectionId={setSelectedSectionId}
         />
       )}
     </div>

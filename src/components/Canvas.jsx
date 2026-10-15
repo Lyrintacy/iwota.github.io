@@ -1,5 +1,6 @@
 import React from "react";
-import { inlineTokens, itemStyle, mediaUrl } from "../lib/model.js";
+import { inlineTokens, itemStyle, pageHeight } from "../lib/model.js";
+import { useMedia } from "../lib/media.js";
 
 function Text({ item }) {
   const Tag = ["h1", "h2", "h3"].includes(item.level) ? item.level : "p";
@@ -25,12 +26,14 @@ function Text({ item }) {
 }
 
 function Media({ item }) {
+  const main = useMedia(item.type, item.file);
+  const poster = useMedia("image", item.poster);
   if (item.type === "video")
     return (
       <video
         className="media"
-        src={mediaUrl(item) || undefined}
-        poster={mediaUrl({ type: "image", file: item.poster }) || undefined}
+        src={main.url || undefined}
+        poster={poster.url || undefined}
         controls={item.controls !== false}
         loop={!!item.loop}
         autoPlay={!!item.autoplay}
@@ -41,16 +44,62 @@ function Media({ item }) {
   return (
     <img
       className="media"
-      src={mediaUrl(item) || undefined}
+      src={main.url || undefined}
       alt={item.alt || ""}
       style={{ objectFit: item.fit || "contain" }}
     />
   );
 }
 
-export function Canvas({ page, editing, selectedId, onSelect }) {
+// Background band: colour, then a tiled texture, then an overlay colour.
+// The section clips everything to its own box.
+function SectionLayer({ section, selected }) {
+  const tex = section.texture || {};
+  const overlay = section.overlay || {};
+  const texture = useMedia("image", tex.file);
   return (
-    <main className={`canvas ${editing ? "editing" : ""}`} style={{ height: page.canvas.height }}>
+    <div
+      className={`section ${selected ? "selected" : ""}`}
+      style={{
+        top: section.start,
+        height: section.height,
+        background: `var(--color-${section.background})`,
+      }}
+    >
+      {texture.url && (
+        <div
+          className="section-texture"
+          style={{
+            backgroundImage: `url("${texture.url}")`,
+            backgroundSize: `${Math.max(1, tex.size || 0)}px auto`,
+            backgroundPosition: `${tex.offsetX || 0}px ${tex.offsetY || 0}px`,
+            transform: `translate(-50%, -50%) rotate(${tex.rotate || 0}deg)`,
+          }}
+        />
+      )}
+      {overlay.colour && (
+        <div
+          className="section-overlay"
+          style={{
+            background: `var(--color-${overlay.colour})`,
+            opacity: (overlay.opacity || 0) / 100,
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+export function Canvas({ page, editing, selectedId, onSelect, selectedSectionId }) {
+  return (
+    <main className={`canvas ${editing ? "editing" : ""}`} style={{ height: pageHeight(page) }}>
+      {(page.sections || []).map((section) => (
+        <SectionLayer
+          key={section.id}
+          section={section}
+          selected={editing && selectedSectionId === section.id}
+        />
+      ))}
       {page.items.map((item) => (
         <div
           key={item.id}

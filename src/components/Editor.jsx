@@ -8,11 +8,12 @@ import {
   TYPES,
   UNITS,
   formatAt,
-  mediaUrl,
   newItem,
+  newSection,
   toggleFormat,
   uid,
 } from "../lib/model.js";
+import { hasExt, useMedia } from "../lib/media.js";
 
 const TYPE_LABEL = { text: "Text", image: "Image", gif: "GIF", video: "Video" };
 const HORIZONTAL = { start: "Left", center: "Centre", end: "Right", stretch: "Left + right" };
@@ -231,19 +232,30 @@ function TextEditor({ item, onChange, setStatus }) {
   );
 }
 
-function FilePath({ label, value, type, onChange, placeholder }) {
-  const url = mediaUrl({ type, file: value });
+// Typing without an extension: the first existing file (png, jpeg, jpg; mp4,
+// webm for video) is found and its extension is written into the config.
+function FilePath({ label, value = "", type, onChange, placeholder }) {
+  const { url, ext } = useMedia(type, value);
+  useEffect(() => {
+    if (ext && value.trim() && !hasExt(value)) onChange(`${value.trim()}.${ext}`);
+  }, [ext]);
   return (
     <>
       <Field label={label}>
         <input placeholder={placeholder} value={value} onChange={(e) => onChange(e.target.value)} />
       </Field>
       <p className="hint">
-        {url ? <>Loads from <code>{url}</code></> : "Type folder/name, for example 0/profile."}
+        {value.trim() ? (
+          <>Loads from <code>{url}</code></>
+        ) : (
+          "Type folder/name, for example 0/profile. The extension is found automatically."
+        )}
       </p>
     </>
   );
 }
+
+const paletteOptions = (site) => site.palette.map((c, i) => [String(i + 1), `${i + 1} · ${c}`]);
 
 export function Editor({
   site,
@@ -255,6 +267,8 @@ export function Editor({
   onClose,
   selectedId,
   setSelectedId,
+  selectedSectionId,
+  setSelectedSectionId,
 }) {
   const [tab, setTab] = useState("page");
   const [status, setStatus] = useState("");
@@ -296,6 +310,46 @@ export function Editor({
     setSelectedId(null);
   };
 
+  // Sections: background bands behind the items.
+  const sections = page.sections || [];
+  const sIndex = sections.findIndex((x) => x.id === selectedSectionId);
+  const section = sIndex >= 0 ? sections[sIndex] : null;
+  const setSections = (fn) => setPage((p) => ({ ...p, sections: fn(p.sections || []) }));
+  const patchSection = (values) =>
+    setSections((list) => list.map((x) => (x.id === selectedSectionId ? { ...x, ...values } : x)));
+  const patchTexture = (values) =>
+    patchSection({ texture: { ...section.texture, ...values } });
+  const patchOverlay = (values) =>
+    patchSection({ overlay: { ...section.overlay, ...values } });
+  const addSection = () => {
+    const bottom = Math.max(0, ...sections.map((x) => x.start + x.height));
+    const created = newSection(uid("section"), bottom);
+    setSections((list) => [...list, created]);
+    setSelectedSectionId(created.id);
+  };
+  const moveSection = (delta) =>
+    setSections((list) => {
+      const to = sIndex + delta;
+      if (to < 0 || to >= list.length) return list;
+      const copy = [...list];
+      [copy[sIndex], copy[to]] = [copy[to], copy[sIndex]];
+      return copy;
+    });
+  const duplicateSection = () => {
+    const copy = { ...structuredClone(section), id: uid("section"), start: section.start + section.height };
+    setSections((list) => {
+      const next = [...list];
+      next.splice(sIndex + 1, 0, copy);
+      return next;
+    });
+    setSelectedSectionId(copy.id);
+  };
+  const removeSection = () => {
+    if (!window.confirm(`Delete "${section.name || "this section"}"?`)) return;
+    setSections((list) => list.filter((x) => x.id !== selectedSectionId));
+    setSelectedSectionId(null);
+  };
+
   const setColour = (n, hex) =>
     setSite((s) => ({ ...s, palette: s.palette.map((c, i) => (i === n ? hex : c)) }));
   const setRole = (role, n) => setSite((s) => ({ ...s, roles: { ...s.roles, [role]: n } }));
@@ -330,10 +384,106 @@ export function Editor({
       {tab === "page" && (
         <div className="panel">
           <NumberField
-            label="Canvas height (px)"
+            label="Page height (px) — grows to fit sections"
             value={page.canvas.height}
             onChange={(height) => setPage((p) => ({ ...p, canvas: { ...p.canvas, height } }))}
           />
+
+          <h4>Sections (background bands)</h4>
+          <ul className="items">
+            {sections.map((x, n) => (
+              <li key={x.id}>
+                <button
+                  className={x.id === selectedSectionId ? "on" : ""}
+                  onClick={() => setSelectedSectionId(x.id)}
+                >
+                  {n + 1}. {x.name || "Section"} <small>{x.start}–{x.start + x.height}px</small>
+                </button>
+              </li>
+            ))}
+          </ul>
+          <div className="row">
+            <button onClick={addSection}>+ Section</button>
+          </div>
+
+          {section && (
+            <div className="details" key={section.id}>
+              <Field label="Name (for you)">
+                <input value={section.name} onChange={(e) => patchSection({ name: e.target.value })} />
+              </Field>
+              <div className="row">
+                <button disabled={sIndex === 0} onClick={() => moveSection(-1)}>↑ Up</button>
+                <button disabled={sIndex === sections.length - 1} onClick={() => moveSection(1)}>↓ Down</button>
+                <button onClick={duplicateSection}>Duplicate</button>
+                <button className="danger" onClick={removeSection}>Delete</button>
+              </div>
+              <div className="axis-grid">
+                <NumberField
+                  label="Start height (px)"
+                  value={section.start}
+                  onChange={(start) => patchSection({ start: Math.max(0, start) })}
+                />
+                <NumberField
+                  label="Height (px)"
+                  value={section.height}
+                  onChange={(height) => patchSection({ height: Math.max(1, height) })}
+                />
+              </div>
+              <Select
+                label="Background colour (palette number)"
+                value={String(section.background)}
+                options={paletteOptions(site)}
+                onChange={(n) => patchSection({ background: Number(n) })}
+              />
+
+              <fieldset className="axis">
+                <legend>Texture (tiled)</legend>
+                <FilePath
+                  label="File (in public/images/, extension optional)"
+                  value={section.texture.file}
+                  type="image"
+                  placeholder="0/texture"
+                  onChange={(file) => patchTexture({ file })}
+                />
+                <NumberField
+                  label="Tile size (px wide)"
+                  value={section.texture.size}
+                  onChange={(size) => patchTexture({ size: Math.max(1, size) })}
+                />
+                <NumberField
+                  label="Offset X (px)"
+                  value={section.texture.offsetX}
+                  onChange={(offsetX) => patchTexture({ offsetX })}
+                />
+                <NumberField
+                  label="Offset Y (px)"
+                  value={section.texture.offsetY}
+                  onChange={(offsetY) => patchTexture({ offsetY })}
+                />
+                <NumberField
+                  label="Rotation (degrees)"
+                  value={section.texture.rotate}
+                  onChange={(rotate) => patchTexture({ rotate })}
+                />
+              </fieldset>
+
+              <fieldset className="axis">
+                <legend>Overlay</legend>
+                <Select
+                  label="Overlay colour (palette number)"
+                  value={String(section.overlay.colour)}
+                  options={paletteOptions(site)}
+                  onChange={(n) => patchOverlay({ colour: Number(n) })}
+                />
+                <NumberField
+                  label="Overlay opacity (%)"
+                  value={section.overlay.opacity}
+                  onChange={(opacity) => patchOverlay({ opacity: Math.min(100, Math.max(0, opacity)) })}
+                />
+              </fieldset>
+            </div>
+          )}
+          <h4>Items</h4>
           <div className="row">
             {TYPES.map((t) => (
               <button key={t} onClick={() => add(t)}>
