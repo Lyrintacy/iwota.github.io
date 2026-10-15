@@ -72,6 +72,24 @@ export default function App() {
     else localStorage.removeItem(DRAFT_KEY);
   }, [data, draft]);
 
+  // --scroll drives every panning texture and animated image (see panPos in model.js).
+  useEffect(() => {
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      document.documentElement.style.setProperty("--scroll", String(window.scrollY));
+    };
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      cancelAnimationFrame(frame);
+    };
+  }, []);
+
   useEffect(() => {
     const key = (e) => {
       if (e.key === "F2") {

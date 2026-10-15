@@ -2,14 +2,185 @@
   "id": "main",
   "title": "Main",
   "canvas": {
-    "height": 1200
+    "height": 2000
   },
-  "items": [],
-  "sections": [],
+  "items": [
+    {
+      "id": "text-k8wgd",
+      "type": "text",
+      "name": "",
+      "parent": "",
+      "h": {
+        "anchor": "start",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 300,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 0,
+        "sizeUnit": "auto"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "text": "Write something here.",
+      "level": "p",
+      "align": "left",
+      "color": "text"
+    },
+    {
+      "id": "image-ar5jf",
+      "type": "image",
+      "name": "",
+      "parent": "section-tfih3",
+      "h": {
+        "anchor": "start",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 300,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 0,
+        "sizeUnit": "auto"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "file": "0/IMG_3586",
+      "alt": "",
+      "fit": "contain"
+    },
+    {
+      "id": "text-ldvyg",
+      "type": "text",
+      "name": "",
+      "parent": "section-tfih3",
+      "h": {
+        "anchor": "center",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 300,
+        "sizeUnit": "auto"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 0,
+        "sizeUnit": "auto"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "text": "fjsdo-e-odfiesoisjdijdasijdasidjwidjaei[djas[dijasdsa[dasidsaij\n",
+      "level": "p",
+      "align": "left",
+      "color": "text"
+    },
+    {
+      "id": "text-z67a9",
+      "type": "text",
+      "name": "",
+      "parent": "section-mzin5",
+      "h": {
+        "anchor": "start",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 300,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 0,
+        "sizeUnit": "auto"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "text": "Oskar Wota\n",
+      "level": "p",
+      "align": "left",
+      "color": "text"
+    }
+  ],
+  "sections": [
+    {
+      "id": "section-tfih3",
+      "kind": "band",
+      "name": "",
+      "anchor": "bottom",
+      "start": 100,
+      "height": 600,
+      "background": 4,
+      "texture": {
+        "file": "ui/LeftBorder.png",
+        "size": 150,
+        "offsetX": 0,
+        "offsetY": 0,
+        "rotate": 45
+      },
+      "overlay": {
+        "colour": 6,
+        "opacity": 50
+      }
+    },
+    {
+      "id": "section-mzin5",
+      "kind": "fixed",
+      "name": ""
+    }
+  ],
   "mobile": {
     "breakpoint": 700,
     "canvas": {},
-    "items": {},
+    "items": {
+      "image-ar5jf": {
+        "h": {
+          "anchor": "start",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 100,
+          "sizeUnit": "px"
+        }
+      },
+      "text-k8wgd": {
+        "h": {
+          "anchor": "end",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 11,
+          "sizeUnit": "px"
+        }
+      }
+    },
     "sections": {}
   }
 }

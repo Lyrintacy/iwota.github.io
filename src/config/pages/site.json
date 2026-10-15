@@ -14,5 +14,11 @@
     "text": 2,
     "secondary": 6,
     "highlight": 3
+  },
+  "text": {
+    "body": 16,
+    "h1": 56,
+    "h2": 36,
+    "h3": 24
   }
 }
