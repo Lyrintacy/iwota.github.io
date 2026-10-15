@@ -2,12 +2,12 @@
 
 A blank React + Vite starting point.
 
-## Check it locally (no push needed)
+## Open it locally (no server, no push)
 
-- **macOS / Linux:** double-click or run `./start.sh`
-- **Windows:** double-click `start.bat`
+1. Run `npm run build:local` once (and again after changes).
+2. Double-click **`local/index.html`** to open the site in your browser.
 
-The launcher installs packages on the first run, starts the dev server and opens http://localhost:3000. Stop it with Ctrl+C.
+`local/` is a single self-contained page. Images are in `local/images/`.
 
 ```sh
 npm ci
