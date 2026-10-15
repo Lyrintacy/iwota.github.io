@@ -50,7 +50,7 @@ body {
   outline: 2px dashed #2d6cdf;
   outline-offset: -2px;
 }
-.canvas.editing .item {
+.site.editing .item {
   cursor: pointer;
   outline: 1px dashed rgba(0, 0, 0, 0.2);
 }
@@ -306,4 +306,110 @@ body {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
+}
+
+/* Frames: every item is positioned as a % of its frame. */
+.frame {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.frame > .item {
+  pointer-events: auto;
+}
+.band-frame {
+  overflow: hidden;
+  z-index: 1;
+}
+.page-frame {
+  z-index: 2;
+}
+.fixed-frame {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+}
+.site.phone-preview .fixed-frame {
+  left: 50%;
+  width: 390px;
+  transform: translateX(-50%);
+}
+.site.phone-preview .canvas {
+  width: 390px;
+  margin: 0 auto;
+}
+.site.phone-preview.editing {
+  margin-right: 380px;
+}
+
+/* Editor layout */
+.editor {
+  overflow-y: auto;
+}
+.add-bar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 8px 0;
+  background: #fff;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+.add-bar button {
+  font: inherit;
+  font-size: 12px;
+  padding: 4px 8px;
+}
+.banner {
+  margin: 8px 0;
+  padding: 8px;
+  border-radius: 4px;
+  background: #fff4cc;
+  font-size: 12px;
+}
+.seg {
+  display: flex;
+  margin: 8px 12px 0;
+}
+.seg button {
+  flex: 1;
+  font: inherit;
+  padding: 6px;
+  border: 1px solid #999;
+  background: #fff;
+  cursor: pointer;
+}
+.seg button:first-child {
+  border-radius: 4px 0 0 4px;
+}
+.seg button:last-child {
+  border-radius: 0 4px 4px 0;
+  border-left: 0;
+}
+.seg button.on {
+  background: #2d6cdf;
+  border-color: #2d6cdf;
+  color: #fff;
+}
+.row.between {
+  justify-content: space-between;
+  align-items: center;
+}
+.axis-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.swatch {
+  display: grid;
+  grid-template-columns: 22px 40px 1fr 28px;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.toolbar button.on {
+  background: #2d6cdf;
+  color: #fff;
 }

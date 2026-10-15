@@ -1,5 +1,5 @@
 import React from "react";
-import { inlineTokens, itemStyle, pageHeight } from "../lib/model.js";
+import { bandTop, inlineTokens, isBand, itemStyle, pageHeight } from "../lib/model.js";
 import { useMedia } from "../lib/media.js";
 
 function Text({ item }) {
@@ -52,8 +52,7 @@ function Media({ item }) {
 }
 
 // Background band: colour, then a tiled texture, then an overlay colour.
-// The section clips everything to its own box.
-function SectionLayer({ section, selected }) {
+function BandBackground({ section, top, selected }) {
   const tex = section.texture || {};
   const overlay = section.overlay || {};
   const texture = useMedia("image", tex.file);
@@ -61,7 +60,7 @@ function SectionLayer({ section, selected }) {
     <div
       className={`section ${selected ? "selected" : ""}`}
       style={{
-        top: section.start,
+        top,
         height: section.height,
         background: `var(--color-${section.background})`,
       }}
@@ -90,33 +89,66 @@ function SectionLayer({ section, selected }) {
   );
 }
 
+/**
+ * Layers, bottom to top: band backgrounds, band frames (items parented to a
+ * band, clipped to it), the page items, then screen overlays fixed to the
+ * viewport. A frame's percentages refer to that frame.
+ */
 export function Canvas({ page, editing, selectedId, onSelect, selectedSectionId }) {
+  const P = pageHeight(page);
+  const sections = page.sections || [];
+  const bands = sections.filter(isBand);
+  const fixed = sections.filter((s) => !isBand(s));
+  const itemsIn = (parent) => page.items.filter((i) => (i.parent || "") === parent);
+  const renderItem = (item) => (
+    <div
+      key={item.id}
+      className={`item item-${item.type} ${selectedId === item.id ? "selected" : ""}`}
+      style={itemStyle(item)}
+      onClick={
+        editing
+          ? (e) => {
+              e.stopPropagation();
+              onSelect(item.id);
+            }
+          : undefined
+      }
+    >
+      {item.type === "text" ? <Text item={item} /> : <Media item={item} />}
+    </div>
+  );
   return (
-    <main className={`canvas ${editing ? "editing" : ""}`} style={{ height: pageHeight(page) }}>
-      {(page.sections || []).map((section) => (
-        <SectionLayer
-          key={section.id}
-          section={section}
-          selected={editing && selectedSectionId === section.id}
-        />
-      ))}
-      {page.items.map((item) => (
+    <>
+      <main className={`canvas ${editing ? "editing" : ""}`} style={{ height: P }}>
+        {bands.map((s) => (
+          <BandBackground
+            key={s.id}
+            section={s}
+            top={bandTop(s, P)}
+            selected={editing && selectedSectionId === s.id}
+          />
+        ))}
+        {bands.map((s) => (
+          <div
+            key={`${s.id}-frame`}
+            className="frame band-frame"
+            style={{ top: bandTop(s, P), height: s.height }}
+          >
+            {itemsIn(s.id).map(renderItem)}
+          </div>
+        ))}
+        <div className="frame page-frame" style={{ height: P }}>
+          {itemsIn("").map(renderItem)}
+        </div>
+      </main>
+      {fixed.map((s) => (
         <div
-          key={item.id}
-          className={`item item-${item.type} ${selectedId === item.id ? "selected" : ""}`}
-          style={itemStyle(item)}
-          onClick={
-            editing
-              ? (e) => {
-                  e.stopPropagation();
-                  onSelect(item.id);
-                }
-              : undefined
-          }
+          key={`${s.id}-frame`}
+          className={`frame fixed-frame ${editing && selectedSectionId === s.id ? "selected" : ""}`}
         >
-          {item.type === "text" ? <Text item={item} /> : <Media item={item} />}
+          {itemsIn(s.id).map(renderItem)}
         </div>
       ))}
-    </main>
+    </>
   );
 }
