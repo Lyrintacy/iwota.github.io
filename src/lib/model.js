@@ -214,11 +214,13 @@ export function newItem(type, id, parent = "") {
   } else if (type === "video") {
     Object.assign(item, { file: "", poster: "", controls: true, loop: false, autoplay: false });
   } else if (type === "animated") {
-    // The image is masked to a ring of these widths (px) inside the box.
+    // A square box filled with the image, tiled like a section texture.
     Object.assign(item, {
       file: "",
       tile: 64,
-      border: { top: 20, right: 20, bottom: 20, left: 20 },
+      offsetX: 0,
+      offsetY: 0,
+      textureRotate: 0,
       repeatX: true,
       repeatY: true,
       scrollX: false,
@@ -264,15 +266,16 @@ export function newSection(kind, id, start = 0) {
 export const isBand = (section) => (section.kind || "band") === "band";
 
 /**
- * CSS background-position on one axis. When panning, the position follows the
- * page scroll (--scroll, set in App): speed × scrollY, so a negative speed moves
- * the other way, and scrolling back up reverses the motion.
+ * CSS background-position on one axis. A panning axis moves with the scroll
+ * movement: --pan is the sum of every scroll step since the page loaded (set in
+ * App), so scrolling down adds and scrolling back up takes away. Speed is px
+ * moved per px scrolled; a negative speed moves the other way.
  */
 export function panPos(offset = 0, pan = false, speed = DEFAULT_SPEED) {
   const o = Number(offset) || 0;
   if (!pan) return `${o}px`;
   const s = Number.isFinite(Number(speed)) ? Number(speed) : DEFAULT_SPEED;
-  return `calc(var(--scroll, 0) * ${s} * 1px ${o < 0 ? "-" : "+"} ${Math.abs(o)}px)`;
+  return `calc(var(--pan, 0) * ${s} * 1px ${o < 0 ? "-" : "+"} ${Math.abs(o)}px)`;
 }
 
 /** Top edge of a band in page coordinates. */
@@ -390,12 +393,8 @@ export function validatePage(page, site = null) {
     if (!TYPES.includes(item.type)) errors.push(`${where}: unknown type`);
     if (!item.id || ids.has(item.id)) errors.push(`${where}: missing or duplicate id`);
     ids.add(item.id);
-    if (item.type === "animated") {
-      const b = item.border || {};
-      if (![b.top, b.right, b.bottom, b.left].every((v) => v >= 0))
-        errors.push(`${where}: border widths must be 0 or more`);
-      if (!(item.tile > 0)) errors.push(`${where}: tile size must be positive`);
-    }
+    if (item.type === "animated" && !(item.tile > 0))
+      errors.push(`${where}: tile size must be positive`);
     if (item.type === "text" && typeof item.text !== "string")
       errors.push(`${where}: text items need text`);
     if (item.parent && !sectionIds.has(item.parent))
