@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import siteConfig from "./config/site.json";
 import pageConfig from "./config/pages/main.json";
-import { DEFAULT_TEXT, validatePage, validateSite } from "./lib/model.js";
+import { DEFAULT_TEXT, applyPhone, validatePage, validateSite } from "./lib/model.js";
 import { Canvas } from "./components/Canvas.jsx";
 import { Editor } from "./components/Editor.jsx";
 
@@ -9,7 +9,7 @@ const DRAFT_KEY = "site-editor-draft-v2";
 const SAVED = { site: siteConfig, page: pageConfig };
 
 // Short fingerprint of the saved config. A draft only applies to the config it
-// was made from, so an updated site.json is never hidden by an old draft.
+// was made from, so an updated config file is never hidden by an old draft.
 function hash(text) {
   let h = 5381;
   for (let i = 0; i < text.length; i++) h = ((h * 33) ^ text.charCodeAt(i)) >>> 0;
@@ -27,7 +27,10 @@ function loadDraft() {
         data: SAVED,
         notice: "The saved config changed since your last draft, so the draft was discarded.",
       };
-    const errors = [...validateSite(draft.data.site), ...validatePage(draft.data.page)];
+    const errors = [
+      ...validateSite(draft.data.site),
+      ...validatePage(draft.data.page, draft.data.site),
+    ];
     if (errors.length) throw new Error(errors.join("; "));
     return { data: draft.data, notice: "" };
   } catch (e) {
@@ -35,14 +38,33 @@ function loadDraft() {
   }
 }
 
+// True when the viewport is at or below the phone breakpoint.
+function usePhoneViewport(breakpoint) {
+  const query = `(max-width: ${breakpoint}px)`;
+  const [small, setSmall] = useState(() => window.matchMedia(query).matches);
+  useEffect(() => {
+    const mq = window.matchMedia(query);
+    const update = () => setSmall(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, [query]);
+  return small;
+}
+
 export default function App() {
   const [initial] = useState(loadDraft);
   const [data, setData] = useState(initial.data);
   const [notice, setNotice] = useState(initial.notice);
   const [editing, setEditing] = useState(false);
+  const [phone, setPhone] = useState(false); // editor: edit phone overrides
   const [selectedId, setSelectedId] = useState(null);
   const [selectedSectionId, setSelectedSectionId] = useState(null);
   const { site, page } = data;
+
+  const phoneViewport = usePhoneViewport(page.mobile?.breakpoint || 700);
+  const previewing = editing && phone;
+  const view = previewing || phoneViewport ? applyPhone(page) : page;
 
   const draft = JSON.stringify(data) !== JSON.stringify(SAVED);
   useEffect(() => {
@@ -72,6 +94,8 @@ export default function App() {
       return;
     setData(SAVED);
     setSelectedId(null);
+    setSelectedSectionId(null);
+    setPhone(false);
     setNotice("");
   };
 
@@ -84,14 +108,17 @@ export default function App() {
   for (const [key, px] of Object.entries(sizes)) vars[`--size-${key}`] = `${px}px`;
 
   return (
-    <div className={`site ${editing ? "editing" : ""}`} style={vars}>
+    <div
+      className={`site ${editing ? "editing" : ""} ${previewing ? "phone-preview" : ""}`}
+      style={vars}
+    >
       {notice && (
         <div className="notice" role="status">
           {notice}
         </div>
       )}
       <Canvas
-        page={page}
+        page={view}
         editing={editing}
         selectedId={selectedId}
         onSelect={setSelectedId}
@@ -104,6 +131,7 @@ export default function App() {
         <Editor
           site={site}
           page={page}
+          view={view}
           setSite={setSite}
           setPage={setPage}
           draft={draft}
@@ -113,6 +141,8 @@ export default function App() {
           setSelectedId={setSelectedId}
           selectedSectionId={selectedSectionId}
           setSelectedSectionId={setSelectedSectionId}
+          phone={phone}
+          setPhone={setPhone}
         />
       )}
     </div>

@@ -2,14 +2,17 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   ANCHORS,
   COLORS,
+  DEFAULT_MOBILE,
   DEFAULT_TEXT,
   ROLES,
   SIZE_UNITS,
   TYPES,
   UNITS,
   formatAt,
+  isBand,
   newItem,
   newSection,
+  removeColour,
   toggleFormat,
   uid,
 } from "../lib/model.js";
@@ -24,6 +27,7 @@ const PIVOTS = [
   [0, 100], [50, 100], [100, 100],
 ];
 const TEXT_SIZE_LABELS = { body: "Body text", h1: "Heading 1", h2: "Heading 2", h3: "Heading 3" };
+const paletteOptions = (site) => site.palette.map((c, i) => [String(i + 1), `${i + 1} · ${c}`]);
 
 function download(name, text) {
   const url = URL.createObjectURL(new Blob([text], { type: "application/json" }));
@@ -135,7 +139,7 @@ function AxisFields({ title, axisValue = {}, labels, onChange }) {
       <Select
         label="Offset unit"
         value={a.unit}
-        options={UNITS.map((u) => [u, u === "%" ? "% of canvas" : "px"])}
+        options={UNITS.map((u) => [u, u === "%" ? "% of frame" : "px"])}
         onChange={(unit) => onChange({ unit })}
       />
       {a.anchor !== "stretch" && (
@@ -144,7 +148,7 @@ function AxisFields({ title, axisValue = {}, labels, onChange }) {
           <Select
             label="Size unit"
             value={a.sizeUnit}
-            options={SIZE_UNITS.map((u) => [u, u === "%" ? "% of canvas" : u])}
+            options={SIZE_UNITS.map((u) => [u, u === "%" ? "% of frame" : u])}
             onChange={(sizeUnit) => onChange({ sizeUnit })}
           />
         </>
@@ -255,11 +259,10 @@ function FilePath({ label, value = "", type, onChange, placeholder }) {
   );
 }
 
-const paletteOptions = (site) => site.palette.map((c, i) => [String(i + 1), `${i + 1} · ${c}`]);
-
 export function Editor({
   site,
   page,
+  view,
   setSite,
   setPage,
   draft,
@@ -269,92 +272,163 @@ export function Editor({
   setSelectedId,
   selectedSectionId,
   setSelectedSectionId,
+  phone,
+  setPhone,
 }) {
   const [tab, setTab] = useState("page");
   const [status, setStatus] = useState("");
   const [copied, setCopied] = useState("");
-  const index = page.items.findIndex((i) => i.id === selectedId);
-  const item = index >= 0 ? page.items[index] : null;
+  const [jsonText, setJsonText] = useState(null);
+  const [jsonError, setJsonError] = useState("");
 
-  const updateItem = (fn) =>
-    setPage((p) => ({ ...p, items: p.items.map((i) => (i.id === selectedId ? fn(i) : i)) }));
-  const patch = (values) => updateItem((i) => ({ ...i, ...values }));
-  const patchAxis = (axis, values) =>
-    updateItem((i) => ({ ...i, [axis]: { ...i[axis], ...values } }));
+  const sections = page.sections || [];
+  const sIdx = sections.findIndex((x) => x.id === selectedSectionId);
+  const section = sIdx >= 0 ? sections[sIdx] : null;
+  const sectionView = section ? view.sections.find((x) => x.id === section.id) : null;
+  const iIdx = page.items.findIndex((i) => i.id === selectedId);
+  const item = iIdx >= 0 ? page.items[iIdx] : null;
+  const itemView = item ? view.items.find((i) => i.id === item.id) : null;
+  const mobile = { ...DEFAULT_MOBILE, ...(page.mobile || {}) };
 
+  // Edits go to the base page, or to the phone overrides in Phone mode.
+  const writeOverride = (kind, id, values) =>
+    setPage((p) => {
+      const m = { ...DEFAULT_MOBILE, ...(p.mobile || {}) };
+      return {
+        ...p,
+        mobile: { ...m, [kind]: { ...m[kind], [id]: { ...m[kind][id], ...values } } },
+      };
+    });
+  const writeItem = (id, values) =>
+    phone
+      ? writeOverride("items", id, values)
+      : setPage((p) => ({ ...p, items: p.items.map((i) => (i.id === id ? { ...i, ...values } : i)) }));
+  const writeSection = (id, values) =>
+    phone
+      ? writeOverride("sections", id, values)
+      : setPage((p) => ({
+          ...p,
+          sections: (p.sections || []).map((s) => (s.id === id ? { ...s, ...values } : s)),
+        }));
+  const writeCanvas = (values) =>
+    phone
+      ? setPage((p) => {
+          const m = { ...DEFAULT_MOBILE, ...(p.mobile || {}) };
+          return { ...p, mobile: { ...m, canvas: { ...m.canvas, ...values } } };
+        })
+      : setPage((p) => ({ ...p, canvas: { ...p.canvas, ...values } }));
+
+  const patch = (values) => writeItem(item.id, values);
+  const patchAxis = (axis, values) => writeItem(item.id, { [axis]: { ...itemView[axis], ...values } });
+  const patchSection = (values) => writeSection(section.id, values);
+  const patchTexture = (values) => patchSection({ texture: { ...sectionView.texture, ...values } });
+  const patchOverlay = (values) => patchSection({ overlay: { ...sectionView.overlay, ...values } });
+
+  // Structure (adding, moving, deleting) always happens on the base page.
   const add = (type) => {
     const created = newItem(type, uid(type));
     setPage((p) => ({ ...p, items: [...p.items, created] }));
     setSelectedId(created.id);
   };
-  const move = (delta) =>
+  const moveItem = (delta) =>
     setPage((p) => {
       const list = [...p.items];
-      const to = index + delta;
+      const to = iIdx + delta;
       if (to < 0 || to >= list.length) return p;
-      [list[index], list[to]] = [list[to], list[index]];
+      [list[iIdx], list[to]] = [list[to], list[iIdx]];
       return { ...p, items: list };
     });
-  const duplicate = () => {
+  const duplicateItem = () => {
     const copy = { ...structuredClone(item), id: uid(item.type) };
     setPage((p) => {
       const list = [...p.items];
-      list.splice(index + 1, 0, copy);
+      list.splice(iIdx + 1, 0, copy);
       return { ...p, items: list };
     });
     setSelectedId(copy.id);
   };
-  const remove = () => {
+  const removeItem = () => {
     if (!window.confirm(`Delete "${item.name || TYPE_LABEL[item.type]}"?`)) return;
     setPage((p) => ({ ...p, items: p.items.filter((i) => i.id !== selectedId) }));
     setSelectedId(null);
   };
 
-  // Sections: background bands behind the items.
-  const sections = page.sections || [];
-  const sIndex = sections.findIndex((x) => x.id === selectedSectionId);
-  const section = sIndex >= 0 ? sections[sIndex] : null;
-  const setSections = (fn) => setPage((p) => ({ ...p, sections: fn(p.sections || []) }));
-  const patchSection = (values) =>
-    setSections((list) => list.map((x) => (x.id === selectedSectionId ? { ...x, ...values } : x)));
-  const patchTexture = (values) =>
-    patchSection({ texture: { ...section.texture, ...values } });
-  const patchOverlay = (values) =>
-    patchSection({ overlay: { ...section.overlay, ...values } });
-  const addSection = () => {
-    const bottom = Math.max(0, ...sections.map((x) => x.start + x.height));
-    const created = newSection(uid("section"), bottom);
-    setSections((list) => [...list, created]);
+  const addSection = (kind) => {
+    const bottom = Math.max(0, ...sections.filter(isBand).map((x) => x.start + x.height));
+    const created = newSection(kind, uid("section"), kind === "band" ? bottom : 0);
+    setPage((p) => ({ ...p, sections: [...(p.sections || []), created] }));
     setSelectedSectionId(created.id);
   };
   const moveSection = (delta) =>
-    setSections((list) => {
-      const to = sIndex + delta;
-      if (to < 0 || to >= list.length) return list;
-      const copy = [...list];
-      [copy[sIndex], copy[to]] = [copy[to], copy[sIndex]];
-      return copy;
+    setPage((p) => {
+      const list = [...(p.sections || [])];
+      const to = sIdx + delta;
+      if (to < 0 || to >= list.length) return p;
+      [list[sIdx], list[to]] = [list[to], list[sIdx]];
+      return { ...p, sections: list };
     });
   const duplicateSection = () => {
-    const copy = { ...structuredClone(section), id: uid("section"), start: section.start + section.height };
-    setSections((list) => {
-      const next = [...list];
-      next.splice(sIndex + 1, 0, copy);
-      return next;
+    const copy = {
+      ...structuredClone(section),
+      id: uid("section"),
+      start: isBand(section) ? section.start + section.height : 0,
+    };
+    setPage((p) => {
+      const list = [...(p.sections || [])];
+      list.splice(sIdx + 1, 0, copy);
+      return { ...p, sections: list };
     });
     setSelectedSectionId(copy.id);
   };
   const removeSection = () => {
-    if (!window.confirm(`Delete "${section.name || "this section"}"?`)) return;
-    setSections((list) => list.filter((x) => x.id !== selectedSectionId));
+    if (!window.confirm(`Delete "${section.name || "this section"}"? Items inside it move to the page.`))
+      return;
+    setPage((p) => {
+      const { [section.id]: _s, ...sectionOverrides } = p.mobile?.sections || {};
+      return {
+        ...p,
+        sections: (p.sections || []).filter((x) => x.id !== section.id),
+        items: p.items.map((i) => (i.parent === section.id ? { ...i, parent: "" } : i)),
+        mobile: p.mobile ? { ...p.mobile, sections: sectionOverrides } : p.mobile,
+      };
+    });
     setSelectedSectionId(null);
   };
 
+  // Clicking the selected item or section again closes its panel.
+  const toggleItem = (id) => setSelectedId((cur) => (cur === id ? null : id));
+  const toggleSection = (id) => setSelectedSectionId((cur) => (cur === id ? null : id));
+
+  const addColour = () => setSite((s) => ({ ...s, palette: [...s.palette, "#808080"] }));
+  const dropColour = (n) => {
+    if (site.palette.length <= 1) return;
+    if (!window.confirm(`Remove colour ${n + 1}? Anything using it switches to colour 1.`)) return;
+    const next = removeColour(site, page, n + 1);
+    setSite(() => next.site);
+    setPage(() => next.page);
+  };
   const setColour = (n, hex) =>
     setSite((s) => ({ ...s, palette: s.palette.map((c, i) => (i === n ? hex : c)) }));
   const setRole = (role, n) => setSite((s) => ({ ...s, roles: { ...s.roles, [role]: n } }));
   const sizes = { ...DEFAULT_TEXT, ...(site.text || {}) };
   const setSize = (key, px) => setSite((s) => ({ ...s, text: { ...sizes, [key]: px } }));
+
+  const applyPhoneJson = () => {
+    try {
+      const parsed = JSON.parse(jsonText ?? "");
+      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error("Expected an object.");
+      setPage((p) => ({ ...p, mobile: { ...DEFAULT_MOBILE, ...parsed } }));
+      setJsonText(null);
+      setJsonError("");
+    } catch (e) {
+      setJsonError(`Not applied: ${e.message}`);
+    }
+  };
+  const clearPhone = () => {
+    if (!window.confirm("Remove all phone overrides? The desktop layout stays as it is.")) return;
+    setPage((p) => ({ ...p, mobile: { ...DEFAULT_MOBILE, breakpoint: mobile.breakpoint } }));
+    setJsonText(null);
+  };
 
   const siteText = JSON.stringify(site, null, 2) + "\n";
   const pageText = JSON.stringify(page, null, 2) + "\n";
@@ -367,14 +441,20 @@ export function Editor({
     }
   };
 
+  const parentOptions = [["", "Page"], ...sections.map((s) => [s.id, `${s.name || "Section"}${isBand(s) ? "" : " (screen overlay)"}`])];
+
   return (
     <aside className="editor" aria-label="Workshop">
       <header>
         <strong>Workshop</strong>
         {draft && <span className="badge">Unsaved draft</span>}
       </header>
+      <div className="seg" role="group" aria-label="Edit target">
+        <button className={!phone ? "on" : ""} onClick={() => setPhone(false)}>Desktop</button>
+        <button className={phone ? "on" : ""} onClick={() => setPhone(true)}>Phone</button>
+      </div>
       <nav className="tabs">
-        {[["page", "Page"], ["general", "General"], ["export", "Export"]].map(([id, label]) => (
+        {[["page", "Page"], ["general", "General"], ["phone", "Phone"], ["export", "Export"]].map(([id, label]) => (
           <button key={id} className={tab === id ? "on" : ""} onClick={() => setTab(id)}>
             {label}
           </button>
@@ -383,159 +463,191 @@ export function Editor({
 
       {tab === "page" && (
         <div className="panel">
+          {phone && (
+            <p className="banner">
+              Phone mode: changes apply only on phones (screens {mobile.breakpoint}px wide or less).
+              Adding, moving and deleting are locked here.
+            </p>
+          )}
+          <div className="add-bar">
+            {TYPES.map((t) => (
+              <button key={t} disabled={phone} onClick={() => add(t)}>
+                + {TYPE_LABEL[t]}
+              </button>
+            ))}
+            <button disabled={phone} onClick={() => addSection("band")}>+ Section</button>
+            <button disabled={phone} onClick={() => addSection("fixed")}>+ Screen overlay</button>
+          </div>
+
           <NumberField
             label="Page height (px) — grows to fit sections"
-            value={page.canvas.height}
-            onChange={(height) => setPage((p) => ({ ...p, canvas: { ...p.canvas, height } }))}
+            value={view.canvas.height}
+            onChange={(height) => writeCanvas({ height })}
           />
 
-          <h4>Sections (background bands)</h4>
+          <h4>Sections</h4>
           <ul className="items">
             {sections.map((x, n) => (
               <li key={x.id}>
-                <button
-                  className={x.id === selectedSectionId ? "on" : ""}
-                  onClick={() => setSelectedSectionId(x.id)}
-                >
-                  {n + 1}. {x.name || "Section"} <small>{x.start}–{x.start + x.height}px</small>
+                <button className={x.id === selectedSectionId ? "on" : ""} onClick={() => toggleSection(x.id)}>
+                  {n + 1}. {x.name || "Section"}{" "}
+                  <small>
+                    {isBand(x) ? `${x.anchor === "bottom" ? "bottom" : "top"} · ${x.start}px · ${x.height}px` : "screen overlay"}
+                  </small>
                 </button>
               </li>
             ))}
           </ul>
-          <div className="row">
-            <button onClick={addSection}>+ Section</button>
-          </div>
 
-          {section && (
+          {section && sectionView && (
             <div className="details" key={section.id}>
+              <div className="row between">
+                <strong>{section.name || "Section"}</strong>
+                <button onClick={() => setSelectedSectionId(null)}>Close ×</button>
+              </div>
               <Field label="Name (for you)">
                 <input value={section.name} onChange={(e) => patchSection({ name: e.target.value })} />
               </Field>
               <div className="row">
-                <button disabled={sIndex === 0} onClick={() => moveSection(-1)}>↑ Up</button>
-                <button disabled={sIndex === sections.length - 1} onClick={() => moveSection(1)}>↓ Down</button>
-                <button onClick={duplicateSection}>Duplicate</button>
-                <button className="danger" onClick={removeSection}>Delete</button>
+                <button disabled={phone || sIdx === 0} onClick={() => moveSection(-1)}>↑ Up</button>
+                <button disabled={phone || sIdx === sections.length - 1} onClick={() => moveSection(1)}>↓ Down</button>
+                <button disabled={phone} onClick={duplicateSection}>Duplicate</button>
+                <button className="danger" disabled={phone} onClick={removeSection}>Delete</button>
               </div>
-              <div className="axis-grid">
-                <NumberField
-                  label="Start height (px)"
-                  value={section.start}
-                  onChange={(start) => patchSection({ start: Math.max(0, start) })}
-                />
-                <NumberField
-                  label="Height (px)"
-                  value={section.height}
-                  onChange={(height) => patchSection({ height: Math.max(1, height) })}
-                />
-              </div>
-              <Select
-                label="Background colour (palette number)"
-                value={String(section.background)}
-                options={paletteOptions(site)}
-                onChange={(n) => patchSection({ background: Number(n) })}
-              />
 
-              <fieldset className="axis">
-                <legend>Texture (tiled)</legend>
-                <FilePath
-                  label="File (in public/images/, extension optional)"
-                  value={section.texture.file}
-                  type="image"
-                  placeholder="0/texture"
-                  onChange={(file) => patchTexture({ file })}
-                />
-                <NumberField
-                  label="Tile size (px wide)"
-                  value={section.texture.size}
-                  onChange={(size) => patchTexture({ size: Math.max(1, size) })}
-                />
-                <NumberField
-                  label="Offset X (px)"
-                  value={section.texture.offsetX}
-                  onChange={(offsetX) => patchTexture({ offsetX })}
-                />
-                <NumberField
-                  label="Offset Y (px)"
-                  value={section.texture.offsetY}
-                  onChange={(offsetY) => patchTexture({ offsetY })}
-                />
-                <NumberField
-                  label="Rotation (degrees)"
-                  value={section.texture.rotate}
-                  onChange={(rotate) => patchTexture({ rotate })}
-                />
-              </fieldset>
-
-              <fieldset className="axis">
-                <legend>Overlay</legend>
-                <Select
-                  label="Overlay colour (palette number)"
-                  value={String(section.overlay.colour)}
-                  options={paletteOptions(site)}
-                  onChange={(n) => patchOverlay({ colour: Number(n) })}
-                />
-                <NumberField
-                  label="Overlay opacity (%)"
-                  value={section.overlay.opacity}
-                  onChange={(opacity) => patchOverlay({ opacity: Math.min(100, Math.max(0, opacity)) })}
-                />
-              </fieldset>
+              {isBand(section) ? (
+                <>
+                  <Select
+                    label="Align to"
+                    value={sectionView.anchor || "top"}
+                    options={[["top", "Top of the page"], ["bottom", "Bottom of the page"]]}
+                    onChange={(anchor) => patchSection({ anchor })}
+                  />
+                  <div className="axis-grid">
+                    <NumberField
+                      label={sectionView.anchor === "bottom" ? "Distance from bottom (px)" : "Start height from top (px)"}
+                      value={sectionView.start}
+                      onChange={(start) => patchSection({ start: Math.max(0, start) })}
+                    />
+                    <NumberField
+                      label="Height (px)"
+                      value={sectionView.height}
+                      onChange={(height) => patchSection({ height: Math.max(1, height) })}
+                    />
+                  </div>
+                  <Select
+                    label="Background colour"
+                    value={String(sectionView.background)}
+                    options={paletteOptions(site)}
+                    onChange={(n) => patchSection({ background: Number(n) })}
+                  />
+                  <fieldset className="axis">
+                    <legend>Texture (tiled)</legend>
+                    <FilePath
+                      label="File (in public/images/, extension optional)"
+                      value={sectionView.texture.file}
+                      type="image"
+                      placeholder="0/texture"
+                      onChange={(file) => patchTexture({ file })}
+                    />
+                    <NumberField
+                      label="Tile size (px wide)"
+                      value={sectionView.texture.size}
+                      onChange={(size) => patchTexture({ size: Math.max(1, size) })}
+                    />
+                    <NumberField
+                      label="Offset X (px)"
+                      value={sectionView.texture.offsetX}
+                      onChange={(offsetX) => patchTexture({ offsetX })}
+                    />
+                    <NumberField
+                      label="Offset Y (px)"
+                      value={sectionView.texture.offsetY}
+                      onChange={(offsetY) => patchTexture({ offsetY })}
+                    />
+                    <NumberField
+                      label="Rotation (degrees)"
+                      value={sectionView.texture.rotate}
+                      onChange={(rotate) => patchTexture({ rotate })}
+                    />
+                  </fieldset>
+                  <fieldset className="axis">
+                    <legend>Overlay tint</legend>
+                    <Select
+                      label="Overlay colour"
+                      value={String(sectionView.overlay.colour)}
+                      options={paletteOptions(site)}
+                      onChange={(n) => patchOverlay({ colour: Number(n) })}
+                    />
+                    <NumberField
+                      label="Overlay opacity (%)"
+                      value={sectionView.overlay.opacity}
+                      onChange={(opacity) => patchOverlay({ opacity: Math.min(100, Math.max(0, opacity)) })}
+                    />
+                  </fieldset>
+                </>
+              ) : (
+                <p className="hint">
+                  A screen overlay is always the size of the screen and stays in place while you scroll.
+                  Put items in it with their Parent setting.
+                </p>
+              )}
             </div>
           )}
+
           <h4>Items</h4>
-          <div className="row">
-            {TYPES.map((t) => (
-              <button key={t} onClick={() => add(t)}>
-                + {TYPE_LABEL[t]}
-              </button>
-            ))}
-          </div>
           <ul className="items">
             {page.items.map((it, n) => (
               <li key={it.id}>
-                <button
-                  className={it.id === selectedId ? "on" : ""}
-                  onClick={() => setSelectedId(it.id)}
-                >
-                  {n + 1}. {it.name || TYPE_LABEL[it.type]} <small>{it.type}</small>
+                <button className={it.id === selectedId ? "on" : ""} onClick={() => toggleItem(it.id)}>
+                  {n + 1}. {it.name || TYPE_LABEL[it.type]} <small>{it.type}{it.parent ? " · in section" : ""}</small>
                 </button>
               </li>
             ))}
           </ul>
           {!item && <p className="hint">Select an item on the page or in this list to edit it.</p>}
 
-          {item && (
+          {item && itemView && (
             <div className="details" key={item.id}>
+              <div className="row between">
+                <strong>{item.name || TYPE_LABEL[item.type]}</strong>
+                <button onClick={() => setSelectedId(null)}>Close ×</button>
+              </div>
               <Field label="Name (for you)">
                 <input value={item.name} onChange={(e) => patch({ name: e.target.value })} />
               </Field>
+              <Select
+                label="Parent (positions are measured from it)"
+                value={itemView.parent || ""}
+                options={parentOptions}
+                onChange={(parent) => patch({ parent })}
+              />
               <div className="row">
-                <button disabled={index === 0} onClick={() => move(-1)}>↑ Up</button>
-                <button disabled={index === page.items.length - 1} onClick={() => move(1)}>↓ Down</button>
-                <button onClick={duplicate}>Duplicate</button>
-                <button className="danger" onClick={remove}>Delete</button>
+                <button disabled={phone || iIdx === 0} onClick={() => moveItem(-1)}>↑ Up</button>
+                <button disabled={phone || iIdx === page.items.length - 1} onClick={() => moveItem(1)}>↓ Down</button>
+                <button disabled={phone} onClick={duplicateItem}>Duplicate</button>
+                <button className="danger" disabled={phone} onClick={removeItem}>Delete</button>
               </div>
 
               {item.type === "text" && (
-                <TextEditor item={item} onChange={patch} setStatus={setStatus} />
+                <TextEditor item={itemView} onChange={patch} setStatus={setStatus} />
               )}
               {status && <p className="hint warn">{status}</p>}
               {(item.type === "image" || item.type === "gif") && (
                 <>
                   <FilePath
                     label="File (in public/images/, extension optional)"
-                    value={item.file}
+                    value={itemView.file}
                     type={item.type}
                     placeholder="0/profile"
                     onChange={(file) => patch({ file })}
                   />
                   <Field label="Description (alt text)">
-                    <input value={item.alt} onChange={(e) => patch({ alt: e.target.value })} />
+                    <input value={itemView.alt} onChange={(e) => patch({ alt: e.target.value })} />
                   </Field>
                   <Select
                     label="Fit"
-                    value={item.fit}
+                    value={itemView.fit}
                     options={[["contain", "Contain"], ["cover", "Cover"], ["fill", "Fill"]]}
                     onChange={(fit) => patch({ fit })}
                   />
@@ -545,14 +657,14 @@ export function Editor({
                 <>
                   <FilePath
                     label="File (in public/images/, extension optional)"
-                    value={item.file}
+                    value={itemView.file}
                     type="video"
                     placeholder="0/clip"
                     onChange={(file) => patch({ file })}
                   />
                   <FilePath
                     label="Poster image (optional)"
-                    value={item.poster}
+                    value={itemView.poster}
                     type="image"
                     placeholder="0/poster"
                     onChange={(poster) => patch({ poster })}
@@ -562,7 +674,7 @@ export function Editor({
                       <label className="check" key={key}>
                         <input
                           type="checkbox"
-                          checked={!!item[key]}
+                          checked={!!itemView[key]}
                           onChange={(e) => patch({ [key]: e.target.checked })}
                         />
                         {label}
@@ -574,13 +686,13 @@ export function Editor({
 
               <AxisFields
                 title="Horizontal constraint"
-                axisValue={item.h}
+                axisValue={itemView.h}
                 labels={HORIZONTAL}
                 onChange={(v) => patchAxis("h", v)}
               />
               <AxisFields
                 title="Vertical constraint"
-                axisValue={item.v}
+                axisValue={itemView.v}
                 labels={VERTICAL}
                 onChange={(v) => patchAxis("v", v)}
               />
@@ -591,7 +703,7 @@ export function Editor({
                   {PIVOTS.map(([x, y]) => (
                     <button
                       key={`${x}-${y}`}
-                      className={item.pivot[0] === x && item.pivot[1] === y ? "on" : ""}
+                      className={itemView.pivot[0] === x && itemView.pivot[1] === y ? "on" : ""}
                       onClick={() => patch({ pivot: [x, y] })}
                       title={`Pivot ${x}% ${y}%`}
                     >
@@ -601,17 +713,17 @@ export function Editor({
                 </div>
                 <NumberField
                   label="Pivot X (% of item)"
-                  value={item.pivot[0]}
-                  onChange={(x) => patch({ pivot: [x, item.pivot[1]] })}
+                  value={itemView.pivot[0]}
+                  onChange={(x) => patch({ pivot: [x, itemView.pivot[1]] })}
                 />
                 <NumberField
                   label="Pivot Y (% of item)"
-                  value={item.pivot[1]}
-                  onChange={(y) => patch({ pivot: [item.pivot[0], y] })}
+                  value={itemView.pivot[1]}
+                  onChange={(y) => patch({ pivot: [itemView.pivot[0], y] })}
                 />
                 <NumberField
                   label="Rotation (degrees)"
-                  value={item.rotate}
+                  value={itemView.rotate}
                   onChange={(rotate) => patch({ rotate })}
                 />
               </fieldset>
@@ -624,18 +736,13 @@ export function Editor({
         <div className="panel">
           <h4>Text sizes (px, applies to every text item)</h4>
           {Object.entries(TEXT_SIZE_LABELS).map(([key, label]) => (
-            <NumberField
-              key={key}
-              label={label}
-              value={sizes[key]}
-              onChange={(px) => setSize(key, px)}
-            />
+            <NumberField key={key} label={label} value={sizes[key]} onChange={(px) => setSize(key, px)} />
           ))}
 
           <h4>Palette</h4>
           <p className="hint">
-            Edit a hex value and the whole page updates. Roles choose which palette number is used for
-            the background and text colours.
+            Edit a hex value and the whole page updates. Add or remove colours; roles and sections keep
+            their colours when a colour is removed.
           </p>
           {site.palette.map((c, i) => (
             <div className="swatch" key={i}>
@@ -647,8 +754,20 @@ export function Editor({
                 aria-label={`Colour ${i + 1}`}
               />
               <HexField value={c} onValid={(hex) => setColour(i, hex)} />
+              <button
+                className="danger"
+                disabled={site.palette.length <= 1}
+                onClick={() => dropColour(i)}
+                aria-label={`Remove colour ${i + 1}`}
+                title="Remove colour"
+              >
+                ×
+              </button>
             </div>
           ))}
+          <div className="row">
+            <button onClick={addColour}>+ Add colour</button>
+          </div>
 
           <h4>Roles</h4>
           {ROLES.map((role) => (
@@ -656,10 +775,42 @@ export function Editor({
               key={role}
               label={role[0].toUpperCase() + role.slice(1)}
               value={String(site.roles[role])}
-              options={site.palette.map((c, i) => [String(i + 1), `${i + 1} · ${c}`])}
+              options={paletteOptions(site)}
               onChange={(n) => setRole(role, Number(n))}
             />
           ))}
+        </div>
+      )}
+
+      {tab === "phone" && (
+        <div className="panel">
+          <p className="hint">
+            Phone overrides apply only on phones. Use the <b>Phone</b> switch at the top and edit on the Page
+            tab: those edits are saved here. You can also edit the JSON by hand.
+          </p>
+          <NumberField
+            label="Breakpoint (phone width in px, or less)"
+            value={mobile.breakpoint}
+            onChange={(b) =>
+              setPage((p) => ({ ...p, mobile: { ...DEFAULT_MOBILE, ...(p.mobile || {}), breakpoint: Math.max(200, b) } }))
+            }
+          />
+          <Field label="Phone overrides (JSON)">
+            <textarea
+              rows={14}
+              value={jsonText ?? JSON.stringify(mobile, null, 2)}
+              onChange={(e) => {
+                setJsonText(e.target.value);
+                setJsonError("");
+              }}
+            />
+          </Field>
+          {jsonError && <p className="hint warn">{jsonError}</p>}
+          <div className="row">
+            <button onClick={applyPhoneJson} disabled={jsonText === null}>Apply JSON</button>
+            <button onClick={() => setJsonText(null)} disabled={jsonText === null}>Discard edits</button>
+            <button className="danger" onClick={clearPhone}>Clear all phone overrides…</button>
+          </div>
         </div>
       )}
 

@@ -5,5 +5,11 @@
     "height": 1200
   },
   "items": [],
-  "sections": []
+  "sections": [],
+  "mobile": {
+    "breakpoint": 700,
+    "canvas": {},
+    "items": {},
+    "sections": {}
+  }
 }
