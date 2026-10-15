@@ -3,6 +3,7 @@ import {
   ANCHORS,
   COLORS,
   DEFAULT_MOBILE,
+  DEFAULT_SPEED,
   DEFAULT_TEXT,
   ROLES,
   SIZE_UNITS,
@@ -18,7 +19,7 @@ import {
 } from "../lib/model.js";
 import { hasExt, useMedia } from "../lib/media.js";
 
-const TYPE_LABEL = { text: "Text", image: "Image", gif: "GIF", video: "Video" };
+const TYPE_LABEL = { text: "Text", image: "Image", gif: "GIF", video: "Video", animated: "Animated image" };
 const HORIZONTAL = { start: "Left", center: "Centre", end: "Right", stretch: "Left + right" };
 const VERTICAL = { start: "Top", center: "Middle", end: "Bottom", stretch: "Top + bottom" };
 const PIVOTS = [
@@ -81,6 +82,30 @@ function NumberField({ label, value, onChange }) {
         </button>
       </span>
     </Field>
+  );
+}
+
+// Optional panning. The checkbox is per axis; the speed (px moved per px scrolled)
+// can be negative, which reverses the direction.
+function PanControl({ axis, pan, speed, onChange }) {
+  return (
+    <>
+      <label className="check">
+        <input
+          type="checkbox"
+          checked={!!pan}
+          onChange={(e) => onChange({ [`scroll${axis}`]: e.target.checked })}
+        />
+        Pan when scrolling ({axis})
+      </label>
+      {pan && (
+        <NumberField
+          label={`Pan speed ${axis} (− = opposite way)`}
+          value={speed ?? DEFAULT_SPEED}
+          onChange={(v) => onChange({ [`speed${axis}`]: v })}
+        />
+      )}
+    </>
   );
 }
 
@@ -560,10 +585,22 @@ export function Editor({
                       value={sectionView.texture.offsetX}
                       onChange={(offsetX) => patchTexture({ offsetX })}
                     />
+                    <PanControl
+                      axis="X"
+                      pan={sectionView.texture.scrollX}
+                      speed={sectionView.texture.speedX}
+                      onChange={patchTexture}
+                    />
                     <NumberField
                       label="Offset Y (px)"
                       value={sectionView.texture.offsetY}
                       onChange={(offsetY) => patchTexture({ offsetY })}
+                    />
+                    <PanControl
+                      axis="Y"
+                      pan={sectionView.texture.scrollY}
+                      speed={sectionView.texture.speedY}
+                      onChange={patchTexture}
                     />
                     <NumberField
                       label="Rotation (degrees)"
@@ -681,6 +718,60 @@ export function Editor({
                       </label>
                     ),
                   )}
+                </>
+              )}
+
+              {item.type === "animated" && (
+                <>
+                  <FilePath
+                    label="Image (masked to the border, extension optional)"
+                    value={itemView.file}
+                    type="image"
+                    placeholder="0/border"
+                    onChange={(file) => patch({ file })}
+                  />
+                  <NumberField
+                    label="Tile size (px, one tile is square)"
+                    value={itemView.tile}
+                    onChange={(tile) => patch({ tile: Math.max(1, tile) })}
+                  />
+                  <fieldset className="axis">
+                    <legend>Border width (px)</legend>
+                    <div className="axis-grid">
+                      {["top", "right", "bottom", "left"].map((side) => (
+                        <NumberField
+                          key={side}
+                          label={side[0].toUpperCase() + side.slice(1)}
+                          value={itemView.border[side]}
+                          onChange={(v) => patch({ border: { ...itemView.border, [side]: Math.max(0, v) } })}
+                        />
+                      ))}
+                    </div>
+                  </fieldset>
+                  <fieldset className="axis">
+                    <legend>Repeat</legend>
+                    <label className="check">
+                      <input
+                        type="checkbox"
+                        checked={!!itemView.repeatX}
+                        onChange={(e) => patch({ repeatX: e.target.checked })}
+                      />
+                      Repeat along X (off = stretch to the width)
+                    </label>
+                    <label className="check">
+                      <input
+                        type="checkbox"
+                        checked={!!itemView.repeatY}
+                        onChange={(e) => patch({ repeatY: e.target.checked })}
+                      />
+                      Repeat along Y (off = stretch to the height)
+                    </label>
+                  </fieldset>
+                  <fieldset className="axis">
+                    <legend>Scrolling</legend>
+                    <PanControl axis="X" pan={itemView.scrollX} speed={itemView.speedX} onChange={patch} />
+                    <PanControl axis="Y" pan={itemView.scrollY} speed={itemView.speedY} onChange={patch} />
+                  </fieldset>
                 </>
               )}
 

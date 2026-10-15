@@ -1,7 +1,8 @@
 // Pure helpers: constraints -> CSS, text markup, toggling, media paths,
 // sections, phone overrides, palette edits and validation.
 
-export const TYPES = ["text", "image", "gif", "video"];
+export const TYPES = ["text", "image", "gif", "video", "animated"];
+export const DEFAULT_SPEED = 0.5;
 export const ANCHORS = ["start", "center", "end", "stretch"];
 export const UNITS = ["px", "%"];
 export const SIZE_UNITS = ["px", "%", "auto"];
@@ -10,7 +11,7 @@ export const ROLES = ["background", "text", "secondary", "highlight"];
 export const DEFAULT_TEXT = { body: 16, h1: 56, h2: 36, h3: 24 };
 export const DEFAULT_MOBILE = { breakpoint: 700, canvas: {}, items: {}, sections: {} };
 const COLOR_CODE = { n: "text", s: "secondary", h: "highlight" };
-const DEFAULT_EXT = { image: "png", gif: "gif", video: "mp4" };
+const DEFAULT_EXT = { image: "png", gif: "gif", video: "mp4", animated: "png" };
 
 export function uid(prefix) {
   return `${prefix}-${Math.random().toString(36).slice(2, 7)}`;
@@ -212,6 +213,19 @@ export function newItem(type, id, parent = "") {
     });
   } else if (type === "video") {
     Object.assign(item, { file: "", poster: "", controls: true, loop: false, autoplay: false });
+  } else if (type === "animated") {
+    // The image is masked to a ring of these widths (px) inside the box.
+    Object.assign(item, {
+      file: "",
+      tile: 64,
+      border: { top: 20, right: 20, bottom: 20, left: 20 },
+      repeatX: true,
+      repeatY: true,
+      scrollX: false,
+      speedX: DEFAULT_SPEED,
+      scrollY: false,
+      speedY: DEFAULT_SPEED,
+    });
   } else {
     Object.assign(item, { file: "", alt: "", fit: "contain" });
   }
@@ -232,12 +246,34 @@ export function newSection(kind, id, start = 0) {
     start,
     height: 600,
     background: 2,
-    texture: { file: "", size: 200, offsetX: 0, offsetY: 0, rotate: 0 },
+    texture: {
+      file: "",
+      size: 200,
+      offsetX: 0,
+      offsetY: 0,
+      scrollX: false,
+      speedX: DEFAULT_SPEED,
+      scrollY: false,
+      speedY: DEFAULT_SPEED,
+      rotate: 0,
+    },
     overlay: { colour: 1, opacity: 0 },
   };
 }
 
 export const isBand = (section) => (section.kind || "band") === "band";
+
+/**
+ * CSS background-position on one axis. When panning, the position follows the
+ * page scroll (--scroll, set in App): speed × scrollY, so a negative speed moves
+ * the other way, and scrolling back up reverses the motion.
+ */
+export function panPos(offset = 0, pan = false, speed = DEFAULT_SPEED) {
+  const o = Number(offset) || 0;
+  if (!pan) return `${o}px`;
+  const s = Number.isFinite(Number(speed)) ? Number(speed) : DEFAULT_SPEED;
+  return `calc(var(--scroll, 0) * ${s} * 1px ${o < 0 ? "-" : "+"} ${Math.abs(o)}px)`;
+}
 
 /** Top edge of a band in page coordinates. */
 export function bandTop(section, pageH) {
@@ -354,6 +390,12 @@ export function validatePage(page, site = null) {
     if (!TYPES.includes(item.type)) errors.push(`${where}: unknown type`);
     if (!item.id || ids.has(item.id)) errors.push(`${where}: missing or duplicate id`);
     ids.add(item.id);
+    if (item.type === "animated") {
+      const b = item.border || {};
+      if (![b.top, b.right, b.bottom, b.left].every((v) => v >= 0))
+        errors.push(`${where}: border widths must be 0 or more`);
+      if (!(item.tile > 0)) errors.push(`${where}: tile size must be positive`);
+    }
     if (item.type === "text" && typeof item.text !== "string")
       errors.push(`${where}: text items need text`);
     if (item.parent && !sectionIds.has(item.parent))
