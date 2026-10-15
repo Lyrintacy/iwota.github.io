@@ -2,7 +2,67 @@
   "id": "main",
   "title": "Main",
   "canvas": {
-    "height": 1200
+    "height": 1204
   },
-  "items": []
+  "items": [
+    {
+      "id": "text-a9rpy",
+      "type": "text",
+      "name": "TitleMe",
+      "h": {
+        "anchor": "end",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "%",
+        "size": 2,
+        "sizeUnit": "auto"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 0,
+        "sizeUnit": "px"
+      },
+      "pivot": [
+        100,
+        50
+      ],
+      "rotate": 0,
+      "text": "DSDDSASDADSDSADSPD,SAD,AS,DASD,\nDFSDSDFDSDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD\nLDAPSDLS[DLSSSSDSSDSDSP\n{n:DSDDSD}\nsdlatext\nCXVDXVDLDLDLSD",
+      "level": "p",
+      "align": "right",
+      "color": "text"
+    },
+    {
+      "id": "image-htfna",
+      "type": "image",
+      "name": "",
+      "h": {
+        "anchor": "center",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 300,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 100,
+        "sizeUnit": "px"
+      },
+      "pivot": [
+        50,
+        0
+      ],
+      "rotate": 0,
+      "src": "images/0/IMG_3586",
+      "alt": "",
+      "fit": "contain"
+    }
+  ]
 }
