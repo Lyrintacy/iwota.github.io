@@ -724,39 +724,43 @@ export function Editor({
               {item.type === "animated" && (
                 <>
                   <FilePath
-                    label="Image (masked to the border, extension optional)"
+                    label="Image (tiled in the square, extension optional)"
                     value={itemView.file}
                     type="image"
-                    placeholder="0/border"
+                    placeholder="0/pattern"
                     onChange={(file) => patch({ file })}
                   />
                   <NumberField
-                    label="Tile size (px, one tile is square)"
+                    label="Tile size (px, square)"
                     value={itemView.tile}
                     onChange={(tile) => patch({ tile: Math.max(1, tile) })}
                   />
+                  <NumberField
+                    label="Offset X (px)"
+                    value={itemView.offsetX}
+                    onChange={(offsetX) => patch({ offsetX })}
+                  />
+                  <PanControl axis="X" pan={itemView.scrollX} speed={itemView.speedX} onChange={patch} />
+                  <NumberField
+                    label="Offset Y (px)"
+                    value={itemView.offsetY}
+                    onChange={(offsetY) => patch({ offsetY })}
+                  />
+                  <PanControl axis="Y" pan={itemView.scrollY} speed={itemView.speedY} onChange={patch} />
+                  <NumberField
+                    label="Texture rotation (degrees)"
+                    value={itemView.textureRotate}
+                    onChange={(textureRotate) => patch({ textureRotate })}
+                  />
                   <fieldset className="axis">
-                    <legend>Border width (px)</legend>
-                    <div className="axis-grid">
-                      {["top", "right", "bottom", "left"].map((side) => (
-                        <NumberField
-                          key={side}
-                          label={side[0].toUpperCase() + side.slice(1)}
-                          value={itemView.border[side]}
-                          onChange={(v) => patch({ border: { ...itemView.border, [side]: Math.max(0, v) } })}
-                        />
-                      ))}
-                    </div>
-                  </fieldset>
-                  <fieldset className="axis">
-                    <legend>Repeat</legend>
+                    <legend>Repeat (off = one tile only)</legend>
                     <label className="check">
                       <input
                         type="checkbox"
                         checked={!!itemView.repeatX}
                         onChange={(e) => patch({ repeatX: e.target.checked })}
                       />
-                      Repeat along X (off = stretch to the width)
+                      Repeat along X
                     </label>
                     <label className="check">
                       <input
@@ -764,13 +768,8 @@ export function Editor({
                         checked={!!itemView.repeatY}
                         onChange={(e) => patch({ repeatY: e.target.checked })}
                       />
-                      Repeat along Y (off = stretch to the height)
+                      Repeat along Y
                     </label>
-                  </fieldset>
-                  <fieldset className="axis">
-                    <legend>Scrolling</legend>
-                    <PanControl axis="X" pan={itemView.scrollX} speed={itemView.speedX} onChange={patch} />
-                    <PanControl axis="Y" pan={itemView.scrollY} speed={itemView.speedY} onChange={patch} />
                   </fieldset>
                 </>
               )}

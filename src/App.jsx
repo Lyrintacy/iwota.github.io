@@ -72,12 +72,18 @@ export default function App() {
     else localStorage.removeItem(DRAFT_KEY);
   }, [data, draft]);
 
-  // --scroll drives every panning texture and animated image (see panPos in model.js).
+  // --pan adds up the scroll movement (not the scroll position). Every panning
+  // texture reads it (see panPos in model.js).
   useEffect(() => {
     let frame = 0;
+    let last = window.scrollY;
+    let pan = 0;
     const update = () => {
       frame = 0;
-      document.documentElement.style.setProperty("--scroll", String(window.scrollY));
+      const y = window.scrollY;
+      pan += y - last;
+      last = y;
+      document.documentElement.style.setProperty("--pan", pan.toFixed(2));
     };
     const onScroll = () => {
       if (!frame) frame = requestAnimationFrame(update);

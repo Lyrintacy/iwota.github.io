@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useLayoutEffect, useRef, useState } from "react";
 import { bandTop, inlineTokens, isBand, itemStyle, pageHeight, panPos } from "../lib/model.js";
 import { useMedia } from "../lib/media.js";
 
@@ -51,23 +51,39 @@ function Media({ item }) {
   );
 }
 
-// Image masked to a ring of border widths; tiled or stretched per axis, optionally panning.
+// A square box tiled with the image, like a section texture: tile size, offset,
+// rotation, per-axis repeat and panning. The tiled layer is sized to the box's
+// diagonal and rotated, so the box is always fully covered.
 function Animated({ item }) {
   const media = useMedia("image", item.file);
-  const b = item.border || {};
-  const w = (v) => Math.max(0, Number(v) || 0);
+  const ref = useRef(null);
+  const [box, setBox] = useState({ w: 0, h: 0 });
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([e]) =>
+      setBox({ w: e.contentRect.width, h: e.contentRect.height }),
+    );
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
   const tile = Math.max(1, Number(item.tile) || 1);
+  const diagonal = Math.ceil(Math.hypot(box.w, box.h));
   return (
-    <div
-      className="media animated"
-      style={{
-        backgroundImage: media.url ? `url("${media.url}")` : undefined,
-        backgroundSize: `${item.repeatX ? `${tile}px` : "100%"} ${item.repeatY ? `${tile}px` : "100%"}`,
-        backgroundRepeat: `${item.repeatX ? "repeat" : "no-repeat"} ${item.repeatY ? "repeat" : "no-repeat"}`,
-        backgroundPosition: `${panPos(0, item.scrollX, item.speedX)} ${panPos(0, item.scrollY, item.speedY)}`,
-        padding: `${w(b.top)}px ${w(b.right)}px ${w(b.bottom)}px ${w(b.left)}px`,
-      }}
-    />
+    <div ref={ref} className="media animated">
+      <div
+        className="animated-tex"
+        style={{
+          width: diagonal,
+          height: diagonal,
+          backgroundImage: media.url ? `url("${media.url}")` : undefined,
+          backgroundSize: `${tile}px ${tile}px`,
+          backgroundRepeat: `${item.repeatX ? "repeat" : "no-repeat"} ${item.repeatY ? "repeat" : "no-repeat"}`,
+          backgroundPosition: `${panPos(item.offsetX, item.scrollX, item.speedX)} ${panPos(item.offsetY, item.scrollY, item.speedY)}`,
+          transform: `translate(-50%, -50%) rotate(${Number(item.textureRotate) || 0}deg)`,
+        }}
+      />
+    </div>
   );
 }
 

@@ -414,13 +414,27 @@ body {
   color: #fff;
 }
 
-/* Animated image: the image shows only inside the border ring (padding) */
+/* Animated image: a square box that clips its tiled layer */
 .animated {
-  box-sizing: border-box;
-  background-origin: border-box;
-  background-clip: border-box;
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  mask-composite: exclude;
+  position: relative;
+  overflow: hidden;
+}
+.animated-tex {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  background-origin: content-box;
+}
+
+/* Phones: the editor takes the full width instead of a side panel */
+@media (max-width: 700px) {
+  .site.editing {
+    margin-right: 0;
+  }
+  .editor {
+    width: 100%;
+  }
+  .site.phone-preview.editing {
+    margin-right: 0;
+  }
 }
