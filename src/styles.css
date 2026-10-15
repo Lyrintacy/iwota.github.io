@@ -39,20 +39,20 @@ body {
   margin: 0;
   white-space: pre-line;
   line-height: 1.5;
-  font-size: 16px;
+  font-size: var(--size-body, 16px);
   font-weight: 400;
   color: var(--c-text, #151814);
 }
 .text-body.level-h1 {
-  font-size: 56px;
+  font-size: var(--size-h1, 56px);
   line-height: 1.05;
 }
 .text-body.level-h2 {
-  font-size: 36px;
+  font-size: var(--size-h2, 36px);
   line-height: 1.15;
 }
 .text-body.level-h3 {
-  font-size: 24px;
+  font-size: var(--size-h3, 24px);
   line-height: 1.2;
 }
 
@@ -243,8 +243,28 @@ body {
   gap: 8px;
   align-items: center;
 }
-.swatch .num {
+.num-label {
   color: #555;
+}
+.num {
+  display: flex;
+  gap: 4px;
+}
+.num input {
+  flex: 1;
+  min-width: 0;
+}
+.num button {
+  width: 32px;
+  font-size: 16px;
+  line-height: 1;
+}
+.hint.warn {
+  color: #9a5b00;
+}
+.hint code {
+  font-size: 11px;
+  word-break: break-all;
 }
 .swatch input[type="color"] {
   width: 40px;

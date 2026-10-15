@@ -15,8 +15,8 @@ public/images/                put your pictures, GIFs and videos here, then refe
 - **Page:** add Text / Image / GIF / Video items, select them (in the list or by clicking on the canvas), and set:
   - **Horizontal and vertical constraints** — *Pin to* (Left, Centre, Right, or Left + right stretch), an *Offset* (px or % of the canvas), and a *Size*. Percent values keep the layout proportional when the window resizes.
   - **Pivot & rotation** — the point the item rotates around, and the angle.
-  - **Text** — select words and press Bold, Italic, Bold italic, Normal, Secondary, or Highlight. Heading level and alignment are per item.
-- **Palette:** edit the 7 colours, and choose which palette number is used for the background, normal text, secondary text, and highlight.
+  - **Text** — select words and press **Bold**, **Italic**, **Secondary**, or **Highlight**. Press again to turn it off (the button lights up while the selection has it). **Clear colour** removes the colour. Bold and italic combine. Heading level and alignment are per item.
+- **General:** the font size of body text and each heading level (applies to every text item), the 7 palette colours, and which palette number is used for the background, normal text, secondary text, and highlight.
 - **Export:** copy or download `site.json` and `main.json`, then paste them over the matching files in `src/config/` on GitHub and commit.
 - **Reset to saved config…** clears unexported changes after a confirmation.
 
@@ -24,7 +24,7 @@ Changes are kept in this browser (the "Unsaved draft" badge shows until you rese
 
 ## Text markup
 
-`**bold**`, `*italic*`, `***bold italic***`, `{s:secondary text}`, `{h:highlighted}`, `{n:normal}`. Colour spans can contain bold or italic.
+The workshop writes this for you: `**bold**`, `*italic*`, `***bold italic***`, `{s:secondary text}`, `{h:highlighted}`. Colour spans can contain bold or italic.
 
 ## Open it locally (no server, no push)
 

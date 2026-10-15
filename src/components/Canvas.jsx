@@ -1,5 +1,5 @@
 import React from "react";
-import { inlineTokens, itemStyle } from "../lib/model.js";
+import { inlineTokens, itemStyle, mediaUrl } from "../lib/model.js";
 
 function Text({ item }) {
   const Tag = ["h1", "h2", "h3"].includes(item.level) ? item.level : "p";
@@ -29,8 +29,8 @@ function Media({ item }) {
     return (
       <video
         className="media"
-        src={item.src || undefined}
-        poster={item.poster || undefined}
+        src={mediaUrl(item) || undefined}
+        poster={mediaUrl({ type: "image", file: item.poster }) || undefined}
         controls={item.controls !== false}
         loop={!!item.loop}
         autoPlay={!!item.autoplay}
@@ -41,7 +41,7 @@ function Media({ item }) {
   return (
     <img
       className="media"
-      src={item.src || undefined}
+      src={mediaUrl(item) || undefined}
       alt={item.alt || ""}
       style={{ objectFit: item.fit || "contain" }}
     />
