@@ -1,4 +1,5 @@
-// Pure helpers: constraint -> CSS, text markup, toggling, media paths, validation.
+// Pure helpers: constraints -> CSS, text markup, toggling, media paths,
+// sections, phone overrides, palette edits and validation.
 
 export const TYPES = ["text", "image", "gif", "video"];
 export const ANCHORS = ["start", "center", "end", "stretch"];
@@ -7,6 +8,7 @@ export const SIZE_UNITS = ["px", "%", "auto"];
 export const COLORS = ["text", "secondary", "highlight"];
 export const ROLES = ["background", "text", "secondary", "highlight"];
 export const DEFAULT_TEXT = { body: 16, h1: 56, h2: 36, h3: 24 };
+export const DEFAULT_MOBILE = { breakpoint: 700, canvas: {}, items: {}, sections: {} };
 const COLOR_CODE = { n: "text", s: "secondary", h: "highlight" };
 const DEFAULT_EXT = { image: "png", gif: "gif", video: "mp4" };
 
@@ -14,6 +16,7 @@ export function uid(prefix) {
   return `${prefix}-${Math.random().toString(36).slice(2, 7)}`;
 }
 
+// --- Text markup --------------------------------------------------------------
 /**
  * Markup: **bold**, *italic*, ***bold italic***,
  * {s:secondary}, {h:highlight}, {n:normal}. Colour spans may contain emphasis.
@@ -46,7 +49,7 @@ export function inlineTokens(text = "") {
   return out;
 }
 
-// --- Toggling formats on a selection --------------------------------------
+// --- Toggling formats on a selection -------------------------------------------
 // Bold and italic are asterisk runs around the selection: * = italic,
 // ** = bold, *** = both. Toggling flips one bit of that run.
 const BOLD = 2,
@@ -137,7 +140,9 @@ export function toggleFormat(text, s, e, kind) {
   };
 }
 
-// --- Layout constraints -> CSS ----------------------------------------------
+// --- Layout constraints -> CSS ---------------------------------------------------
+// Items are positioned inside their frame: the page, a band section, or a
+// screen overlay. Percent values are of that frame.
 const css = (value, unit) => `${Number(value) || 0}${unit === "%" ? "%" : "px"}`;
 
 // One axis. `lo`/`hi` are the CSS edges (left/right or top/bottom).
@@ -155,7 +160,7 @@ function axis(a = {}, lo, hi, size) {
   return { style, shift };
 }
 
-/** Converts an item's constraints into CSS. Percent values are of the canvas. */
+/** Converts an item's constraints into CSS. */
 export function itemStyle(item) {
   const x = axis(item.h, "left", "right", "width");
   const y = axis(item.v, "top", "bottom", "height");
@@ -171,7 +176,7 @@ export function itemStyle(item) {
   };
 }
 
-// --- Media paths ------------------------------------------------------------
+// --- Media paths ---------------------------------------------------------------
 /**
  * "0/profile" -> "images/0/profile.png". The extension is optional; the default
  * depends on the item type. Full http(s) URLs are used as they are.
@@ -186,11 +191,13 @@ export function mediaUrl(item) {
   return `images/${file}`;
 }
 
-export function newItem(type, id) {
+// --- Creating things -------------------------------------------------------------
+export function newItem(type, id, parent = "") {
   const item = {
     id,
     type,
     name: "",
+    parent,
     h: { anchor: "start", offset: 0, offsetEnd: 0, unit: "px", size: 300, sizeUnit: "px" },
     v: { anchor: "start", offset: 0, offsetEnd: 0, unit: "px", size: 0, sizeUnit: "auto" },
     pivot: [50, 50],
@@ -211,32 +218,17 @@ export function newItem(type, id) {
   return item;
 }
 
-// --- Validation ---------------------------------------------------------------
-const hex = /^#[0-9a-f]{6}$/i;
-
-export function validateSite(site) {
-  const errors = [];
-  if (!site || !Array.isArray(site.palette) || site.palette.length !== 7)
-    errors.push("site.palette must contain exactly 7 colours");
-  else
-    site.palette.forEach((c, i) => {
-      if (!hex.test(c)) errors.push(`palette ${i + 1} must be #RRGGBB`);
-    });
-  for (const role of ROLES) {
-    const n = site?.roles?.[role];
-    if (!Number.isInteger(n) || n < 1 || n > 7)
-      errors.push(`roles.${role} must be a palette number from 1 to 7`);
-  }
-  for (const [key, value] of Object.entries(site?.text || {}))
-    if (!(DEFAULT_TEXT[key] !== undefined && value > 0))
-      errors.push(`text.${key} must be a size in px`);
-  return errors;
-}
-
-export function newSection(id, start = 0) {
+/**
+ * kind "band": a background section placed from the top or bottom of the page.
+ * kind "fixed": a screen overlay, always the size of the screen, fixed on scroll.
+ */
+export function newSection(kind, id, start = 0) {
+  if (kind === "fixed") return { id, kind: "fixed", name: "" };
   return {
     id,
+    kind: "band",
     name: "",
+    anchor: "top",
     start,
     height: 600,
     background: 2,
@@ -245,39 +237,129 @@ export function newSection(id, start = 0) {
   };
 }
 
-/** The page grows to fit its sections when they extend below the canvas height. */
-export function pageHeight(page) {
-  return Math.max(
-    page.canvas.height,
-    ...(page.sections || []).map((s) => s.start + s.height),
-  );
+export const isBand = (section) => (section.kind || "band") === "band";
+
+/** Top edge of a band in page coordinates. */
+export function bandTop(section, pageH) {
+  return section.anchor === "bottom" ? pageH - section.start - section.height : section.start;
 }
 
-export function validatePage(page) {
+/** The page grows to fit bands that extend below the canvas height. */
+export function pageHeight(page) {
+  let h = page.canvas.height;
+  for (const s of page.sections || [])
+    if (isBand(s))
+      h = Math.max(h, s.anchor === "bottom" ? s.start + s.height : s.start + s.height);
+  return h;
+}
+
+/** Phone overrides: merged over the base page on phones and in Phone mode. */
+export function applyPhone(page) {
+  const m = page.mobile;
+  if (!m) return page;
+  return {
+    ...page,
+    canvas: { ...page.canvas, ...(m.canvas || {}) },
+    items: page.items.map((i) => (m.items?.[i.id] ? { ...i, ...m.items[i.id] } : i)),
+    sections: (page.sections || []).map((s) =>
+      m.sections?.[s.id] ? { ...s, ...m.sections[s.id] } : s,
+    ),
+  };
+}
+
+/**
+ * Removes palette colour n (1-based). Anything that used it falls back to
+ * colour 1; anything after it moves down one, so it keeps its colour.
+ */
+export function removeColour(site, page, n) {
+  const remap = (v) => (v === n ? 1 : v > n ? v - 1 : v);
+  const band = (s) =>
+    isBand(s)
+      ? {
+          ...s,
+          background: remap(s.background),
+          ...(s.overlay ? { overlay: { ...s.overlay, colour: remap(s.overlay.colour) } } : {}),
+        }
+      : s;
+  const phoneSection = (o) => {
+    const next = { ...o };
+    if (o.background !== undefined) next.background = remap(o.background);
+    if (o.overlay) next.overlay = { ...o.overlay, colour: remap(o.overlay.colour) };
+    return next;
+  };
+  const mobile = page.mobile && {
+    ...page.mobile,
+    sections: Object.fromEntries(
+      Object.entries(page.mobile.sections || {}).map(([id, o]) => [id, phoneSection(o)]),
+    ),
+  };
+  return {
+    site: {
+      ...site,
+      palette: site.palette.filter((_, i) => i !== n - 1),
+      roles: Object.fromEntries(Object.entries(site.roles).map(([k, v]) => [k, remap(v)])),
+    },
+    page: { ...page, sections: (page.sections || []).map(band), ...(mobile ? { mobile } : {}) },
+  };
+}
+
+// --- Validation -----------------------------------------------------------------
+const hex = /^#[0-9a-f]{6}$/i;
+
+export function validateSite(site) {
+  const errors = [];
+  const n = Array.isArray(site?.palette) ? site.palette.length : 0;
+  if (n < 1) errors.push("site.palette needs at least one colour");
+  else
+    site.palette.forEach((c, i) => {
+      if (!hex.test(c)) errors.push(`palette ${i + 1} must be #RRGGBB`);
+    });
+  for (const role of ROLES) {
+    const v = site?.roles?.[role];
+    if (!Number.isInteger(v) || v < 1 || v > n)
+      errors.push(`roles.${role} must be a palette number from 1 to ${n}`);
+  }
+  for (const [key, value] of Object.entries(site?.text || {}))
+    if (!(DEFAULT_TEXT[key] !== undefined && value > 0))
+      errors.push(`text.${key} must be a size in px`);
+  return errors;
+}
+
+export function validatePage(page, site = null) {
   if (!page || !Array.isArray(page.items)) return ["page.items must be a list"];
   const errors = [];
+  const colours = site?.palette?.length || 99;
+  const inPalette = (n) => Number.isInteger(n) && n >= 1 && n <= colours;
   if (!(page.canvas?.height > 0))
     errors.push("canvas.height must be a positive number");
+
+  const sectionIds = new Set();
+  (page.sections || []).forEach((s, i) => {
+    const where = `section ${i + 1}`;
+    if (!s.id || sectionIds.has(s.id)) errors.push(`${where}: missing or duplicate id`);
+    sectionIds.add(s.id);
+    if (!["band", "fixed", undefined].includes(s.kind)) errors.push(`${where}: unknown kind`);
+    if (isBand(s)) {
+      if (!(s.start >= 0)) errors.push(`${where}: start must be 0 or more`);
+      if (!(s.height > 0)) errors.push(`${where}: height must be positive`);
+      if (!inPalette(s.background)) errors.push(`${where}: background must be a palette number`);
+      if (s.overlay && !inPalette(s.overlay.colour))
+        errors.push(`${where}: overlay colour must be a palette number`);
+    }
+  });
+
   const ids = new Set();
   page.items.forEach((item, i) => {
     const where = `item ${i + 1}`;
     if (!TYPES.includes(item.type)) errors.push(`${where}: unknown type`);
-    if (!item.id || ids.has(item.id))
-      errors.push(`${where}: missing or duplicate id`);
+    if (!item.id || ids.has(item.id)) errors.push(`${where}: missing or duplicate id`);
     ids.add(item.id);
     if (item.type === "text" && typeof item.text !== "string")
       errors.push(`${where}: text items need text`);
+    if (item.parent && !sectionIds.has(item.parent))
+      errors.push(`${where}: parent section not found`);
   });
-  const sectionIds = new Set();
-  (page.sections || []).forEach((section, i) => {
-    const where = `section ${i + 1}`;
-    if (!section.id || sectionIds.has(section.id))
-      errors.push(`${where}: missing or duplicate id`);
-    sectionIds.add(section.id);
-    if (!(section.start >= 0)) errors.push(`${where}: start must be 0 or more`);
-    if (!(section.height > 0)) errors.push(`${where}: height must be positive`);
-    if (!(section.background >= 1 && section.background <= 7))
-      errors.push(`${where}: background must be a palette number from 1 to 7`);
-  });
+  if (page.mobile !== undefined && (typeof page.mobile !== "object" || !page.mobile))
+    errors.push("mobile must be an object");
   return errors;
 }
