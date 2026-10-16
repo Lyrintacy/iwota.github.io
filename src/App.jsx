@@ -1,9 +1,15 @@
 import React, { useEffect, useState } from "react";
 import siteConfig from "./config/site.json";
 import pageConfig from "./config/pages/main.json";
-import { DEFAULT_TEXT, applyPhone, validatePage, validateSite } from "./lib/model.js";
+import {
+  DEFAULT_TEXT,
+  applyPhone,
+  validatePage,
+  validateSite,
+} from "./lib/model.js";
 import { Canvas } from "./components/Canvas.jsx";
 import { Editor } from "./components/Editor.jsx";
+import { startScrollEffects } from "./lib/scroll.js";
 
 const DRAFT_KEY = "site-editor-draft-v2";
 const SAVED = { site: siteConfig, page: pageConfig };
@@ -12,7 +18,8 @@ const SAVED = { site: siteConfig, page: pageConfig };
 // was made from, so an updated config file is never hidden by an old draft.
 function hash(text) {
   let h = 5381;
-  for (let i = 0; i < text.length; i++) h = ((h * 33) ^ text.charCodeAt(i)) >>> 0;
+  for (let i = 0; i < text.length; i++)
+    h = ((h * 33) ^ text.charCodeAt(i)) >>> 0;
   return String(h);
 }
 const BASE = hash(JSON.stringify(SAVED));
@@ -25,7 +32,8 @@ function loadDraft() {
     if (draft.base !== BASE)
       return {
         data: SAVED,
-        notice: "The saved config changed since your last draft, so the draft was discarded.",
+        notice:
+          "The saved config changed since your last draft, so the draft was discarded.",
       };
     const errors = [
       ...validateSite(draft.data.site),
@@ -60,6 +68,18 @@ export default function App() {
   const [phone, setPhone] = useState(false); // editor: edit phone overrides
   const [selectedId, setSelectedId] = useState(null);
   const [selectedSectionId, setSelectedSectionId] = useState(null);
+  // Where the workshop panel sits. Stored in this browser only.
+  const [dock, setDock] = useState(() =>
+    localStorage.getItem("editor-dock") === "right" ? "right" : "left",
+  );
+  const [previewWidth, setPreviewWidth] = useState(
+    () => Number(localStorage.getItem("preview-width")) || 390,
+  );
+  useEffect(() => localStorage.setItem("editor-dock", dock), [dock]);
+  useEffect(
+    () => localStorage.setItem("preview-width", String(previewWidth)),
+    [previewWidth],
+  );
   const { site, page } = data;
 
   const phoneViewport = usePhoneViewport(page.mobile?.breakpoint || 700);
@@ -68,33 +88,12 @@ export default function App() {
 
   const draft = JSON.stringify(data) !== JSON.stringify(SAVED);
   useEffect(() => {
-    if (draft) localStorage.setItem(DRAFT_KEY, JSON.stringify({ base: BASE, data }));
+    if (draft)
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({ base: BASE, data }));
     else localStorage.removeItem(DRAFT_KEY);
   }, [data, draft]);
 
-  // --pan adds up the scroll movement (not the scroll position). Every panning
-  // texture reads it (see panPos in model.js).
-  useEffect(() => {
-    let frame = 0;
-    let last = window.scrollY;
-    let pan = 0;
-    const update = () => {
-      frame = 0;
-      const y = window.scrollY;
-      pan += y - last;
-      last = y;
-      document.documentElement.style.setProperty("--pan", pan.toFixed(2));
-    };
-    const onScroll = () => {
-      if (!frame) frame = requestAnimationFrame(update);
-    };
-    update();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      cancelAnimationFrame(frame);
-    };
-  }, []);
+  useEffect(() => startScrollEffects(), []);
 
   useEffect(() => {
     const key = (e) => {
@@ -129,11 +128,13 @@ export default function App() {
   for (const [role, n] of Object.entries(site.roles))
     vars[`--c-${role}`] = `var(--color-${n})`;
   const sizes = { ...DEFAULT_TEXT, ...(site.text || {}) };
-  for (const [key, px] of Object.entries(sizes)) vars[`--size-${key}`] = `${px}px`;
+  for (const [key, px] of Object.entries(sizes))
+    vars[`--size-${key}`] = `${px}px`;
+  vars["--preview-w"] = `${previewWidth}px`;
 
   return (
     <div
-      className={`site ${editing ? "editing" : ""} ${previewing ? "phone-preview" : ""}`}
+      className={`site dock-${dock} ${editing ? "editing" : ""} ${previewing ? "phone-preview" : ""}`}
       style={vars}
     >
       {notice && (
@@ -147,6 +148,7 @@ export default function App() {
         selectedId={selectedId}
         onSelect={setSelectedId}
         selectedSectionId={selectedSectionId}
+        previewWidth={previewing ? previewWidth : 0}
       />
       <button className="edit-toggle" onClick={() => setEditing((v) => !v)}>
         {editing ? "Close workshop" : "Workshop"} <kbd>F2</kbd>
@@ -167,6 +169,10 @@ export default function App() {
           setSelectedSectionId={setSelectedSectionId}
           phone={phone}
           setPhone={setPhone}
+          dock={dock}
+          setDock={setDock}
+          previewWidth={previewWidth}
+          setPreviewWidth={setPreviewWidth}
         />
       )}
     </div>

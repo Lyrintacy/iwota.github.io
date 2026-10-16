@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   ANCHORS,
   COLORS,
+  DEFAULT_DESIGN,
   DEFAULT_MOBILE,
   DEFAULT_SPEED,
   DEFAULT_TEXT,
@@ -19,19 +20,49 @@ import {
 } from "../lib/model.js";
 import { hasExt, useMedia } from "../lib/media.js";
 
-const TYPE_LABEL = { text: "Text", image: "Image", gif: "GIF", video: "Video", animated: "Animated image" };
-const HORIZONTAL = { start: "Left", center: "Centre", end: "Right", stretch: "Left + right" };
-const VERTICAL = { start: "Top", center: "Middle", end: "Bottom", stretch: "Top + bottom" };
+const TYPE_LABEL = {
+  text: "Text",
+  image: "Image",
+  gif: "GIF",
+  video: "Video",
+  animated: "Animated image",
+};
+const HORIZONTAL = {
+  start: "Left",
+  center: "Centre",
+  end: "Right",
+  stretch: "Left + right",
+};
+const VERTICAL = {
+  start: "Top",
+  center: "Middle",
+  end: "Bottom",
+  stretch: "Top + bottom",
+};
 const PIVOTS = [
-  [0, 0], [50, 0], [100, 0],
-  [0, 50], [50, 50], [100, 50],
-  [0, 100], [50, 100], [100, 100],
+  [0, 0],
+  [50, 0],
+  [100, 0],
+  [0, 50],
+  [50, 50],
+  [100, 50],
+  [0, 100],
+  [50, 100],
+  [100, 100],
 ];
-const TEXT_SIZE_LABELS = { body: "Body text", h1: "Heading 1", h2: "Heading 2", h3: "Heading 3" };
-const paletteOptions = (site) => site.palette.map((c, i) => [String(i + 1), `${i + 1} · ${c}`]);
+const TEXT_SIZE_LABELS = {
+  body: "Body text",
+  h1: "Heading 1",
+  h2: "Heading 2",
+  h3: "Heading 3",
+};
+const paletteOptions = (site) =>
+  site.palette.map((c, i) => [String(i + 1), `${i + 1} · ${c}`]);
 
 function download(name, text) {
-  const url = URL.createObjectURL(new Blob([text], { type: "application/json" }));
+  const url = URL.createObjectURL(
+    new Blob([text], { type: "application/json" }),
+  );
   const a = document.createElement("a");
   a.href = url;
   a.download = name;
@@ -76,7 +107,9 @@ function NumberField({ label, value, onChange }) {
           type="button"
           aria-label="Toggle minus sign"
           title="Add or remove the minus sign"
-          onClick={() => update(text.startsWith("-") ? text.slice(1) : `-${text}`)}
+          onClick={() =>
+            update(text.startsWith("-") ? text.slice(1) : `-${text}`)
+          }
         >
           −
         </button>
@@ -150,7 +183,11 @@ function AxisFields({ title, axisValue = {}, labels, onChange }) {
         onChange={(anchor) => onChange({ anchor })}
       />
       <NumberField
-        label={a.anchor === "center" ? "Shift (− = left/up, + = right/down)" : "Offset"}
+        label={
+          a.anchor === "center"
+            ? "Shift (− = left/up, + = right/down)"
+            : "Offset"
+        }
         value={a.offset}
         onChange={(offset) => onChange({ offset })}
       />
@@ -169,7 +206,11 @@ function AxisFields({ title, axisValue = {}, labels, onChange }) {
       />
       {a.anchor !== "stretch" && (
         <>
-          <NumberField label="Size" value={a.size} onChange={(size) => onChange({ size })} />
+          <NumberField
+            label="Size"
+            value={a.size}
+            onChange={(size) => onChange({ size })}
+          />
           <Select
             label="Size unit"
             value={a.sizeUnit}
@@ -223,7 +264,11 @@ function TextEditor({ item, onChange, setStatus }) {
             {label}
           </button>
         ))}
-        <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => apply("n")}>
+        <button
+          type="button"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => apply("n")}
+        >
           Clear colour
         </button>
       </div>
@@ -242,13 +287,22 @@ function TextEditor({ item, onChange, setStatus }) {
       <Select
         label="Heading"
         value={item.level}
-        options={[["p", "Body text"], ["h1", "Heading 1"], ["h2", "Heading 2"], ["h3", "Heading 3"]]}
+        options={[
+          ["p", "Body text"],
+          ["h1", "Heading 1"],
+          ["h2", "Heading 2"],
+          ["h3", "Heading 3"],
+        ]}
         onChange={(level) => onChange({ level })}
       />
       <Select
         label="Alignment"
         value={item.align}
-        options={[["left", "Left"], ["center", "Centre"], ["right", "Right"]]}
+        options={[
+          ["left", "Left"],
+          ["center", "Centre"],
+          ["right", "Right"],
+        ]}
         onChange={(align) => onChange({ align })}
       />
       <Select
@@ -266,16 +320,23 @@ function TextEditor({ item, onChange, setStatus }) {
 function FilePath({ label, value = "", type, onChange, placeholder }) {
   const { url, ext } = useMedia(type, value);
   useEffect(() => {
-    if (ext && value.trim() && !hasExt(value)) onChange(`${value.trim()}.${ext}`);
+    if (ext && value.trim() && !hasExt(value))
+      onChange(`${value.trim()}.${ext}`);
   }, [ext]);
   return (
     <>
       <Field label={label}>
-        <input placeholder={placeholder} value={value} onChange={(e) => onChange(e.target.value)} />
+        <input
+          placeholder={placeholder}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+        />
       </Field>
       <p className="hint">
         {value.trim() ? (
-          <>Loads from <code>{url}</code></>
+          <>
+            Loads from <code>{url}</code>
+          </>
         ) : (
           "Type folder/name, for example 0/profile. The extension is found automatically."
         )}
@@ -299,6 +360,10 @@ export function Editor({
   setSelectedSectionId,
   phone,
   setPhone,
+  dock,
+  setDock,
+  previewWidth,
+  setPreviewWidth,
 }) {
   const [tab, setTab] = useState("page");
   const [status, setStatus] = useState("");
@@ -309,7 +374,9 @@ export function Editor({
   const sections = page.sections || [];
   const sIdx = sections.findIndex((x) => x.id === selectedSectionId);
   const section = sIdx >= 0 ? sections[sIdx] : null;
-  const sectionView = section ? view.sections.find((x) => x.id === section.id) : null;
+  const sectionView = section
+    ? view.sections.find((x) => x.id === section.id)
+    : null;
   const iIdx = page.items.findIndex((i) => i.id === selectedId);
   const item = iIdx >= 0 ? page.items[iIdx] : null;
   const itemView = item ? view.items.find((i) => i.id === item.id) : null;
@@ -321,19 +388,27 @@ export function Editor({
       const m = { ...DEFAULT_MOBILE, ...(p.mobile || {}) };
       return {
         ...p,
-        mobile: { ...m, [kind]: { ...m[kind], [id]: { ...m[kind][id], ...values } } },
+        mobile: {
+          ...m,
+          [kind]: { ...m[kind], [id]: { ...m[kind][id], ...values } },
+        },
       };
     });
   const writeItem = (id, values) =>
     phone
       ? writeOverride("items", id, values)
-      : setPage((p) => ({ ...p, items: p.items.map((i) => (i.id === id ? { ...i, ...values } : i)) }));
+      : setPage((p) => ({
+          ...p,
+          items: p.items.map((i) => (i.id === id ? { ...i, ...values } : i)),
+        }));
   const writeSection = (id, values) =>
     phone
       ? writeOverride("sections", id, values)
       : setPage((p) => ({
           ...p,
-          sections: (p.sections || []).map((s) => (s.id === id ? { ...s, ...values } : s)),
+          sections: (p.sections || []).map((s) =>
+            s.id === id ? { ...s, ...values } : s,
+          ),
         }));
   const writeCanvas = (values) =>
     phone
@@ -344,10 +419,13 @@ export function Editor({
       : setPage((p) => ({ ...p, canvas: { ...p.canvas, ...values } }));
 
   const patch = (values) => writeItem(item.id, values);
-  const patchAxis = (axis, values) => writeItem(item.id, { [axis]: { ...itemView[axis], ...values } });
+  const patchAxis = (axis, values) =>
+    writeItem(item.id, { [axis]: { ...itemView[axis], ...values } });
   const patchSection = (values) => writeSection(section.id, values);
-  const patchTexture = (values) => patchSection({ texture: { ...sectionView.texture, ...values } });
-  const patchOverlay = (values) => patchSection({ overlay: { ...sectionView.overlay, ...values } });
+  const patchTexture = (values) =>
+    patchSection({ texture: { ...sectionView.texture, ...values } });
+  const patchOverlay = (values) =>
+    patchSection({ overlay: { ...sectionView.overlay, ...values } });
 
   // Structure (adding, moving, deleting) always happens on the base page.
   const add = (type) => {
@@ -373,14 +451,25 @@ export function Editor({
     setSelectedId(copy.id);
   };
   const removeItem = () => {
-    if (!window.confirm(`Delete "${item.name || TYPE_LABEL[item.type]}"?`)) return;
-    setPage((p) => ({ ...p, items: p.items.filter((i) => i.id !== selectedId) }));
+    if (!window.confirm(`Delete "${item.name || TYPE_LABEL[item.type]}"?`))
+      return;
+    setPage((p) => ({
+      ...p,
+      items: p.items.filter((i) => i.id !== selectedId),
+    }));
     setSelectedId(null);
   };
 
   const addSection = (kind) => {
-    const bottom = Math.max(0, ...sections.filter(isBand).map((x) => x.start + x.height));
-    const created = newSection(kind, uid("section"), kind === "band" ? bottom : 0);
+    const bottom = Math.max(
+      0,
+      ...sections.filter(isBand).map((x) => x.start + x.height),
+    );
+    const created = newSection(
+      kind,
+      uid("section"),
+      kind === "band" ? bottom : 0,
+    );
     setPage((p) => ({ ...p, sections: [...(p.sections || []), created] }));
     setSelectedSectionId(created.id);
   };
@@ -406,15 +495,24 @@ export function Editor({
     setSelectedSectionId(copy.id);
   };
   const removeSection = () => {
-    if (!window.confirm(`Delete "${section.name || "this section"}"? Items inside it move to the page.`))
+    if (
+      !window.confirm(
+        `Delete "${section.name || "this section"}"? Items inside it move to the page.`,
+      )
+    )
       return;
     setPage((p) => {
-      const { [section.id]: _s, ...sectionOverrides } = p.mobile?.sections || {};
+      const { [section.id]: _s, ...sectionOverrides } =
+        p.mobile?.sections || {};
       return {
         ...p,
         sections: (p.sections || []).filter((x) => x.id !== section.id),
-        items: p.items.map((i) => (i.parent === section.id ? { ...i, parent: "" } : i)),
-        mobile: p.mobile ? { ...p.mobile, sections: sectionOverrides } : p.mobile,
+        items: p.items.map((i) =>
+          i.parent === section.id ? { ...i, parent: "" } : i,
+        ),
+        mobile: p.mobile
+          ? { ...p.mobile, sections: sectionOverrides }
+          : p.mobile,
       };
     });
     setSelectedSectionId(null);
@@ -422,26 +520,39 @@ export function Editor({
 
   // Clicking the selected item or section again closes its panel.
   const toggleItem = (id) => setSelectedId((cur) => (cur === id ? null : id));
-  const toggleSection = (id) => setSelectedSectionId((cur) => (cur === id ? null : id));
+  const toggleSection = (id) =>
+    setSelectedSectionId((cur) => (cur === id ? null : id));
 
-  const addColour = () => setSite((s) => ({ ...s, palette: [...s.palette, "#808080"] }));
+  const addColour = () =>
+    setSite((s) => ({ ...s, palette: [...s.palette, "#808080"] }));
   const dropColour = (n) => {
     if (site.palette.length <= 1) return;
-    if (!window.confirm(`Remove colour ${n + 1}? Anything using it switches to colour 1.`)) return;
+    if (
+      !window.confirm(
+        `Remove colour ${n + 1}? Anything using it switches to colour 1.`,
+      )
+    )
+      return;
     const next = removeColour(site, page, n + 1);
     setSite(() => next.site);
     setPage(() => next.page);
   };
   const setColour = (n, hex) =>
-    setSite((s) => ({ ...s, palette: s.palette.map((c, i) => (i === n ? hex : c)) }));
-  const setRole = (role, n) => setSite((s) => ({ ...s, roles: { ...s.roles, [role]: n } }));
+    setSite((s) => ({
+      ...s,
+      palette: s.palette.map((c, i) => (i === n ? hex : c)),
+    }));
+  const setRole = (role, n) =>
+    setSite((s) => ({ ...s, roles: { ...s.roles, [role]: n } }));
   const sizes = { ...DEFAULT_TEXT, ...(site.text || {}) };
-  const setSize = (key, px) => setSite((s) => ({ ...s, text: { ...sizes, [key]: px } }));
+  const setSize = (key, px) =>
+    setSite((s) => ({ ...s, text: { ...sizes, [key]: px } }));
 
   const applyPhoneJson = () => {
     try {
       const parsed = JSON.parse(jsonText ?? "");
-      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error("Expected an object.");
+      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed))
+        throw new Error("Expected an object.");
       setPage((p) => ({ ...p, mobile: { ...DEFAULT_MOBILE, ...parsed } }));
       setJsonText(null);
       setJsonError("");
@@ -450,8 +561,16 @@ export function Editor({
     }
   };
   const clearPhone = () => {
-    if (!window.confirm("Remove all phone overrides? The desktop layout stays as it is.")) return;
-    setPage((p) => ({ ...p, mobile: { ...DEFAULT_MOBILE, breakpoint: mobile.breakpoint } }));
+    if (
+      !window.confirm(
+        "Remove all phone overrides? The desktop layout stays as it is.",
+      )
+    )
+      return;
+    setPage((p) => ({
+      ...p,
+      mobile: { ...DEFAULT_MOBILE, breakpoint: mobile.breakpoint },
+    }));
     setJsonText(null);
   };
 
@@ -462,25 +581,53 @@ export function Editor({
       await navigator.clipboard.writeText(text);
       setCopied(`${label} copied.`);
     } catch {
-      setCopied("Copy blocked by the browser. Select the text and copy it manually.");
+      setCopied(
+        "Copy blocked by the browser. Select the text and copy it manually.",
+      );
     }
   };
 
-  const parentOptions = [["", "Page"], ...sections.map((s) => [s.id, `${s.name || "Section"}${isBand(s) ? "" : " (screen overlay)"}`])];
+  const parentOptions = [
+    ["", "Page"],
+    ...sections.map((s) => [
+      s.id,
+      `${s.name || "Section"}${isBand(s) ? "" : " (screen overlay)"}`,
+    ]),
+  ];
 
   return (
-    <aside className="editor" aria-label="Workshop">
+    <aside className={`editor dock-${dock}`} aria-label="Workshop">
       <header>
         <strong>Workshop</strong>
         {draft && <span className="badge">Unsaved draft</span>}
+        <button
+          className="dock-toggle"
+          onClick={() => setDock(dock === "left" ? "right" : "left")}
+          title="Move the workshop panel to the other side"
+        >
+          Dock {dock === "left" ? "right" : "left"}
+        </button>
       </header>
       <div className="seg" role="group" aria-label="Edit target">
-        <button className={!phone ? "on" : ""} onClick={() => setPhone(false)}>Desktop</button>
-        <button className={phone ? "on" : ""} onClick={() => setPhone(true)}>Phone</button>
+        <button className={!phone ? "on" : ""} onClick={() => setPhone(false)}>
+          Desktop
+        </button>
+        <button className={phone ? "on" : ""} onClick={() => setPhone(true)}>
+          Phone
+        </button>
       </div>
       <nav className="tabs">
-        {[["page", "Page"], ["general", "General"], ["phone", "Phone"], ["export", "Export"]].map(([id, label]) => (
-          <button key={id} className={tab === id ? "on" : ""} onClick={() => setTab(id)}>
+        {[
+          ["page", "Page"],
+          ["general", "General"],
+          ["phone", "Phone"],
+          ["export", "Export"],
+        ].map(([id, label]) => (
+          <button
+            key={id}
+            className={tab === id ? "on" : ""}
+            onClick={() => setTab(id)}
+          >
             {label}
           </button>
         ))}
@@ -490,8 +637,9 @@ export function Editor({
         <div className="panel">
           {phone && (
             <p className="banner">
-              Phone mode: changes apply only on phones (screens {mobile.breakpoint}px wide or less).
-              Adding, moving and deleting are locked here.
+              Phone mode: changes apply only on phones (screens{" "}
+              {mobile.breakpoint}px wide or less). Adding, moving and deleting
+              are locked here.
             </p>
           )}
           <div className="add-bar">
@@ -500,8 +648,12 @@ export function Editor({
                 + {TYPE_LABEL[t]}
               </button>
             ))}
-            <button disabled={phone} onClick={() => addSection("band")}>+ Section</button>
-            <button disabled={phone} onClick={() => addSection("fixed")}>+ Screen overlay</button>
+            <button disabled={phone} onClick={() => addSection("band")}>
+              + Section
+            </button>
+            <button disabled={phone} onClick={() => addSection("fixed")}>
+              + Screen overlay
+            </button>
           </div>
 
           <NumberField
@@ -509,15 +661,40 @@ export function Editor({
             value={view.canvas.height}
             onChange={(height) => writeCanvas({ height })}
           />
+          <div className="axis-grid">
+            <NumberField
+              label="Design width (px)"
+              value={view.canvas.designWidth ?? DEFAULT_DESIGN.designWidth}
+              onChange={(designWidth) =>
+                writeCanvas({ designWidth: Math.max(1, designWidth) })
+              }
+            />
+            <NumberField
+              label="Design height (px)"
+              value={view.canvas.designHeight ?? DEFAULT_DESIGN.designHeight}
+              onChange={(designHeight) =>
+                writeCanvas({ designHeight: Math.max(1, designHeight) })
+              }
+            />
+          </div>
+          <p className="hint">
+            Items with Shrink on scale down when the screen is smaller than
+            these sizes.
+          </p>
 
           <h4>Sections</h4>
           <ul className="items">
             {sections.map((x, n) => (
               <li key={x.id}>
-                <button className={x.id === selectedSectionId ? "on" : ""} onClick={() => toggleSection(x.id)}>
+                <button
+                  className={x.id === selectedSectionId ? "on" : ""}
+                  onClick={() => toggleSection(x.id)}
+                >
                   {n + 1}. {x.name || "Section"}{" "}
                   <small>
-                    {isBand(x) ? `${x.anchor === "bottom" ? "bottom" : "top"} · ${x.start}px · ${x.height}px` : "screen overlay"}
+                    {isBand(x)
+                      ? `${x.anchor === "bottom" ? "bottom" : "top"} · ${x.start}px · ${x.height}px`
+                      : "screen overlay"}
                   </small>
                 </button>
               </li>
@@ -528,16 +705,39 @@ export function Editor({
             <div className="details" key={section.id}>
               <div className="row between">
                 <strong>{section.name || "Section"}</strong>
-                <button onClick={() => setSelectedSectionId(null)}>Close ×</button>
+                <button onClick={() => setSelectedSectionId(null)}>
+                  Close ×
+                </button>
               </div>
               <Field label="Name (for you)">
-                <input value={section.name} onChange={(e) => patchSection({ name: e.target.value })} />
+                <input
+                  value={section.name}
+                  onChange={(e) => patchSection({ name: e.target.value })}
+                />
               </Field>
               <div className="row">
-                <button disabled={phone || sIdx === 0} onClick={() => moveSection(-1)}>↑ Up</button>
-                <button disabled={phone || sIdx === sections.length - 1} onClick={() => moveSection(1)}>↓ Down</button>
-                <button disabled={phone} onClick={duplicateSection}>Duplicate</button>
-                <button className="danger" disabled={phone} onClick={removeSection}>Delete</button>
+                <button
+                  disabled={phone || sIdx === 0}
+                  onClick={() => moveSection(-1)}
+                >
+                  ↑ Up
+                </button>
+                <button
+                  disabled={phone || sIdx === sections.length - 1}
+                  onClick={() => moveSection(1)}
+                >
+                  ↓ Down
+                </button>
+                <button disabled={phone} onClick={duplicateSection}>
+                  Duplicate
+                </button>
+                <button
+                  className="danger"
+                  disabled={phone}
+                  onClick={removeSection}
+                >
+                  Delete
+                </button>
               </div>
 
               {isBand(section) ? (
@@ -545,19 +745,30 @@ export function Editor({
                   <Select
                     label="Align to"
                     value={sectionView.anchor || "top"}
-                    options={[["top", "Top of the page"], ["bottom", "Bottom of the page"]]}
+                    options={[
+                      ["top", "Top of the page"],
+                      ["bottom", "Bottom of the page"],
+                    ]}
                     onChange={(anchor) => patchSection({ anchor })}
                   />
                   <div className="axis-grid">
                     <NumberField
-                      label={sectionView.anchor === "bottom" ? "Distance from bottom (px)" : "Start height from top (px)"}
+                      label={
+                        sectionView.anchor === "bottom"
+                          ? "Distance from bottom (px)"
+                          : "Start height from top (px)"
+                      }
                       value={sectionView.start}
-                      onChange={(start) => patchSection({ start: Math.max(0, start) })}
+                      onChange={(start) =>
+                        patchSection({ start: Math.max(0, start) })
+                      }
                     />
                     <NumberField
                       label="Height (px)"
                       value={sectionView.height}
-                      onChange={(height) => patchSection({ height: Math.max(1, height) })}
+                      onChange={(height) =>
+                        patchSection({ height: Math.max(1, height) })
+                      }
                     />
                   </div>
                   <Select
@@ -578,7 +789,9 @@ export function Editor({
                     <NumberField
                       label="Tile size (px wide)"
                       value={sectionView.texture.size}
-                      onChange={(size) => patchTexture({ size: Math.max(1, size) })}
+                      onChange={(size) =>
+                        patchTexture({ size: Math.max(1, size) })
+                      }
                     />
                     <NumberField
                       label="Offset X (px)"
@@ -619,14 +832,19 @@ export function Editor({
                     <NumberField
                       label="Overlay opacity (%)"
                       value={sectionView.overlay.opacity}
-                      onChange={(opacity) => patchOverlay({ opacity: Math.min(100, Math.max(0, opacity)) })}
+                      onChange={(opacity) =>
+                        patchOverlay({
+                          opacity: Math.min(100, Math.max(0, opacity)),
+                        })
+                      }
                     />
                   </fieldset>
                 </>
               ) : (
                 <p className="hint">
-                  A screen overlay is always the size of the screen and stays in place while you scroll.
-                  Put items in it with their Parent setting.
+                  A screen overlay is always the size of the screen and stays in
+                  place while you scroll. Put items in it with their Parent
+                  setting.
                 </p>
               )}
             </div>
@@ -636,13 +854,24 @@ export function Editor({
           <ul className="items">
             {page.items.map((it, n) => (
               <li key={it.id}>
-                <button className={it.id === selectedId ? "on" : ""} onClick={() => toggleItem(it.id)}>
-                  {n + 1}. {it.name || TYPE_LABEL[it.type]} <small>{it.type}{it.parent ? " · in section" : ""}</small>
+                <button
+                  className={it.id === selectedId ? "on" : ""}
+                  onClick={() => toggleItem(it.id)}
+                >
+                  {n + 1}. {it.name || TYPE_LABEL[it.type]}{" "}
+                  <small>
+                    {it.type}
+                    {it.parent ? " · in section" : ""}
+                  </small>
                 </button>
               </li>
             ))}
           </ul>
-          {!item && <p className="hint">Select an item on the page or in this list to edit it.</p>}
+          {!item && (
+            <p className="hint">
+              Select an item on the page or in this list to edit it.
+            </p>
+          )}
 
           {item && itemView && (
             <div className="details" key={item.id}>
@@ -651,7 +880,10 @@ export function Editor({
                 <button onClick={() => setSelectedId(null)}>Close ×</button>
               </div>
               <Field label="Name (for you)">
-                <input value={item.name} onChange={(e) => patch({ name: e.target.value })} />
+                <input
+                  value={item.name}
+                  onChange={(e) => patch({ name: e.target.value })}
+                />
               </Field>
               <Select
                 label="Parent (positions are measured from it)"
@@ -660,14 +892,36 @@ export function Editor({
                 onChange={(parent) => patch({ parent })}
               />
               <div className="row">
-                <button disabled={phone || iIdx === 0} onClick={() => moveItem(-1)}>↑ Up</button>
-                <button disabled={phone || iIdx === page.items.length - 1} onClick={() => moveItem(1)}>↓ Down</button>
-                <button disabled={phone} onClick={duplicateItem}>Duplicate</button>
-                <button className="danger" disabled={phone} onClick={removeItem}>Delete</button>
+                <button
+                  disabled={phone || iIdx === 0}
+                  onClick={() => moveItem(-1)}
+                >
+                  ↑ Up
+                </button>
+                <button
+                  disabled={phone || iIdx === page.items.length - 1}
+                  onClick={() => moveItem(1)}
+                >
+                  ↓ Down
+                </button>
+                <button disabled={phone} onClick={duplicateItem}>
+                  Duplicate
+                </button>
+                <button
+                  className="danger"
+                  disabled={phone}
+                  onClick={removeItem}
+                >
+                  Delete
+                </button>
               </div>
 
               {item.type === "text" && (
-                <TextEditor item={itemView} onChange={patch} setStatus={setStatus} />
+                <TextEditor
+                  item={itemView}
+                  onChange={patch}
+                  setStatus={setStatus}
+                />
               )}
               {status && <p className="hint warn">{status}</p>}
               {(item.type === "image" || item.type === "gif") && (
@@ -680,12 +934,19 @@ export function Editor({
                     onChange={(file) => patch({ file })}
                   />
                   <Field label="Description (alt text)">
-                    <input value={itemView.alt} onChange={(e) => patch({ alt: e.target.value })} />
+                    <input
+                      value={itemView.alt}
+                      onChange={(e) => patch({ alt: e.target.value })}
+                    />
                   </Field>
                   <Select
                     label="Fit"
                     value={itemView.fit}
-                    options={[["contain", "Contain"], ["cover", "Cover"], ["fill", "Fill"]]}
+                    options={[
+                      ["contain", "Contain"],
+                      ["cover", "Cover"],
+                      ["fill", "Fill"],
+                    ]}
                     onChange={(fit) => patch({ fit })}
                   />
                 </>
@@ -706,18 +967,20 @@ export function Editor({
                     placeholder="0/poster"
                     onChange={(poster) => patch({ poster })}
                   />
-                  {[["controls", "Show controls"], ["loop", "Loop"], ["autoplay", "Autoplay (muted)"]].map(
-                    ([key, label]) => (
-                      <label className="check" key={key}>
-                        <input
-                          type="checkbox"
-                          checked={!!itemView[key]}
-                          onChange={(e) => patch({ [key]: e.target.checked })}
-                        />
-                        {label}
-                      </label>
-                    ),
-                  )}
+                  {[
+                    ["controls", "Show controls"],
+                    ["loop", "Loop"],
+                    ["autoplay", "Autoplay (muted)"],
+                  ].map(([key, label]) => (
+                    <label className="check" key={key}>
+                      <input
+                        type="checkbox"
+                        checked={!!itemView[key]}
+                        onChange={(e) => patch({ [key]: e.target.checked })}
+                      />
+                      {label}
+                    </label>
+                  ))}
                 </>
               )}
 
@@ -740,13 +1003,23 @@ export function Editor({
                     value={itemView.offsetX}
                     onChange={(offsetX) => patch({ offsetX })}
                   />
-                  <PanControl axis="X" pan={itemView.scrollX} speed={itemView.speedX} onChange={patch} />
+                  <PanControl
+                    axis="X"
+                    pan={itemView.scrollX}
+                    speed={itemView.speedX}
+                    onChange={patch}
+                  />
                   <NumberField
                     label="Offset Y (px)"
                     value={itemView.offsetY}
                     onChange={(offsetY) => patch({ offsetY })}
                   />
-                  <PanControl axis="Y" pan={itemView.scrollY} speed={itemView.speedY} onChange={patch} />
+                  <PanControl
+                    axis="Y"
+                    pan={itemView.scrollY}
+                    speed={itemView.speedY}
+                    onChange={patch}
+                  />
                   <NumberField
                     label="Texture rotation (degrees)"
                     value={itemView.textureRotate}
@@ -774,6 +1047,36 @@ export function Editor({
                 </>
               )}
 
+              <fieldset className="axis">
+                <legend>Shrink on small screens</legend>
+                <label className="check">
+                  <input
+                    type="checkbox"
+                    checked={!!itemView.shrink?.on}
+                    onChange={(e) =>
+                      patch({
+                        shrink: { ...itemView.shrink, on: e.target.checked },
+                      })
+                    }
+                  />
+                  Scale down when the screen is smaller than the design
+                </label>
+                {itemView.shrink?.on && (
+                  <Select
+                    label="Fit to"
+                    value={itemView.shrink.axis || "x"}
+                    options={[
+                      ["x", "Width (fit X)"],
+                      ["y", "Height (fit Y)"],
+                      ["both", "Both (smaller of the two)"],
+                    ]}
+                    onChange={(axis) =>
+                      patch({ shrink: { ...itemView.shrink, axis } })
+                    }
+                  />
+                )}
+              </fieldset>
+
               <AxisFields
                 title="Horizontal constraint"
                 axisValue={itemView.h}
@@ -793,7 +1096,11 @@ export function Editor({
                   {PIVOTS.map(([x, y]) => (
                     <button
                       key={`${x}-${y}`}
-                      className={itemView.pivot[0] === x && itemView.pivot[1] === y ? "on" : ""}
+                      className={
+                        itemView.pivot[0] === x && itemView.pivot[1] === y
+                          ? "on"
+                          : ""
+                      }
                       onClick={() => patch({ pivot: [x, y] })}
                       title={`Pivot ${x}% ${y}%`}
                     >
@@ -826,13 +1133,18 @@ export function Editor({
         <div className="panel">
           <h4>Text sizes (px, applies to every text item)</h4>
           {Object.entries(TEXT_SIZE_LABELS).map(([key, label]) => (
-            <NumberField key={key} label={label} value={sizes[key]} onChange={(px) => setSize(key, px)} />
+            <NumberField
+              key={key}
+              label={label}
+              value={sizes[key]}
+              onChange={(px) => setSize(key, px)}
+            />
           ))}
 
           <h4>Palette</h4>
           <p className="hint">
-            Edit a hex value and the whole page updates. Add or remove colours; roles and sections keep
-            their colours when a colour is removed.
+            Edit a hex value and the whole page updates. Add or remove colours;
+            roles and sections keep their colours when a colour is removed.
           </p>
           {site.palette.map((c, i) => (
             <div className="swatch" key={i}>
@@ -875,16 +1187,39 @@ export function Editor({
       {tab === "phone" && (
         <div className="panel">
           <p className="hint">
-            Phone overrides apply only on phones. Use the <b>Phone</b> switch at the top and edit on the Page
-            tab: those edits are saved here. You can also edit the JSON by hand.
+            Phone overrides apply only on phones. Use the <b>Phone</b> switch at
+            the top and edit on the Page tab: those edits are saved here. You
+            can also edit the JSON by hand.
           </p>
           <NumberField
             label="Breakpoint (phone width in px, or less)"
             value={mobile.breakpoint}
             onChange={(b) =>
-              setPage((p) => ({ ...p, mobile: { ...DEFAULT_MOBILE, ...(p.mobile || {}), breakpoint: Math.max(200, b) } }))
+              setPage((p) => ({
+                ...p,
+                mobile: {
+                  ...DEFAULT_MOBILE,
+                  ...(p.mobile || {}),
+                  breakpoint: Math.max(200, b),
+                },
+              }))
             }
           />
+          <Select
+            label="Phone preview width (px)"
+            value={String(previewWidth)}
+            options={[
+              ["320", "320 (small phone)"],
+              ["360", "360"],
+              ["390", "390 (design)"],
+              ["430", "430 (large phone)"],
+            ]}
+            onChange={(v) => setPreviewWidth(Number(v))}
+          />
+          <p className="hint">
+            The preview is shown at this width, so you can check how items
+            shrink. The real phone width is used on actual phones.
+          </p>
           <Field label="Phone overrides (JSON)">
             <textarea
               rows={14}
@@ -897,9 +1232,18 @@ export function Editor({
           </Field>
           {jsonError && <p className="hint warn">{jsonError}</p>}
           <div className="row">
-            <button onClick={applyPhoneJson} disabled={jsonText === null}>Apply JSON</button>
-            <button onClick={() => setJsonText(null)} disabled={jsonText === null}>Discard edits</button>
-            <button className="danger" onClick={clearPhone}>Clear all phone overrides…</button>
+            <button onClick={applyPhoneJson} disabled={jsonText === null}>
+              Apply JSON
+            </button>
+            <button
+              onClick={() => setJsonText(null)}
+              disabled={jsonText === null}
+            >
+              Discard edits
+            </button>
+            <button className="danger" onClick={clearPhone}>
+              Clear all phone overrides…
+            </button>
           </div>
         </div>
       )}
@@ -907,25 +1251,47 @@ export function Editor({
       {tab === "export" && (
         <div className="panel">
           <p className="hint">
-            Copy each file and paste it over the matching file in GitHub: <code>src/config/site.json</code>{" "}
-            and <code>src/config/pages/main.json</code>. Commit, and the site rebuilds.
+            Copy each file and paste it over the matching file in GitHub:{" "}
+            <code>src/config/site.json</code> and{" "}
+            <code>src/config/pages/main.json</code>. Commit, and the site
+            rebuilds.
           </p>
           <div className="row">
-            <button onClick={() => copy(siteText, "site.json")}>Copy site.json</button>
-            <button onClick={() => download("site.json", siteText)}>Download site.json</button>
+            <button onClick={() => copy(siteText, "site.json")}>
+              Copy site.json
+            </button>
+            <button onClick={() => download("site.json", siteText)}>
+              Download site.json
+            </button>
           </div>
-          <textarea readOnly rows={8} value={siteText} onFocus={(e) => e.target.select()} />
+          <textarea
+            readOnly
+            rows={8}
+            value={siteText}
+            onFocus={(e) => e.target.select()}
+          />
           <div className="row">
-            <button onClick={() => copy(pageText, "main.json")}>Copy main.json</button>
-            <button onClick={() => download("main.json", pageText)}>Download main.json</button>
+            <button onClick={() => copy(pageText, "main.json")}>
+              Copy main.json
+            </button>
+            <button onClick={() => download("main.json", pageText)}>
+              Download main.json
+            </button>
           </div>
-          <textarea readOnly rows={8} value={pageText} onFocus={(e) => e.target.select()} />
+          <textarea
+            readOnly
+            rows={8}
+            value={pageText}
+            onFocus={(e) => e.target.select()}
+          />
           {copied && <p className="hint">{copied}</p>}
         </div>
       )}
 
       <footer>
-        <button className="danger" onClick={onReset}>Reset to saved config…</button>
+        <button className="danger" onClick={onReset}>
+          Reset to saved config…
+        </button>
         <button onClick={onClose}>Close</button>
       </footer>
     </aside>
