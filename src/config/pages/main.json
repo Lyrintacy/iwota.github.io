@@ -36,7 +36,11 @@
       "text": "Write something here.",
       "level": "p",
       "align": "left",
-      "color": "text"
+      "color": "text",
+      "shrink": {
+        "on": true,
+        "axis": "x"
+      }
     },
     {
       "id": "image-ar5jf",
@@ -97,7 +101,11 @@
       "text": "fjsdo-e-odfiesoisjdijdasijdasidjwidjaei[djas[dijasdsa[dasidsaij\n",
       "level": "p",
       "align": "left",
-      "color": "text"
+      "color": "text",
+      "shrink": {
+        "on": true,
+        "axis": "x"
+      }
     },
     {
       "id": "text-z67a9",
@@ -128,7 +136,11 @@
       "text": "Oskar Wota\n",
       "level": "p",
       "align": "left",
-      "color": "text"
+      "color": "text",
+      "shrink": {
+        "on": true,
+        "axis": "x"
+      }
     }
   ],
   "sections": [

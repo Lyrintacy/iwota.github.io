@@ -6,8 +6,8 @@
 //   instead of snapping. Every panning texture reads it (see panPos in model.js).
 //
 // Set both time constants to 0 (or use reduced motion) to turn smoothing off.
-const PAN_TAU_MS = 90; // time to close most of the gap between pan and target
-const WHEEL_EASE = 0.14; // share of the remaining wheel distance covered per frame
+const PAN_TAU_MS = 240; // time to close most of the gap between pan and target
+const WHEEL_EASE = 0.09; // share of the remaining wheel distance covered per frame
 
 const reducedMotion = () =>
   window.matchMedia("(prefers-reduced-motion: reduce)").matches;
