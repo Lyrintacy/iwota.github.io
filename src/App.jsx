@@ -129,8 +129,10 @@ export default function App() {
     vars[`--c-${role}`] = `var(--color-${n})`;
   const sizes = { ...DEFAULT_TEXT, ...(site.text || {}) };
   for (const [key, px] of Object.entries(sizes))
-    vars[`--size-${key}`] = `${px}px`;
+    vars[`--size-${key}`] = String(px); // unitless: scaled by --u in CSS
+  // Screen width used for scaling: the window, or the phone preview's width.
   vars["--preview-w"] = `${previewWidth}px`;
+  vars["--vw"] = previewing ? `${previewWidth}px` : "100vw";
 
   return (
     <div
@@ -148,7 +150,6 @@ export default function App() {
         selectedId={selectedId}
         onSelect={setSelectedId}
         selectedSectionId={selectedSectionId}
-        previewWidth={previewing ? previewWidth : 0}
       />
       <button className="edit-toggle" onClick={() => setEditing((v) => !v)}>
         {editing ? "Close workshop" : "Workshop"} <kbd>F2</kbd>

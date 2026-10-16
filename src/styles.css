@@ -1,3 +1,15 @@
+/* Scaling: --u is one pixel at the design size, --vw the screen width (see model.js). */
+:root {
+  --u: 1px;
+  --vw: 100vw;
+}
+
+/* Scaling: --u is one pixel at the design size, --vw the screen width (see model.js). */
+:root {
+  --u: 1px;
+  --vw: 100vw;
+}
+
 html,
 body {
   margin: 0;
@@ -78,20 +90,20 @@ body {
   margin: 0;
   white-space: pre-line;
   line-height: 1.5;
-  font-size: calc(var(--size-body, 16px) * var(--shrink, 1));
+  font-size: calc(var(--size-body, 16) * var(--u, 1px));
   font-weight: 400;
   color: var(--c-text, #151814);
 }
 .text-body.level-h1 {
-  font-size: calc(var(--size-h1, 56px) * var(--shrink, 1));
+  font-size: calc(var(--size-h1, 56) * var(--u, 1px));
   line-height: 1.05;
 }
 .text-body.level-h2 {
-  font-size: calc(var(--size-h2, 36px) * var(--shrink, 1));
+  font-size: calc(var(--size-h2, 36) * var(--u, 1px));
   line-height: 1.15;
 }
 .text-body.level-h3 {
-  font-size: calc(var(--size-h3, 24px) * var(--shrink, 1));
+  font-size: calc(var(--size-h3, 24) * var(--u, 1px));
   line-height: 1.2;
 }
 
@@ -470,4 +482,68 @@ body {
 /* Smooth scrolling for keyboard and scrollbar (the wheel is eased in scroll.js) */
 html {
   scroll-behavior: smooth;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+/* Workshop: clearer and easier to scan */
+.editor {
+  font-size: 14px;
+  line-height: 1.45;
+}
+.editor header {
+  padding: 10px 12px;
+  gap: 8px;
+}
+.editor .dock-toggle {
+  font-size: 12px;
+}
+.search {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px 4px;
+}
+.search input {
+  width: 100%;
+  box-sizing: border-box;
+  font: inherit;
+  padding: 8px 10px;
+  border: 1px solid #aaa;
+  border-radius: 6px;
+  background: #fff;
+}
+.editor h4 {
+  margin: 18px 0 8px;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #555;
+}
+.file-preview {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin: -4px 0 10px;
+}
+.file-preview img {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+.advanced {
+  margin: 8px 0;
+}
+.advanced summary {
+  cursor: pointer;
+  font-weight: 600;
+  padding: 6px 0;
+}
+.editor .field > span {
+  font-weight: 600;
+  margin-bottom: 2px;
 }

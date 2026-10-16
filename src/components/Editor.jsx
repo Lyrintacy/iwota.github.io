@@ -1,4 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import images from "virtual:images";
 import {
   ANCHORS,
   COLORS,
@@ -315,10 +316,27 @@ function TextEditor({ item, onChange, setStatus }) {
   );
 }
 
+// Every file under public/images (any folder, and the top level too), offered as
+// suggestions. Without an extension, the first existing file of the type is used.
+const KINDS = {
+  image: /\.(png|jpe?g|gif)$/i,
+  gif: /\.gif$/i,
+  video: /\.(mp4|webm)$/i,
+};
+function imageChoices(type) {
+  const files = images.filter((f) => KINDS[type]?.test(f));
+  const base = (f) => f.replace(/\.[^./]+$/, "");
+  const count = {};
+  files.forEach((f) => (count[base(f)] = (count[base(f)] || 0) + 1));
+  // A name shared by two files keeps its extension, so the choice is exact.
+  return files.map((f) => (count[base(f)] > 1 ? f : base(f)));
+}
+
 // Typing without an extension: the first existing file (png, jpeg, jpg; mp4,
 // webm for video) is found and its extension is written into the config.
 function FilePath({ label, value = "", type, onChange, placeholder }) {
   const { url, ext } = useMedia(type, value);
+  const listId = `files-${type}`;
   useEffect(() => {
     if (ext && value.trim() && !hasExt(value))
       onChange(`${value.trim()}.${ext}`);
@@ -327,20 +345,29 @@ function FilePath({ label, value = "", type, onChange, placeholder }) {
     <>
       <Field label={label}>
         <input
+          list={listId}
           placeholder={placeholder}
           value={value}
           onChange={(e) => onChange(e.target.value)}
         />
       </Field>
-      <p className="hint">
-        {value.trim() ? (
-          <>
-            Loads from <code>{url}</code>
-          </>
-        ) : (
-          "Type folder/name, for example 0/profile. The extension is found automatically."
-        )}
-      </p>
+      <datalist id={listId}>
+        {imageChoices(type).map((c) => (
+          <option key={c} value={c} />
+        ))}
+      </datalist>
+      <div className="file-preview">
+        {url && type !== "video" && <img src={url} alt="" />}
+        <span className="hint">
+          {value.trim() ? (
+            <>
+              Uses <code>{url}</code>
+            </>
+          ) : (
+            "Pick from the list or type folder/name. Extension optional."
+          )}
+        </span>
+      </div>
     </>
   );
 }
@@ -366,6 +393,9 @@ export function Editor({
   setPreviewWidth,
 }) {
   const [tab, setTab] = useState("page");
+  const [query, setQuery] = useState("");
+  const [shown, setShown] = useState(-1);
+  const rootRef = useRef(null);
   const [status, setStatus] = useState("");
   const [copied, setCopied] = useState("");
   const [jsonText, setJsonText] = useState(null);
@@ -587,6 +617,27 @@ export function Editor({
     }
   };
 
+  // Search hides the fields that don't match, then any group left empty.
+  useLayoutEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+    const q = query.trim().toLowerCase();
+    let visible = 0;
+    root.querySelectorAll(".field, .check").forEach((el) => {
+      const text = el.matches(".field")
+        ? el.querySelector(":scope > span")?.textContent || ""
+        : el.textContent;
+      el.hidden = !!q && !text.toLowerCase().includes(q);
+      if (!el.hidden) visible++;
+    });
+    root.querySelectorAll("fieldset.axis, .details, .advanced").forEach((g) => {
+      const kids = g.querySelectorAll(".field, .check");
+      g.hidden = !!q && (kids.length === 0 || [...kids].every((k) => k.hidden));
+    });
+    root.querySelectorAll(".panel h4").forEach((h) => (h.hidden = !!q));
+    setShown(q ? visible : -1);
+  });
+
   const parentOptions = [
     ["", "Page"],
     ...sections.map((s) => [
@@ -596,7 +647,11 @@ export function Editor({
   ];
 
   return (
-    <aside className={`editor dock-${dock}`} aria-label="Workshop">
+    <aside
+      className={`editor dock-${dock}`}
+      aria-label="Workshop"
+      ref={rootRef}
+    >
       <header>
         <strong>Workshop</strong>
         {draft && <span className="badge">Unsaved draft</span>}
@@ -608,6 +663,22 @@ export function Editor({
           Dock {dock === "left" ? "right" : "left"}
         </button>
       </header>
+      <div className="search">
+        <input
+          type="search"
+          placeholder="Search options, e.g. size, colour, pan"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          aria-label="Search options"
+        />
+        {query && (
+          <span className="hint">
+            {shown === 0
+              ? "No options match on this tab."
+              : `${shown} match${shown === 1 ? "" : "es"} on this tab`}
+          </span>
+        )}
+      </div>
       <div className="seg" role="group" aria-label="Edit target">
         <button className={!phone ? "on" : ""} onClick={() => setPhone(false)}>
           Desktop
@@ -1048,7 +1119,7 @@ export function Editor({
               )}
 
               <fieldset className="axis">
-                <legend>Shrink on small screens</legend>
+                <legend>Scale with the screen</legend>
                 <label className="check">
                   <input
                     type="checkbox"
@@ -1059,16 +1130,16 @@ export function Editor({
                       })
                     }
                   />
-                  Scale down when the screen is smaller than the design
+                  Scale down on smaller screens
                 </label>
                 {itemView.shrink?.on && (
                   <Select
                     label="Fit to"
                     value={itemView.shrink.axis || "x"}
                     options={[
-                      ["x", "Width (fit X)"],
-                      ["y", "Height (fit Y)"],
-                      ["both", "Both (smaller of the two)"],
+                      ["x", "Fit width"],
+                      ["y", "Fit height"],
+                      ["both", "Fit both"],
                     ]}
                     onChange={(axis) =>
                       patch({ shrink: { ...itemView.shrink, axis } })
@@ -1090,40 +1161,43 @@ export function Editor({
                 onChange={(v) => patchAxis("v", v)}
               />
 
-              <fieldset className="axis">
-                <legend>Pivot & rotation</legend>
-                <div className="pivot">
-                  {PIVOTS.map(([x, y]) => (
-                    <button
-                      key={`${x}-${y}`}
-                      className={
-                        itemView.pivot[0] === x && itemView.pivot[1] === y
-                          ? "on"
-                          : ""
-                      }
-                      onClick={() => patch({ pivot: [x, y] })}
-                      title={`Pivot ${x}% ${y}%`}
-                    >
-                      ·
-                    </button>
-                  ))}
-                </div>
-                <NumberField
-                  label="Pivot X (% of item)"
-                  value={itemView.pivot[0]}
-                  onChange={(x) => patch({ pivot: [x, itemView.pivot[1]] })}
-                />
-                <NumberField
-                  label="Pivot Y (% of item)"
-                  value={itemView.pivot[1]}
-                  onChange={(y) => patch({ pivot: [itemView.pivot[0], y] })}
-                />
-                <NumberField
-                  label="Rotation (degrees)"
-                  value={itemView.rotate}
-                  onChange={(rotate) => patch({ rotate })}
-                />
-              </fieldset>
+              <details className="advanced">
+                <summary>Advanced: pivot &amp; rotation</summary>
+                <fieldset className="axis">
+                  <legend>Pivot & rotation</legend>
+                  <div className="pivot">
+                    {PIVOTS.map(([x, y]) => (
+                      <button
+                        key={`${x}-${y}`}
+                        className={
+                          itemView.pivot[0] === x && itemView.pivot[1] === y
+                            ? "on"
+                            : ""
+                        }
+                        onClick={() => patch({ pivot: [x, y] })}
+                        title={`Pivot ${x}% ${y}%`}
+                      >
+                        ·
+                      </button>
+                    ))}
+                  </div>
+                  <NumberField
+                    label="Pivot X (% of item)"
+                    value={itemView.pivot[0]}
+                    onChange={(x) => patch({ pivot: [x, itemView.pivot[1]] })}
+                  />
+                  <NumberField
+                    label="Pivot Y (% of item)"
+                    value={itemView.pivot[1]}
+                    onChange={(y) => patch({ pivot: [itemView.pivot[0], y] })}
+                  />
+                  <NumberField
+                    label="Rotation (degrees)"
+                    value={itemView.rotate}
+                    onChange={(rotate) => patch({ rotate })}
+                  />
+                </fieldset>
+              </details>
             </div>
           )}
         </div>

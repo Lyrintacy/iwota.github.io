@@ -154,10 +154,16 @@ export function toggleFormat(text, s, e, kind) {
 const css = (value, unit) =>
   `${Number(value) || 0}${unit === "%" ? "%" : "px"}`;
 
+/**
+ * Every pixel value is written as calc(N * var(--u)). --u is one pixel at the
+ * design size and shrinks with the screen (see unitFor), so px values scale
+ * continuously. Percentages are never scaled: they already follow the frame.
+ */
+const px = (n) => `calc(${Number(n) || 0} * var(--u, 1px))`;
+
 // One axis. `lo`/`hi` are the CSS edges (left/right or top/bottom).
-// Pixel values are multiplied by s (the shrink factor); percentages are not.
-function axis(a = {}, lo, hi, size, s = 1) {
-  const v = (n, unit) => css(unit === "px" ? (Number(n) || 0) * s : n, unit);
+function axis(a = {}, lo, hi, size) {
+  const v = (n, unit) => (unit === "%" ? css(n, unit) : px(n));
   const style = {};
   let shift = "0";
   if (a.anchor === "end") style[hi] = v(a.offset, a.unit);
@@ -166,39 +172,39 @@ function axis(a = {}, lo, hi, size, s = 1) {
     shift = "-50%"; // centres the item on the anchor point
   } else style[lo] = v(a.offset, a.unit);
   if (a.anchor === "stretch") style[hi] = v(a.offsetEnd, a.unit);
-  else if (a.sizeUnit && a.sizeUnit !== "auto")
-    style[size] = v(a.size, a.sizeUnit);
+  else if (a.sizeUnit && a.sizeUnit !== "auto") style[size] = v(a.size, a.sizeUnit);
   return { style, shift };
 }
 
 /**
- * Scale factor for an item with shrink on: below the design size the item gets
- * smaller. size is the viewport (or phone preview) { w, h }; axis picks which
- * dimension decides (x = width, y = height, both = the smaller of the two).
+ * The item's unit, as a CSS length: one pixel at the design size, shrinking with
+ * the screen. "x" follows the width, "y" the height, "both" the smaller of the two.
+ * Never grows above 1px, so the design is the largest size. Off = plain px.
+ * The phone preview sets --vw to its own width.
  */
-export function shrinkFactor(item, size, canvas = {}) {
+export function unitFor(item, canvas = {}) {
   const sh = item.shrink;
-  if (!sh?.on || !(size.w > 0) || !(size.h > 0)) return 1;
+  if (!sh?.on) return "1px";
   const dw = Number(canvas.designWidth) || DEFAULT_DESIGN.designWidth;
   const dh = Number(canvas.designHeight) || DEFAULT_DESIGN.designHeight;
-  const sx = Math.min(1, size.w / dw);
-  const sy = Math.min(1, size.h / dh);
-  const f = sh.axis === "y" ? sy : sh.axis === "both" ? Math.min(sx, sy) : sx;
-  return Math.max(0.05, f);
+  const byW = `calc(var(--vw, 100vw) / ${dw})`;
+  const byH = `calc(100vh / ${dh})`;
+  const parts = sh.axis === "y" ? [byH] : sh.axis === "both" ? [byW, byH] : [byW];
+  return `min(1px, ${parts.join(", ")})`;
 }
 
-/** Converts an item's constraints into CSS. */
-export function itemStyle(item, s = 1) {
-  const x = axis(item.h, "left", "right", "width", s);
-  const y = axis(item.v, "top", "bottom", "height", s);
-  const [px, py] = item.pivot || [50, 50];
+/** Converts an item's constraints into CSS (its --u is set by the canvas). */
+export function itemStyle(item) {
+  const x = axis(item.h, "left", "right", "width");
+  const y = axis(item.v, "top", "bottom", "height");
+  const [px0, py] = item.pivot || [50, 50];
   const transforms = [`translate(${x.shift}, ${y.shift})`];
   if (item.rotate) transforms.push(`rotate(${Number(item.rotate)}deg)`);
   return {
     position: "absolute",
     ...x.style,
     ...y.style,
-    transformOrigin: `${px}% ${py}%`,
+    transformOrigin: `${px0}% ${py}%`,
     transform: transforms.join(" "),
   };
 }
@@ -254,6 +260,7 @@ export function newItem(type, id, parent = "") {
       level: "p",
       align: "left",
       color: "text",
+      shrink: { on: true, axis: "x" }, // text scales with the screen by default
     });
   } else if (type === "video") {
     Object.assign(item, {
@@ -317,15 +324,16 @@ export const isBand = (section) => (section.kind || "band") === "band";
 
 /**
  * CSS background-position on one axis. A panning axis moves with the scroll
- * movement: --pan is the sum of every scroll step since the page loaded (set in
- * App), so scrolling down adds and scrolling back up takes away. Speed is px
- * moved per px scrolled; a negative speed moves the other way.
+ * movement: --pan is the eased sum of scroll steps since the page loaded (set in
+ * scroll.js), so scrolling back takes the movement back. Speed is px moved per px
+ * scrolled (negative = the other way). Offsets and movement scale with --u.
  */
 export function panPos(offset = 0, pan = false, speed = DEFAULT_SPEED) {
   const o = Number(offset) || 0;
-  if (!pan) return `${o}px`;
+  const fixed = o ? px(o) : "0px";
+  if (!pan) return fixed;
   const s = Number.isFinite(Number(speed)) ? Number(speed) : DEFAULT_SPEED;
-  return `calc(var(--pan, 0) * ${s} * 1px ${o < 0 ? "-" : "+"} ${Math.abs(o)}px)`;
+  return `calc(var(--pan, 0) * ${s} * var(--u, 1px) + ${fixed})`;
 }
 
 /** Top edge of a band in page coordinates. */

@@ -3,9 +3,10 @@ import { mediaUrl } from "./model.js";
 
 // Extensions tried, in order, when a path is typed without one.
 export const CANDIDATES = {
-  image: ["png", "jpeg", "jpg"],
-  gif: ["gif"],
-  video: ["mp4", "webm"],
+  // Upper-case variants too: hosting is case-sensitive and many files are .JPEG/.PNG.
+  image: ["png", "PNG", "jpeg", "JPEG", "jpg", "JPG"],
+  gif: ["gif", "GIF"],
+  video: ["mp4", "MP4", "webm", "WEBM"],
 };
 export const hasExt = (file = "") => /\.[a-z0-9]+$/i.test(file.split("/").pop());
 const isUrl = (file) => /^https?:\/\//i.test(file);
