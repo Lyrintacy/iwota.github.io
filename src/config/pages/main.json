@@ -11,7 +11,7 @@
       "name": "",
       "parent": "",
       "h": {
-        "anchor": "start",
+        "anchor": "center",
         "offset": 0,
         "offsetEnd": 0,
         "unit": "px",
@@ -35,36 +35,6 @@
       "level": "p",
       "align": "left",
       "color": "text"
-    },
-    {
-      "id": "image-ar5jf",
-      "type": "image",
-      "name": "",
-      "parent": "section-tfih3",
-      "h": {
-        "anchor": "start",
-        "offset": 0,
-        "offsetEnd": 0,
-        "unit": "px",
-        "size": 300,
-        "sizeUnit": "px"
-      },
-      "v": {
-        "anchor": "start",
-        "offset": 0,
-        "offsetEnd": 0,
-        "unit": "px",
-        "size": 0,
-        "sizeUnit": "auto"
-      },
-      "pivot": [
-        50,
-        50
-      ],
-      "rotate": 0,
-      "file": "0/IMG_3586",
-      "alt": "",
-      "fit": "contain"
     },
     {
       "id": "text-ldvyg",
@@ -96,6 +66,94 @@
       "level": "p",
       "align": "left",
       "color": "text"
+    },
+    {
+      "id": "animated-100so",
+      "type": "animated",
+      "name": "LeMovingBorder",
+      "parent": "section-mzin5",
+      "h": {
+        "anchor": "start",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 300,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "stretch",
+        "offset": 1,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 0,
+        "sizeUnit": "auto"
+      },
+      "pivot": [
+        0,
+        50
+      ],
+      "rotate": 0,
+      "file": "ui/Roof.png",
+      "tile": 50,
+      "border": {
+        "top": 100,
+        "right": 0,
+        "bottom": 1000,
+        "left": 100
+      },
+      "repeatX": true,
+      "repeatY": true,
+      "scrollX": false,
+      "speedX": -10,
+      "scrollY": true,
+      "speedY": -1.1,
+      "textureRotate": 0,
+      "offsetY": 0,
+      "offsetX": 0
+    },
+    {
+      "id": "animated-jjlwh",
+      "type": "animated",
+      "name": "RiMovingBorder",
+      "parent": "section-mzin5",
+      "h": {
+        "anchor": "end",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 300,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "stretch",
+        "offset": 1,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 0,
+        "sizeUnit": "auto"
+      },
+      "pivot": [
+        100,
+        50
+      ],
+      "rotate": 0,
+      "file": "ui/Roof.png",
+      "tile": 50,
+      "border": {
+        "top": 100,
+        "right": 0,
+        "bottom": 1000,
+        "left": 100
+      },
+      "repeatX": true,
+      "repeatY": true,
+      "scrollX": false,
+      "speedX": -1,
+      "scrollY": true,
+      "speedY": 1.1,
+      "textureRotate": 0,
+      "offsetY": 0,
+      "offsetX": 0
     },
     {
       "id": "text-z67a9",
@@ -141,9 +199,13 @@
       "texture": {
         "file": "ui/LeftBorder.png",
         "size": 150,
-        "offsetX": 0,
+        "offsetX": 100,
         "offsetY": 0,
-        "rotate": 45
+        "rotate": 45,
+        "scrollX": true,
+        "speedX": 100,
+        "scrollY": true,
+        "speedY": 1
       },
       "overlay": {
         "colour": 6,
@@ -179,6 +241,52 @@
           "size": 11,
           "sizeUnit": "px"
         }
+      },
+      "animated-100so": {
+        "v": {
+          "anchor": "stretch",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 0,
+          "sizeUnit": "auto"
+        },
+        "h": {
+          "anchor": "start",
+          "offset": -400,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 300,
+          "sizeUnit": "px"
+        },
+        "pivot": [
+          50,
+          50
+        ],
+        "repeatY": true,
+        "repeatX": true
+      },
+      "animated-jjlwh": {
+        "v": {
+          "anchor": "stretch",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 0,
+          "sizeUnit": "auto"
+        },
+        "h": {
+          "anchor": "end",
+          "offset": -100,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 300,
+          "sizeUnit": "px"
+        },
+        "pivot": [
+          50,
+          50
+        ]
       }
     },
     "sections": {}
