@@ -46,6 +46,11 @@ function attach() {
   document.documentElement.addEventListener("pointerleave", clear);
 }
 
+/** Re-checks hover now (after something moved, such as a card that follows its button). */
+export function refreshHover() {
+  check();
+}
+
 /** Subscribes to pointer movement (used for the card tilt). Returns an unsubscribe. */
 export function onPointer(fn) {
   attach();
@@ -54,10 +59,11 @@ export function onPointer(fn) {
 }
 
 /**
- * True while the pointer is over the element behind ref (or over extraRef, if
- * given and set, such as a card that opens on top of it).
+ * True while the pointer is over the element behind ref, or over the rect that
+ * extra() returns (for example a card open on top of it). Returns undefined when
+ * there is no extra area.
  */
-export function useHoverRegion(ref, extraRef) {
+export function useHoverRegion(ref, extra) {
   const [on, setOn] = useState(false);
   useEffect(() => {
     const key = {};
@@ -65,7 +71,7 @@ export function useHoverRegion(ref, extraRef) {
       on: false,
       set: setOn,
       rect: () => ref.current?.getBoundingClientRect(),
-      extra: () => extraRef?.current?.getBoundingClientRect(),
+      extra: () => (extra ? extra() : undefined),
     });
     attach();
     return () => regions.delete(key);

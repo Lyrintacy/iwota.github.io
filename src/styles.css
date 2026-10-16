@@ -591,28 +591,32 @@ html {
   position: absolute;
   inset: 0;
 }
-/* A subtle wobble and jitter while hovered */
+
+/* A shake that lasts its duration (--shake-ms), once per hover */
 .fx-shake {
-  animation: fx-shake 0.5s ease-in-out infinite;
+  animation: fx-shake var(--shake-ms, 600ms) ease-in-out 1 both;
 }
 @keyframes fx-shake {
-  0%,
+  0% {
+    transform: rotate(0) translate(0, 0);
+  }
+  15% {
+    transform: rotate(-1.4deg) translate(-1px, 0);
+  }
+  35% {
+    transform: rotate(1.1deg) translate(1px, -1px);
+  }
+  55% {
+    transform: rotate(-0.7deg) translate(0, 1px);
+  }
+  75% {
+    transform: rotate(0.5deg) translate(-1px, 0);
+  }
   100% {
     transform: rotate(0) translate(0, 0);
   }
-  20% {
-    transform: rotate(-1.2deg) translate(-1px, 0);
-  }
-  40% {
-    transform: rotate(1deg) translate(1px, -1px);
-  }
-  60% {
-    transform: rotate(-0.6deg) translate(0, 1px);
-  }
-  80% {
-    transform: rotate(0.8deg) translate(-1px, 0);
-  }
 }
+
 /* Masks follow the button's own shape */
 .fx-mask {
   position: absolute;
@@ -639,23 +643,47 @@ html {
     opacity: 0;
   }
 }
+
+/* The moving shine: width (--sw) and speed (animation-duration) are variables */
 .fx-shine-band {
   position: absolute;
   top: -15%;
   bottom: -15%;
   left: 0;
-  width: 45%;
+  width: var(--sw, 70%);
   background: linear-gradient(90deg, transparent, var(--shine, #fff), transparent);
-  transform: translateX(-120%) skewX(-18deg);
+  transform: skewX(-18deg);
   animation: fx-shine 0.7s cubic-bezier(0.5, 0, 0.8, 0.6) forwards;
 }
 @keyframes fx-shine {
+  from {
+    left: calc(var(--sw, 70%) * -1);
+  }
   to {
-    transform: translateX(260%) skewX(-18deg);
+    left: 100%;
   }
 }
 
-/* The card opens over everything, centred on the button */
+/* A coloured, smooth flash (no white). Used on the card and on click. */
+.fx-soft-flash {
+  position: absolute;
+  inset: 0;
+  background: var(--flash-col, var(--color-3));
+  animation: fx-soft-flash 0.5s ease-in-out forwards;
+}
+@keyframes fx-soft-flash {
+  0% {
+    opacity: 0;
+  }
+  40% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* The card: extends from the button's size to full size, wobbles, and shrinks back to it */
 .fx-card {
   position: fixed;
   z-index: 1000;
@@ -666,7 +694,11 @@ html {
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
   transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
   transition: transform 0.12s ease-out;
-  animation: fx-card-in 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation: fx-card-open 0.45s cubic-bezier(0.2, 0.9, 0.25, 1.05) both,
+    fx-card-wobble var(--shake-ms, 600ms) ease-in-out 1 both;
+}
+.fx-card.is-closing {
+  animation: fx-card-close 0.36s ease-in both;
 }
 .fx-card img {
   display: block;
@@ -674,13 +706,46 @@ html {
   height: 100%;
   object-fit: cover;
 }
-@keyframes fx-card-in {
+.fx-card .fx-soft-flash {
+  border-radius: 6px;
+}
+@keyframes fx-card-open {
   from {
-    opacity: 0;
-    scale: 0.6;
+    scale: var(--k0, 0.4);
+    opacity: 0.6;
   }
   to {
-    opacity: 1;
     scale: 1;
+    opacity: 1;
+  }
+}
+@keyframes fx-card-close {
+  from {
+    scale: 1;
+    opacity: 1;
+  }
+  to {
+    scale: var(--k0, 0.4);
+    opacity: 0;
+  }
+}
+@keyframes fx-card-wobble {
+  0% {
+    rotate: 0deg;
+  }
+  20% {
+    rotate: -2.5deg;
+  }
+  40% {
+    rotate: 2deg;
+  }
+  60% {
+    rotate: -1.2deg;
+  }
+  80% {
+    rotate: 0.6deg;
+  }
+  100% {
+    rotate: 0deg;
   }
 }

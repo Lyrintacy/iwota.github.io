@@ -6,12 +6,20 @@ export const TYPES = ["text", "image", "gif", "video", "animated", "button"];
 // Hover effects for buttons (and GIFs made into buttons). Palette number for the shine.
 export const DEFAULT_FX = {
   shake: true,
+  shakeMs: 600, // how long the shake lasts (once per hover)
   flash: true,
+  flashMs: 300, // the white flash
   shine: true,
-  shineColour: 4,
+  shineColour: 4, // palette number
+  shineWidth: 70, // width of the moving band, % of the button
+  shineMs: 700, // how fast the band crosses
+  waitFlash: true, // open the card only after the flash and shine finish
   card: true,
-  cardScale: 2.5,
+  cardScale: 2.5, // card size, times the button
+  cardFit: "both", // keep the card on screen: none | x (width) | y (height) | both
   cardFile: "",
+  cardFlashColour: 3, // palette number of the coloured flash on the card and on click
+  cardFlashMs: 500,
 };
 export const DEFAULT_LINK = { kind: "none", url: "", section: "", newTab: false };
 export const DEFAULT_SPEED = 0.5;

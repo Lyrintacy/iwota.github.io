@@ -434,33 +434,47 @@ function LinkFields({ value, sections, onChange }) {
   );
 }
 
-// Hover sequence for buttons: shake, white flash, coloured shine, then a card.
+// Hover sequence for buttons: shake, colour flash, shine, then a card.
+// Every timing and size here is a variable (stored per item in fx).
 function EffectFields({ fx = {}, site, onChange }) {
+  const palette = paletteOptions(site);
+  const num = (key, min) => (value) =>
+    onChange({ [key]: min === undefined ? value : Math.max(min, value) });
   return (
     <fieldset className="axis">
       <legend>Hover effects</legend>
-      <Check
-        label="Shake"
-        checked={fx.shake}
-        onChange={(shake) => onChange({ shake })}
-      />
-      <Check
-        label="Flash white"
-        checked={fx.flash}
-        onChange={(flash) => onChange({ flash })}
-      />
+      <Check label="Shake (once)" checked={fx.shake} onChange={(shake) => onChange({ shake })} />
+      {fx.shake && (
+        <NumberField label="Shake duration (ms)" value={fx.shakeMs ?? 600} onChange={num("shakeMs", 0)} />
+      )}
+      <Check label="Flash" checked={fx.flash} onChange={(flash) => onChange({ flash })} />
+      {fx.flash && (
+        <NumberField label="Flash duration (ms)" value={fx.flashMs ?? 300} onChange={num("flashMs", 0)} />
+      )}
       <Check
         label="Shine across the button"
         checked={fx.shine}
         onChange={(shine) => onChange({ shine })}
       />
       {fx.shine && (
-        <Select
-          label="Shine colour"
-          value={String(fx.shineColour ?? 4)}
-          options={paletteOptions(site)}
-          onChange={(n) => onChange({ shineColour: Number(n) })}
-        />
+        <>
+          <Select
+            label="Shine colour"
+            value={String(fx.shineColour ?? 4)}
+            options={palette}
+            onChange={(n) => onChange({ shineColour: Number(n) })}
+          />
+          <NumberField
+            label="Shine band width (% of button)"
+            value={fx.shineWidth ?? 70}
+            onChange={num("shineWidth", 1)}
+          />
+          <NumberField
+            label="Shine speed (ms to cross)"
+            value={fx.shineMs ?? 700}
+            onChange={num("shineMs", 0)}
+          />
+        </>
       )}
       <Check
         label="Open a card over the page"
@@ -469,12 +483,26 @@ function EffectFields({ fx = {}, site, onChange }) {
       />
       {fx.card && (
         <>
+          <Check
+            label="Wait for the flash and shine to finish before opening"
+            checked={fx.waitFlash}
+            onChange={(waitFlash) => onChange({ waitFlash })}
+          />
           <NumberField
             label="Card size (times the button)"
             value={fx.cardScale ?? 2.5}
-            onChange={(cardScale) =>
-              onChange({ cardScale: Math.max(1, cardScale) })
-            }
+            onChange={num("cardScale", 1)}
+          />
+          <Select
+            label="Keep the card on screen by"
+            value={fx.cardFit || "both"}
+            options={[
+              ["none", "Not at all"],
+              ["x", "Width"],
+              ["y", "Height"],
+              ["both", "Width and height"],
+            ]}
+            onChange={(cardFit) => onChange({ cardFit })}
           />
           <FilePath
             label="Card picture (optional, else the button image)"
@@ -482,6 +510,21 @@ function EffectFields({ fx = {}, site, onChange }) {
             type="image"
             placeholder="0/card"
             onChange={(cardFile) => onChange({ cardFile })}
+          />
+        </>
+      )}
+      {(fx.card || fx.shine || fx.flash) && (
+        <>
+          <Select
+            label="Colour flash (card open and click)"
+            value={String(fx.cardFlashColour ?? 3)}
+            options={palette}
+            onChange={(n) => onChange({ cardFlashColour: Number(n) })}
+          />
+          <NumberField
+            label="Colour flash duration (ms)"
+            value={fx.cardFlashMs ?? 500}
+            onChange={num("cardFlashMs", 0)}
           />
         </>
       )}
