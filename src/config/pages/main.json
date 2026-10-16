@@ -119,7 +119,11 @@
       "speedY": -1.1,
       "textureRotate": 0,
       "offsetY": 0,
-      "offsetX": 0
+      "offsetX": 0,
+      "shrink": {
+        "on": true,
+        "axis": "both"
+      }
     },
     {
       "id": "animated-jjlwh",
@@ -163,7 +167,11 @@
       "speedY": 1.1,
       "textureRotate": 0,
       "offsetY": 0,
-      "offsetX": 0
+      "offsetX": 0,
+      "shrink": {
+        "on": true,
+        "axis": "both"
+      }
     },
     {
       "id": "text-z67a9",
@@ -199,6 +207,74 @@
         "on": true,
         "axis": "x"
       }
+    },
+    {
+      "id": "image-fen8e",
+      "type": "image",
+      "name": "",
+      "parent": "",
+      "h": {
+        "anchor": "center",
+        "offset": -25,
+        "offsetEnd": 0,
+        "unit": "%",
+        "size": 300,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 1,
+        "offsetEnd": 0,
+        "unit": "%",
+        "size": 0,
+        "sizeUnit": "auto"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "on": true,
+        "axis": "both"
+      },
+      "file": "start/IMG_3586.JPEG",
+      "alt": "",
+      "fit": "contain"
+    },
+    {
+      "id": "gif-ax4fw",
+      "type": "gif",
+      "name": "",
+      "parent": "",
+      "h": {
+        "anchor": "center",
+        "offset": 10,
+        "offsetEnd": 0,
+        "unit": "%",
+        "size": 300,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 20,
+        "offsetEnd": 0,
+        "unit": "%",
+        "size": 0,
+        "sizeUnit": "auto"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "on": true,
+        "axis": "both"
+      },
+      "file": "start/FaraFrogGifPortfolio.gif",
+      "alt": "",
+      "fit": "contain"
     }
   ],
   "sections": [
@@ -207,7 +283,7 @@
       "kind": "band",
       "name": "",
       "anchor": "bottom",
-      "start": 100,
+      "start": 0,
       "height": 600,
       "background": 4,
       "texture": {
@@ -270,7 +346,7 @@
         },
         "h": {
           "anchor": "start",
-          "offset": -400,
+          "offset": -270,
           "offsetEnd": 0,
           "unit": "px",
           "size": 300,
@@ -281,7 +357,11 @@
           50
         ],
         "repeatY": true,
-        "repeatX": true
+        "repeatX": true,
+        "shrink": {
+          "on": true,
+          "axis": "y"
+        }
       },
       "animated-jjlwh": {
         "v": {
@@ -294,7 +374,7 @@
         },
         "h": {
           "anchor": "end",
-          "offset": -100,
+          "offset": -270,
           "offsetEnd": 0,
           "unit": "px",
           "size": 300,
@@ -303,7 +383,45 @@
         "pivot": [
           50,
           50
-        ]
+        ],
+        "shrink": {
+          "on": true,
+          "axis": "y"
+        }
+      },
+      "text-z67a9": {
+        "shrink": {
+          "on": false,
+          "axis": "both"
+        }
+      },
+      "image-fen8e": {
+        "h": {
+          "anchor": "center",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "%",
+          "size": 300,
+          "sizeUnit": "px"
+        }
+      },
+      "gif-ax4fw": {
+        "h": {
+          "anchor": "center",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "%",
+          "size": 200,
+          "sizeUnit": "px"
+        },
+        "v": {
+          "anchor": "start",
+          "offset": 40,
+          "offsetEnd": 0,
+          "unit": "%",
+          "size": 0,
+          "sizeUnit": "auto"
+        }
       }
     },
     "sections": {}
