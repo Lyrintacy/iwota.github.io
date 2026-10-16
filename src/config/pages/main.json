@@ -277,7 +277,115 @@
       },
       "file": "start/FaraFrogGifPortfolio.gif",
       "alt": "",
-      "fit": "contain"
+      "fit": "contain",
+      "button": false,
+      "hoverOnly": false,
+      "fx": {
+        "card": false,
+        "shine": false,
+        "flash": false
+      }
+    },
+    {
+      "id": "gif-eh5md",
+      "type": "gif",
+      "name": "",
+      "parent": "",
+      "h": {
+        "anchor": "start",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 300,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 0,
+        "sizeUnit": "auto"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "on": false,
+        "axis": "x"
+      },
+      "file": "",
+      "alt": "",
+      "fit": "contain",
+      "hoverOnly": false,
+      "thumbnail": "",
+      "button": false,
+      "link": {
+        "kind": "none",
+        "url": "",
+        "section": "",
+        "newTab": false
+      },
+      "fx": {
+        "shake": true,
+        "flash": true,
+        "shine": true,
+        "shineColour": 4,
+        "card": true,
+        "cardScale": 2.5,
+        "cardFile": ""
+      }
+    },
+    {
+      "id": "button-45pnf",
+      "type": "button",
+      "name": "",
+      "parent": "",
+      "h": {
+        "anchor": "center",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 300,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "center",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 300,
+        "sizeUnit": "px"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "on": true,
+        "axis": "both"
+      },
+      "file": "start/profile.JPEG",
+      "alt": "",
+      "fit": "contain",
+      "link": {
+        "kind": "none",
+        "url": "",
+        "section": "",
+        "newTab": false
+      },
+      "fx": {
+        "shake": true,
+        "flash": true,
+        "shine": true,
+        "shineColour": 8,
+        "card": true,
+        "cardScale": 1.5,
+        "cardFile": "start/profile.JPEG"
+      }
     }
   ],
   "sections": [
@@ -424,6 +532,33 @@
           "unit": "%",
           "size": 0,
           "sizeUnit": "auto"
+        }
+      },
+      "button-45pnf": {
+        "fx": {
+          "shake": true,
+          "flash": true,
+          "shine": true,
+          "shineColour": 8,
+          "card": true,
+          "cardScale": 2,
+          "cardFile": "start/profile.JPEG"
+        },
+        "h": {
+          "anchor": "center",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 100,
+          "sizeUnit": "px"
+        },
+        "v": {
+          "anchor": "center",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 100,
+          "sizeUnit": "px"
         }
       }
     },
