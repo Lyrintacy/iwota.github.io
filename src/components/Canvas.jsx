@@ -1,6 +1,7 @@
 import React, { useLayoutEffect, useRef, useState } from "react";
 import { bandTop, inlineTokens, isBand, itemStyle, pageHeight, panPos, unitFor } from "../lib/model.js";
 import { useMedia } from "../lib/media.js";
+import { ButtonItem, HoverGif, HoverVideo } from "./Interactive.jsx";
 
 function Text({ item }) {
   const Tag = ["h1", "h2", "h3"].includes(item.level) ? item.level : "p";
@@ -92,6 +93,7 @@ function BandBackground({ section, top, selected }) {
   const texture = useMedia("image", tex.file);
   return (
     <div
+      id={`section-${section.id}`}
       className={`section ${selected ? "selected" : ""}`}
       style={{
         top,
@@ -150,7 +152,13 @@ export function Canvas({ page, editing, selectedId, onSelect, selectedSectionId 
     >
       {item.type === "text" && <Text item={item} />}
       {item.type === "animated" && <Animated item={item} />}
-      {(item.type === "image" || item.type === "gif" || item.type === "video") && <Media item={item} />}
+      {(item.type === "button" || (item.type === "gif" && item.button)) && (
+        <ButtonItem item={item} editing={editing} />
+      )}
+      {item.type === "gif" && item.hoverOnly && !item.button && <HoverGif item={item} />}
+      {item.type === "video" && item.hoverOnly && <HoverVideo item={item} />}
+      {(item.type === "image" || item.type === "gif" || item.type === "video") &&
+        !(item.hoverOnly || item.button) && <Media item={item} />}
     </div>
   );
   return (

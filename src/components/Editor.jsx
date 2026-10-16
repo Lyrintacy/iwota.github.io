@@ -4,6 +4,7 @@ import {
   ANCHORS,
   COLORS,
   DEFAULT_DESIGN,
+  DEFAULT_LINK,
   DEFAULT_MOBILE,
   DEFAULT_SPEED,
   DEFAULT_TEXT,
@@ -22,6 +23,7 @@ import {
 import { hasExt, useMedia } from "../lib/media.js";
 
 const TYPE_LABEL = {
+  button: "Button",
   text: "Text",
   image: "Image",
   gif: "GIF",
@@ -140,6 +142,20 @@ function PanControl({ axis, pan, speed, onChange }) {
         />
       )}
     </>
+  );
+}
+
+// A tick box with a label (searchable, like the other fields).
+function Check({ label, checked, onChange }) {
+  return (
+    <label className="check">
+      <input
+        type="checkbox"
+        checked={!!checked}
+        onChange={(e) => onChange(e.target.checked)}
+      />
+      {label}
+    </label>
   );
 }
 
@@ -369,6 +385,107 @@ function FilePath({ label, value = "", type, onChange, placeholder }) {
         </span>
       </div>
     </>
+  );
+}
+
+// Where a button goes when clicked: nothing, a web address, or a section's top.
+function LinkFields({ value, sections, onChange }) {
+  const set = (v) => onChange({ ...value, ...v });
+  return (
+    <fieldset className="axis">
+      <legend>Link when clicked</legend>
+      <Select
+        label="Action"
+        value={value.kind || "none"}
+        options={[
+          ["none", "Nothing"],
+          ["url", "Open a web address"],
+          ["section", "Go to the top of a section"],
+        ]}
+        onChange={(kind) => set({ kind })}
+      />
+      {value.kind === "url" && (
+        <>
+          <Field label="Web address (https://…)">
+            <input
+              value={value.url || ""}
+              onChange={(e) => set({ url: e.target.value })}
+            />
+          </Field>
+          <Check
+            label="Open in a new tab"
+            checked={value.newTab}
+            onChange={(newTab) => set({ newTab })}
+          />
+        </>
+      )}
+      {value.kind === "section" && (
+        <Select
+          label="Section"
+          value={value.section || ""}
+          options={[
+            ["", "Choose a section"],
+            ...sections.filter(isBand).map((x) => [x.id, x.name || "Section"]),
+          ]}
+          onChange={(section) => set({ section })}
+        />
+      )}
+    </fieldset>
+  );
+}
+
+// Hover sequence for buttons: shake, white flash, coloured shine, then a card.
+function EffectFields({ fx = {}, site, onChange }) {
+  return (
+    <fieldset className="axis">
+      <legend>Hover effects</legend>
+      <Check
+        label="Shake"
+        checked={fx.shake}
+        onChange={(shake) => onChange({ shake })}
+      />
+      <Check
+        label="Flash white"
+        checked={fx.flash}
+        onChange={(flash) => onChange({ flash })}
+      />
+      <Check
+        label="Shine across the button"
+        checked={fx.shine}
+        onChange={(shine) => onChange({ shine })}
+      />
+      {fx.shine && (
+        <Select
+          label="Shine colour"
+          value={String(fx.shineColour ?? 4)}
+          options={paletteOptions(site)}
+          onChange={(n) => onChange({ shineColour: Number(n) })}
+        />
+      )}
+      <Check
+        label="Open a card over the page"
+        checked={fx.card}
+        onChange={(card) => onChange({ card })}
+      />
+      {fx.card && (
+        <>
+          <NumberField
+            label="Card size (times the button)"
+            value={fx.cardScale ?? 2.5}
+            onChange={(cardScale) =>
+              onChange({ cardScale: Math.max(1, cardScale) })
+            }
+          />
+          <FilePath
+            label="Card picture (optional, else the button image)"
+            value={fx.cardFile || ""}
+            type="image"
+            placeholder="0/card"
+            onChange={(cardFile) => onChange({ cardFile })}
+          />
+        </>
+      )}
+    </fieldset>
   );
 }
 
@@ -995,12 +1112,14 @@ export function Editor({
                 />
               )}
               {status && <p className="hint warn">{status}</p>}
-              {(item.type === "image" || item.type === "gif") && (
+              {(item.type === "image" ||
+                item.type === "gif" ||
+                item.type === "button") && (
                 <>
                   <FilePath
                     label="File (in public/images/, extension optional)"
                     value={itemView.file}
-                    type={item.type}
+                    type={item.type === "gif" ? "gif" : "image"}
                     placeholder="0/profile"
                     onChange={(file) => patch({ file })}
                   />
@@ -1118,33 +1237,104 @@ export function Editor({
                 </>
               )}
 
+              {item.type === "video" && (
+                <>
+                  <Check
+                    label="Play only while hovered"
+                    checked={itemView.hoverOnly}
+                    onChange={(hoverOnly) => patch({ hoverOnly })}
+                  />
+                  {itemView.hoverOnly && (
+                    <FilePath
+                      label="Thumbnail (shown until hovered, optional)"
+                      value={itemView.thumbnail}
+                      type="image"
+                      placeholder="0/thumb"
+                      onChange={(thumbnail) => patch({ thumbnail })}
+                    />
+                  )}
+                </>
+              )}
+              {item.type === "gif" && (
+                <>
+                  <Check
+                    label="Play only while hovered"
+                    checked={itemView.hoverOnly}
+                    onChange={(hoverOnly) => patch({ hoverOnly })}
+                  />
+                  {itemView.hoverOnly && (
+                    <FilePath
+                      label="Thumbnail (shown until hovered, optional)"
+                      value={itemView.thumbnail}
+                      type="image"
+                      placeholder="0/thumb"
+                      onChange={(thumbnail) => patch({ thumbnail })}
+                    />
+                  )}
+                  <Check
+                    label="Make it a button (flash, shine, card, then play)"
+                    checked={itemView.button}
+                    onChange={(button) => patch({ button })}
+                  />
+                </>
+              )}
+              {(item.type === "button" ||
+                (item.type === "gif" && itemView.button)) && (
+                <>
+                  <LinkFields
+                    value={itemView.link || DEFAULT_LINK}
+                    sections={sections}
+                    onChange={(link) => patch({ link })}
+                  />
+                  <EffectFields
+                    fx={itemView.fx}
+                    site={site}
+                    onChange={(fx) => patch({ fx: { ...itemView.fx, ...fx } })}
+                  />
+                </>
+              )}
+
               <fieldset className="axis">
                 <legend>Scale with the screen</legend>
-                <label className="check">
-                  <input
-                    type="checkbox"
+                {item.type === "text" ? (
+                  <Check
+                    label="Auto size: grow and shrink with the screen width"
                     checked={!!itemView.shrink?.on}
-                    onChange={(e) =>
+                    onChange={(on) =>
                       patch({
-                        shrink: { ...itemView.shrink, on: e.target.checked },
+                        shrink: {
+                          axis: "x",
+                          ...itemView.shrink,
+                          on,
+                          grow: true,
+                        },
                       })
                     }
                   />
-                  Scale down on smaller screens
-                </label>
-                {itemView.shrink?.on && (
-                  <Select
-                    label="Fit to"
-                    value={itemView.shrink.axis || "x"}
-                    options={[
-                      ["x", "Fit width"],
-                      ["y", "Fit height"],
-                      ["both", "Fit both"],
-                    ]}
-                    onChange={(axis) =>
-                      patch({ shrink: { ...itemView.shrink, axis } })
-                    }
-                  />
+                ) : (
+                  <>
+                    <Check
+                      label="Scale down on smaller screens"
+                      checked={!!itemView.shrink?.on}
+                      onChange={(on) =>
+                        patch({ shrink: { ...itemView.shrink, on } })
+                      }
+                    />
+                    {itemView.shrink?.on && (
+                      <Select
+                        label="Fit to"
+                        value={itemView.shrink.axis || "x"}
+                        options={[
+                          ["x", "Fit width"],
+                          ["y", "Fit height"],
+                          ["both", "Fit both"],
+                        ]}
+                        onChange={(axis) =>
+                          patch({ shrink: { ...itemView.shrink, axis } })
+                        }
+                      />
+                    )}
+                  </>
                 )}
               </fieldset>
 
