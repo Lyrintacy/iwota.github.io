@@ -1,7 +1,19 @@
 // Pure helpers: constraints -> CSS, text markup, toggling, media paths,
 // sections, phone overrides, palette edits and validation.
 
-export const TYPES = ["text", "image", "gif", "video", "animated"];
+export const TYPES = ["text", "image", "gif", "video", "animated", "button"];
+
+// Hover effects for buttons (and GIFs made into buttons). Palette number for the shine.
+export const DEFAULT_FX = {
+  shake: true,
+  flash: true,
+  shine: true,
+  shineColour: 4,
+  card: true,
+  cardScale: 2.5,
+  cardFile: "",
+};
+export const DEFAULT_LINK = { kind: "none", url: "", section: "", newTab: false };
 export const DEFAULT_SPEED = 0.5;
 // The size each layout was designed at. Shrinking items scale down below it.
 export const DEFAULT_DESIGN = { designWidth: 1200, designHeight: 800 };
@@ -190,6 +202,8 @@ export function unitFor(item, canvas = {}) {
   const byW = `calc(var(--vw, 100vw) / ${dw})`;
   const byH = `calc(100vh / ${dh})`;
   const parts = sh.axis === "y" ? [byH] : sh.axis === "both" ? [byW, byH] : [byW];
+  // grow (auto size) follows the screen both ways; otherwise it is capped at the design.
+  if (sh.grow) return parts.length === 1 ? parts[0] : `min(${parts.join(", ")})`;
   return `min(1px, ${parts.join(", ")})`;
 }
 
@@ -260,7 +274,7 @@ export function newItem(type, id, parent = "") {
       level: "p",
       align: "left",
       color: "text",
-      shrink: { on: true, axis: "x" }, // text scales with the screen by default
+      shrink: { on: true, axis: "x", grow: true }, // auto size: grows and shrinks with the screen
     });
   } else if (type === "video") {
     Object.assign(item, {
@@ -285,8 +299,30 @@ export function newItem(type, id, parent = "") {
       scrollY: false,
       speedY: DEFAULT_SPEED,
     });
+  } else if (type === "video") {
+    Object.assign(item, {
+      file: "",
+      poster: "",
+      controls: true,
+      loop: false,
+      autoplay: false,
+      hoverOnly: false,
+      thumbnail: "",
+    });
+  } else if (type === "button") {
+    Object.assign(item, { file: "", alt: "", fit: "contain", link: { ...DEFAULT_LINK }, fx: { ...DEFAULT_FX } });
   } else {
-    Object.assign(item, { file: "", alt: "", fit: "contain" });
+    // image, and gif (which can be made hover-only or into a button)
+    Object.assign(item, {
+      file: "",
+      alt: "",
+      fit: "contain",
+      hoverOnly: false,
+      thumbnail: "",
+      button: false,
+      link: { ...DEFAULT_LINK },
+      fx: { ...DEFAULT_FX },
+    });
   }
   return item;
 }

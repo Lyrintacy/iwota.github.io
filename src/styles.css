@@ -547,3 +547,140 @@ html {
   font-weight: 600;
   margin-bottom: 2px;
 }
+
+/* Hover-only media, buttons and their effects */
+.hover-box,
+.fx-root {
+  position: absolute;
+  inset: 0;
+}
+.hover-box .layer,
+.fx-body > .media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.poster {
+  transition: opacity 0.4s ease;
+}
+.poster.is-hidden {
+  opacity: 0;
+}
+.fade-in {
+  animation: fx-fade 0.4s ease both;
+}
+@keyframes fx-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.fx-link {
+  position: absolute;
+  inset: 0;
+  display: block;
+  cursor: pointer;
+  color: inherit;
+  text-decoration: none;
+}
+.fx-body {
+  position: absolute;
+  inset: 0;
+}
+/* A subtle wobble and jitter while hovered */
+.fx-shake {
+  animation: fx-shake 0.5s ease-in-out infinite;
+}
+@keyframes fx-shake {
+  0%,
+  100% {
+    transform: rotate(0) translate(0, 0);
+  }
+  20% {
+    transform: rotate(-1.2deg) translate(-1px, 0);
+  }
+  40% {
+    transform: rotate(1deg) translate(1px, -1px);
+  }
+  60% {
+    transform: rotate(-0.6deg) translate(0, 1px);
+  }
+  80% {
+    transform: rotate(0.8deg) translate(-1px, 0);
+  }
+}
+/* Masks follow the button's own shape */
+.fx-mask {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  pointer-events: none;
+}
+.fx-flash {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  animation: fx-flash 0.3s ease-out forwards;
+}
+@keyframes fx-flash {
+  0% {
+    opacity: 0;
+  }
+  25% {
+    opacity: 0.95;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.fx-shine-band {
+  position: absolute;
+  top: -15%;
+  bottom: -15%;
+  left: 0;
+  width: 45%;
+  background: linear-gradient(90deg, transparent, var(--shine, #fff), transparent);
+  transform: translateX(-120%) skewX(-18deg);
+  animation: fx-shine 0.7s cubic-bezier(0.5, 0, 0.8, 0.6) forwards;
+}
+@keyframes fx-shine {
+  to {
+    transform: translateX(260%) skewX(-18deg);
+  }
+}
+
+/* The card opens over everything, centred on the button */
+.fx-card {
+  position: fixed;
+  z-index: 1000;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: 6px;
+  background: #000;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+  transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform 0.12s ease-out;
+  animation: fx-card-in 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.fx-card img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+@keyframes fx-card-in {
+  from {
+    opacity: 0;
+    scale: 0.6;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
