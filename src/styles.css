@@ -7,12 +7,24 @@ body {
 }
 
 /* The site: the canvas follows the palette role "background". */
+/* The page sits beside the workshop panel (--sx on the left, --ex on the right). */
 .site {
+  --sx: 0px;
+  --ex: 0px;
   min-height: 100vh;
-  transition: margin-right 0.2s;
+  margin-left: var(--sx);
+  margin-right: var(--ex);
+  transition: margin 0.2s;
 }
-.site.editing {
-  margin-right: 380px;
+.site.editing.dock-left {
+  --sx: 380px;
+}
+.site.editing.dock-right {
+  --ex: 380px;
+}
+.site.editing.dock-left .edit-toggle {
+  left: auto;
+  right: 12px;
 }
 .canvas {
   position: relative;
@@ -66,20 +78,20 @@ body {
   margin: 0;
   white-space: pre-line;
   line-height: 1.5;
-  font-size: var(--size-body, 16px);
+  font-size: calc(var(--size-body, 16px) * var(--shrink, 1));
   font-weight: 400;
   color: var(--c-text, #151814);
 }
 .text-body.level-h1 {
-  font-size: var(--size-h1, 56px);
+  font-size: calc(var(--size-h1, 56px) * var(--shrink, 1));
   line-height: 1.05;
 }
 .text-body.level-h2 {
-  font-size: var(--size-h2, 36px);
+  font-size: calc(var(--size-h2, 36px) * var(--shrink, 1));
   line-height: 1.15;
 }
 .text-body.level-h3 {
-  font-size: var(--size-h3, 24px);
+  font-size: calc(var(--size-h3, 24px) * var(--shrink, 1));
   line-height: 1.2;
 }
 
@@ -324,22 +336,24 @@ body {
 .page-frame {
   z-index: 2;
 }
+/* Screen overlays fill the same area as the page, so they line up with it. */
 .fixed-frame {
   position: fixed;
-  inset: 0;
+  top: 0;
+  bottom: 0;
+  left: var(--sx);
+  right: var(--ex);
   z-index: 10;
 }
+/* Phone preview: the page and overlays are centred in the same area, at the preview width. */
 .site.phone-preview .fixed-frame {
-  left: 50%;
-  width: 390px;
-  transform: translateX(-50%);
+  left: calc(var(--sx) + (100% - var(--sx) - var(--ex) - var(--preview-w, 390px)) / 2);
+  right: auto;
+  width: var(--preview-w, 390px);
 }
 .site.phone-preview .canvas {
-  width: 390px;
+  width: var(--preview-w, 390px);
   margin: 0 auto;
-}
-.site.phone-preview.editing {
-  margin-right: 380px;
 }
 
 /* Editor layout */
@@ -426,15 +440,34 @@ body {
   background-origin: content-box;
 }
 
-/* Phones: the editor takes the full width instead of a side panel */
+/* Workshop panel: docked left or right (dock-left / dock-right) */
+.editor.dock-left {
+  left: 0;
+  right: auto;
+  border-left: 0;
+  border-right: 1px solid #ccc;
+}
+.editor .dock-toggle {
+  margin-left: auto;
+}
+
+/* Phones: the workshop takes the full width, so the page is not pushed aside */
 @media (max-width: 700px) {
-  .site.editing {
-    margin-right: 0;
+  .site.editing.dock-left,
+  .site.editing.dock-right {
+    --sx: 0px;
+    --ex: 0px;
+  }
+  .site.editing.dock-left .edit-toggle {
+    left: 12px;
+    right: auto;
   }
   .editor {
     width: 100%;
   }
-  .site.phone-preview.editing {
-    margin-right: 0;
-  }
+}
+
+/* Smooth scrolling for keyboard and scrollbar (the wheel is eased in scroll.js) */
+html {
+  scroll-behavior: smooth;
 }

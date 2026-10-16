@@ -1,5 +1,13 @@
-import React, { useLayoutEffect, useRef, useState } from "react";
-import { bandTop, inlineTokens, isBand, itemStyle, pageHeight, panPos } from "../lib/model.js";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+  bandTop,
+  inlineTokens,
+  isBand,
+  itemStyle,
+  pageHeight,
+  panPos,
+  shrinkFactor,
+} from "../lib/model.js";
 import { useMedia } from "../lib/media.js";
 
 function Text({ item }) {
@@ -7,7 +15,10 @@ function Text({ item }) {
   return (
     <Tag
       className={`text-body level-${Tag}`}
-      style={{ textAlign: item.align || "left", color: `var(--c-${item.color || "text"})` }}
+      style={{
+        textAlign: item.align || "left",
+        color: `var(--c-${item.color || "text"})`,
+      }}
     >
       {inlineTokens(item.text).map((t, i) => (
         <span
@@ -54,7 +65,7 @@ function Media({ item }) {
 // A square box tiled with the image, like a section texture: tile size, offset,
 // rotation, per-axis repeat and panning. The tiled layer is sized to the box's
 // diagonal and rotated, so the box is always fully covered.
-function Animated({ item }) {
+function Animated({ item, s = 1 }) {
   const media = useMedia("image", item.file);
   const ref = useRef(null);
   const [box, setBox] = useState({ w: 0, h: 0 });
@@ -67,7 +78,7 @@ function Animated({ item }) {
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
-  const tile = Math.max(1, Number(item.tile) || 1);
+  const tile = Math.max(1, Number(item.tile) || 1) * s;
   const diagonal = Math.ceil(Math.hypot(box.w, box.h));
   return (
     <div ref={ref} className="media animated">
@@ -79,7 +90,7 @@ function Animated({ item }) {
           backgroundImage: media.url ? `url("${media.url}")` : undefined,
           backgroundSize: `${tile}px ${tile}px`,
           backgroundRepeat: `${item.repeatX ? "repeat" : "no-repeat"} ${item.repeatY ? "repeat" : "no-repeat"}`,
-          backgroundPosition: `${panPos(item.offsetX, item.scrollX, item.speedX)} ${panPos(item.offsetY, item.scrollY, item.speedY)}`,
+          backgroundPosition: `${panPos((Number(item.offsetX) || 0) * s, item.scrollX, item.speedX)} ${panPos((Number(item.offsetY) || 0) * s, item.scrollY, item.speedY)}`,
           transform: `translate(-50%, -50%) rotate(${Number(item.textureRotate) || 0}deg)`,
         }}
       />
@@ -130,34 +141,69 @@ function BandBackground({ section, top, selected }) {
  * band, clipped to it), the page items, then screen overlays fixed to the
  * viewport. A frame's percentages refer to that frame.
  */
-export function Canvas({ page, editing, selectedId, onSelect, selectedSectionId }) {
+// The browser window size, kept up to date.
+function useWindowSize() {
+  const [size, setSize] = useState(() => ({
+    w: window.innerWidth,
+    h: window.innerHeight,
+  }));
+  useEffect(() => {
+    const update = () =>
+      setSize({ w: window.innerWidth, h: window.innerHeight });
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+  return size;
+}
+
+// previewWidth > 0 in the phone preview: shrink against that width, not the window.
+export function Canvas({
+  page,
+  editing,
+  selectedId,
+  onSelect,
+  selectedSectionId,
+  previewWidth = 0,
+}) {
   const P = pageHeight(page);
+  const win = useWindowSize();
+  const viewport = previewWidth > 0 ? { w: previewWidth, h: win.h } : win;
+  const shrink = (item) => shrinkFactor(item, viewport, page.canvas);
   const sections = page.sections || [];
   const bands = sections.filter(isBand);
   const fixed = sections.filter((s) => !isBand(s));
-  const itemsIn = (parent) => page.items.filter((i) => (i.parent || "") === parent);
-  const renderItem = (item) => (
-    <div
-      key={item.id}
-      className={`item item-${item.type} ${selectedId === item.id ? "selected" : ""}`}
-      style={itemStyle(item)}
-      onClick={
-        editing
-          ? (e) => {
-              e.stopPropagation();
-              onSelect(item.id);
-            }
-          : undefined
-      }
-    >
-      {item.type === "text" && <Text item={item} />}
-      {item.type === "animated" && <Animated item={item} />}
-      {(item.type === "image" || item.type === "gif" || item.type === "video") && <Media item={item} />}
-    </div>
-  );
+  const itemsIn = (parent) =>
+    page.items.filter((i) => (i.parent || "") === parent);
+  const renderItem = (item) => {
+    const s = shrink(item);
+    return (
+      <div
+        key={item.id}
+        className={`item item-${item.type} ${selectedId === item.id ? "selected" : ""}`}
+        style={{ ...itemStyle(item, s), "--shrink": String(s) }}
+        onClick={
+          editing
+            ? (e) => {
+                e.stopPropagation();
+                onSelect(item.id);
+              }
+            : undefined
+        }
+      >
+        {item.type === "text" && <Text item={item} />}
+        {item.type === "animated" && <Animated item={item} s={s} />}
+        {(item.type === "image" ||
+          item.type === "gif" ||
+          item.type === "video") && <Media item={item} />}
+      </div>
+    );
+  };
   return (
     <>
-      <main className={`canvas ${editing ? "editing" : ""}`} style={{ height: P }}>
+      <main
+        className={`canvas ${editing ? "editing" : ""}`}
+        style={{ height: P }}
+      >
         {bands.map((s) => (
           <BandBackground
             key={s.id}

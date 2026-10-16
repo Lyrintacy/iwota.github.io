@@ -3,13 +3,20 @@
 
 export const TYPES = ["text", "image", "gif", "video", "animated"];
 export const DEFAULT_SPEED = 0.5;
+// The size each layout was designed at. Shrinking items scale down below it.
+export const DEFAULT_DESIGN = { designWidth: 1200, designHeight: 800 };
 export const ANCHORS = ["start", "center", "end", "stretch"];
 export const UNITS = ["px", "%"];
 export const SIZE_UNITS = ["px", "%", "auto"];
 export const COLORS = ["text", "secondary", "highlight"];
 export const ROLES = ["background", "text", "secondary", "highlight"];
 export const DEFAULT_TEXT = { body: 16, h1: 56, h2: 36, h3: 24 };
-export const DEFAULT_MOBILE = { breakpoint: 700, canvas: {}, items: {}, sections: {} };
+export const DEFAULT_MOBILE = {
+  breakpoint: 700,
+  canvas: {},
+  items: {},
+  sections: {},
+};
 const COLOR_CODE = { n: "text", s: "secondary", h: "highlight" };
 const DEFAULT_EXT = { image: "png", gif: "gif", video: "mp4", animated: "png" };
 
@@ -144,27 +151,46 @@ export function toggleFormat(text, s, e, kind) {
 // --- Layout constraints -> CSS ---------------------------------------------------
 // Items are positioned inside their frame: the page, a band section, or a
 // screen overlay. Percent values are of that frame.
-const css = (value, unit) => `${Number(value) || 0}${unit === "%" ? "%" : "px"}`;
+const css = (value, unit) =>
+  `${Number(value) || 0}${unit === "%" ? "%" : "px"}`;
 
 // One axis. `lo`/`hi` are the CSS edges (left/right or top/bottom).
-function axis(a = {}, lo, hi, size) {
+// Pixel values are multiplied by s (the shrink factor); percentages are not.
+function axis(a = {}, lo, hi, size, s = 1) {
+  const v = (n, unit) => css(unit === "px" ? (Number(n) || 0) * s : n, unit);
   const style = {};
   let shift = "0";
-  if (a.anchor === "end") style[hi] = css(a.offset, a.unit);
+  if (a.anchor === "end") style[hi] = v(a.offset, a.unit);
   else if (a.anchor === "center") {
-    style[lo] = `calc(50% + ${css(a.offset, a.unit)})`;
+    style[lo] = `calc(50% + ${v(a.offset, a.unit)})`;
     shift = "-50%"; // centres the item on the anchor point
-  } else style[lo] = css(a.offset, a.unit);
-  if (a.anchor === "stretch") style[hi] = css(a.offsetEnd, a.unit);
+  } else style[lo] = v(a.offset, a.unit);
+  if (a.anchor === "stretch") style[hi] = v(a.offsetEnd, a.unit);
   else if (a.sizeUnit && a.sizeUnit !== "auto")
-    style[size] = css(a.size, a.sizeUnit);
+    style[size] = v(a.size, a.sizeUnit);
   return { style, shift };
 }
 
+/**
+ * Scale factor for an item with shrink on: below the design size the item gets
+ * smaller. size is the viewport (or phone preview) { w, h }; axis picks which
+ * dimension decides (x = width, y = height, both = the smaller of the two).
+ */
+export function shrinkFactor(item, size, canvas = {}) {
+  const sh = item.shrink;
+  if (!sh?.on || !(size.w > 0) || !(size.h > 0)) return 1;
+  const dw = Number(canvas.designWidth) || DEFAULT_DESIGN.designWidth;
+  const dh = Number(canvas.designHeight) || DEFAULT_DESIGN.designHeight;
+  const sx = Math.min(1, size.w / dw);
+  const sy = Math.min(1, size.h / dh);
+  const f = sh.axis === "y" ? sy : sh.axis === "both" ? Math.min(sx, sy) : sx;
+  return Math.max(0.05, f);
+}
+
 /** Converts an item's constraints into CSS. */
-export function itemStyle(item) {
-  const x = axis(item.h, "left", "right", "width");
-  const y = axis(item.v, "top", "bottom", "height");
+export function itemStyle(item, s = 1) {
+  const x = axis(item.h, "left", "right", "width", s);
+  const y = axis(item.v, "top", "bottom", "height", s);
   const [px, py] = item.pivot || [50, 50];
   const transforms = [`translate(${x.shift}, ${y.shift})`];
   if (item.rotate) transforms.push(`rotate(${Number(item.rotate)}deg)`);
@@ -183,7 +209,10 @@ export function itemStyle(item) {
  * depends on the item type. Full http(s) URLs are used as they are.
  */
 export function mediaUrl(item) {
-  let file = String(item?.file || "").trim().replace(/\\/g, "/").replace(/^\/+/, "");
+  let file = String(item?.file || "")
+    .trim()
+    .replace(/\\/g, "/")
+    .replace(/^\/+/, "");
   if (!file) return "";
   if (/^https?:\/\//i.test(file)) return file;
   file = file.replace(/^images\//i, "");
@@ -199,10 +228,25 @@ export function newItem(type, id, parent = "") {
     type,
     name: "",
     parent,
-    h: { anchor: "start", offset: 0, offsetEnd: 0, unit: "px", size: 300, sizeUnit: "px" },
-    v: { anchor: "start", offset: 0, offsetEnd: 0, unit: "px", size: 0, sizeUnit: "auto" },
+    h: {
+      anchor: "start",
+      offset: 0,
+      offsetEnd: 0,
+      unit: "px",
+      size: 300,
+      sizeUnit: "px",
+    },
+    v: {
+      anchor: "start",
+      offset: 0,
+      offsetEnd: 0,
+      unit: "px",
+      size: 0,
+      sizeUnit: "auto",
+    },
     pivot: [50, 50],
     rotate: 0,
+    shrink: { on: false, axis: "x" },
   };
   if (type === "text") {
     Object.assign(item, {
@@ -212,7 +256,13 @@ export function newItem(type, id, parent = "") {
       color: "text",
     });
   } else if (type === "video") {
-    Object.assign(item, { file: "", poster: "", controls: true, loop: false, autoplay: false });
+    Object.assign(item, {
+      file: "",
+      poster: "",
+      controls: true,
+      loop: false,
+      autoplay: false,
+    });
   } else if (type === "animated") {
     // A square box filled with the image, tiled like a section texture.
     Object.assign(item, {
@@ -280,7 +330,9 @@ export function panPos(offset = 0, pan = false, speed = DEFAULT_SPEED) {
 
 /** Top edge of a band in page coordinates. */
 export function bandTop(section, pageH) {
-  return section.anchor === "bottom" ? pageH - section.start - section.height : section.start;
+  return section.anchor === "bottom"
+    ? pageH - section.start - section.height
+    : section.start;
 }
 
 /** The page grows to fit bands that extend below the canvas height. */
@@ -288,7 +340,10 @@ export function pageHeight(page) {
   let h = page.canvas.height;
   for (const s of page.sections || [])
     if (isBand(s))
-      h = Math.max(h, s.anchor === "bottom" ? s.start + s.height : s.start + s.height);
+      h = Math.max(
+        h,
+        s.anchor === "bottom" ? s.start + s.height : s.start + s.height,
+      );
   return h;
 }
 
@@ -299,7 +354,9 @@ export function applyPhone(page) {
   return {
     ...page,
     canvas: { ...page.canvas, ...(m.canvas || {}) },
-    items: page.items.map((i) => (m.items?.[i.id] ? { ...i, ...m.items[i.id] } : i)),
+    items: page.items.map((i) =>
+      m.items?.[i.id] ? { ...i, ...m.items[i.id] } : i,
+    ),
     sections: (page.sections || []).map((s) =>
       m.sections?.[s.id] ? { ...s, ...m.sections[s.id] } : s,
     ),
@@ -317,28 +374,40 @@ export function removeColour(site, page, n) {
       ? {
           ...s,
           background: remap(s.background),
-          ...(s.overlay ? { overlay: { ...s.overlay, colour: remap(s.overlay.colour) } } : {}),
+          ...(s.overlay
+            ? { overlay: { ...s.overlay, colour: remap(s.overlay.colour) } }
+            : {}),
         }
       : s;
   const phoneSection = (o) => {
     const next = { ...o };
     if (o.background !== undefined) next.background = remap(o.background);
-    if (o.overlay) next.overlay = { ...o.overlay, colour: remap(o.overlay.colour) };
+    if (o.overlay)
+      next.overlay = { ...o.overlay, colour: remap(o.overlay.colour) };
     return next;
   };
   const mobile = page.mobile && {
     ...page.mobile,
     sections: Object.fromEntries(
-      Object.entries(page.mobile.sections || {}).map(([id, o]) => [id, phoneSection(o)]),
+      Object.entries(page.mobile.sections || {}).map(([id, o]) => [
+        id,
+        phoneSection(o),
+      ]),
     ),
   };
   return {
     site: {
       ...site,
       palette: site.palette.filter((_, i) => i !== n - 1),
-      roles: Object.fromEntries(Object.entries(site.roles).map(([k, v]) => [k, remap(v)])),
+      roles: Object.fromEntries(
+        Object.entries(site.roles).map(([k, v]) => [k, remap(v)]),
+      ),
     },
-    page: { ...page, sections: (page.sections || []).map(band), ...(mobile ? { mobile } : {}) },
+    page: {
+      ...page,
+      sections: (page.sections || []).map(band),
+      ...(mobile ? { mobile } : {}),
+    },
   };
 }
 
@@ -375,13 +444,16 @@ export function validatePage(page, site = null) {
   const sectionIds = new Set();
   (page.sections || []).forEach((s, i) => {
     const where = `section ${i + 1}`;
-    if (!s.id || sectionIds.has(s.id)) errors.push(`${where}: missing or duplicate id`);
+    if (!s.id || sectionIds.has(s.id))
+      errors.push(`${where}: missing or duplicate id`);
     sectionIds.add(s.id);
-    if (!["band", "fixed", undefined].includes(s.kind)) errors.push(`${where}: unknown kind`);
+    if (!["band", "fixed", undefined].includes(s.kind))
+      errors.push(`${where}: unknown kind`);
     if (isBand(s)) {
       if (!(s.start >= 0)) errors.push(`${where}: start must be 0 or more`);
       if (!(s.height > 0)) errors.push(`${where}: height must be positive`);
-      if (!inPalette(s.background)) errors.push(`${where}: background must be a palette number`);
+      if (!inPalette(s.background))
+        errors.push(`${where}: background must be a palette number`);
       if (s.overlay && !inPalette(s.overlay.colour))
         errors.push(`${where}: overlay colour must be a palette number`);
     }
@@ -391,7 +463,8 @@ export function validatePage(page, site = null) {
   page.items.forEach((item, i) => {
     const where = `item ${i + 1}`;
     if (!TYPES.includes(item.type)) errors.push(`${where}: unknown type`);
-    if (!item.id || ids.has(item.id)) errors.push(`${where}: missing or duplicate id`);
+    if (!item.id || ids.has(item.id))
+      errors.push(`${where}: missing or duplicate id`);
     ids.add(item.id);
     if (item.type === "animated" && !(item.tile > 0))
       errors.push(`${where}: tile size must be positive`);
@@ -400,7 +473,10 @@ export function validatePage(page, site = null) {
     if (item.parent && !sectionIds.has(item.parent))
       errors.push(`${where}: parent section not found`);
   });
-  if (page.mobile !== undefined && (typeof page.mobile !== "object" || !page.mobile))
+  if (
+    page.mobile !== undefined &&
+    (typeof page.mobile !== "object" || !page.mobile)
+  )
     errors.push("mobile must be an object");
   return errors;
 }
