@@ -25,7 +25,9 @@ export class ErrorBoundary extends React.Component {
       <div className="workshop-error" role="alert" style={{ padding: 16, background: "#fff", color: "#900", maxWidth: 560 }}>
         <strong>Something went wrong and the page stopped.</strong>
         <p>Your saved files are unchanged. Reload the page to try again. Please send this message.</p>
-        <pre style={{ whiteSpace: "pre-wrap", fontSize: 12 }}>{String(error?.stack || error?.message || error)}</pre>
+        <pre style={{ whiteSpace: "pre-wrap", fontSize: 12 }}>
+          {`${error?.name || "Error"}: ${error?.message || String(error)}\n\n${String(error?.stack || "")}`}
+        </pre>
         {this.props.onClose && <button onClick={this.props.onClose}>Close workshop</button>}
       </div>
     );
