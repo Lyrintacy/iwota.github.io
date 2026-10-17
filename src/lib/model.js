@@ -98,7 +98,9 @@ export function textStyles(general = {}) {
   const legacyFonts = general.textFonts || {};
   const builtIn = BUILTIN_TEXT_STYLES.map((x) => x.id);
   const custom = (general.textStyles || []).filter((x) => x && x.id && !builtIn.includes(x.id));
-  const styles = [...BUILTIN_TEXT_STYLES, ...custom].map((base) => {
+  // A removed family is hidden (body always stays). Restoring brings it back.
+  const shown = [...BUILTIN_TEXT_STYLES, ...custom].filter((x) => x.id === "body" || own[x.id]?.removed !== true);
+  const styles = shown.map((base) => {
     const f = own[base.id] || {};
     const legacy = custom.find((x) => x.id === base.id) || base;
     const size = Number(f.size ?? general.text?.[base.id] ?? DEFAULT_TEXT[base.id] ?? 16);
@@ -107,7 +109,8 @@ export function textStyles(general = {}) {
       name: f.name || legacy.name || base.id,
       tag: TEXT_TAGS.includes(f.tag) ? f.tag : TEXT_TAGS.includes(legacy.tag) ? legacy.tag : "p",
       size: size > 0 ? size : 16,
-      colour: COLORS.includes(f.colour) ? f.colour : "text",
+      // A palette number. Older settings name a colour role, which maps to its palette colour.
+      colour: typeof f.colour === "number" ? f.colour : general.roles?.[f.colour] ?? general.roles?.text ?? 1,
       font: f.font ?? legacyFonts[base.id] ?? "",
       builtin: !!base.builtin,
     };

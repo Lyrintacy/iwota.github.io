@@ -229,7 +229,7 @@ const FORMATS = [
   ["h", "Highlight", (f) => f.colour === "highlight"],
 ];
 
-function TextEditor({ item, onChange, setStatus, fonts = [], styles = [] }) {
+function TextEditor({ item, onChange, setStatus, fonts = [], styles = [], palette = [] }) {
   const ref = useRef(null);
   const [sel, setSel] = useState({ s: 0, e: 0 });
   const flags = formatAt(item.text, sel.s, sel.e);
@@ -321,12 +321,13 @@ function TextEditor({ item, onChange, setStatus, fonts = [], styles = [] }) {
             )}
             <Select
               label="Colour"
-              value={item.color || ""}
+              value={item.color === undefined || item.color === null ? "" : String(item.color)}
               options={[
-                ["", `Family colour (${fam.colour})`],
-                ...COLORS.map((c) => [c, c[0].toUpperCase() + c.slice(1)]),
+                ["", `Family colour (palette ${fam.colour})`],
+                ...palette,
+                ...(COLORS.includes(item.color) ? [[item.color, `${item.color} (older setting)`]] : []),
               ]}
-              onChange={(color) => onChange({ color })}
+              onChange={(v) => onChange({ color: v === "" ? "" : COLORS.includes(v) ? v : Number(v) })}
             />
           </>
         );
@@ -592,11 +593,12 @@ function CardsFields({ fx = {}, palette, onChange }) {
 }
 
 // Text families: each has a default size, font and colour. A text item uses its family's
-// settings unless it sets its own.
-function TextFamiliesFields({ site, setSite }) {
+// settings unless it sets its own. Each family folds away; any family can be removed.
+function TextFamiliesFields({ site, setSite, palette = [] }) {
   const [name, setName] = useState("");
   const [newTag, setNewTag] = useState("p");
   const styles = textStyles(site);
+  const hidden = BUILTIN_TEXT_STYLES.filter((x) => site.textFamilies?.[x.id]?.removed === true);
   const fontOptions = (site.fonts || []).map((f) => [f.id, f.name || f.id]);
   // Writes one setting of a family; the family's other settings are kept as they are.
   const edit = (id, patch) =>
@@ -629,13 +631,15 @@ function TextFamiliesFields({ site, setSite }) {
         textStyles: [...(s.textStyles || []), { id, name: label, tag: newTag }],
         textFamilies: {
           ...(s.textFamilies || {}),
-          [id]: { name: label, tag: newTag, size: 16, colour: "text", font: "" },
+          [id]: { name: label, tag: newTag, size: 16, colour: palette[0] ? Number(palette[0][0]) : 1, font: "" },
         },
       };
     });
     setName("");
   };
-  const remove = (id) =>
+  // A built-in family is hidden (restorable); a family added by you is deleted.
+  const remove = (id) => {
+    if (BUILTIN_TEXT_STYLES.some((x) => x.id === id)) return edit(id, { removed: true });
     setSite((s) => {
       const text = { ...(s.text || {}) };
       const textFonts = { ...(s.textFonts || {}) };
@@ -645,6 +649,7 @@ function TextFamiliesFields({ site, setSite }) {
       delete textFamilies[id];
       return { ...s, text, textFonts, textFamilies, textStyles: (s.textStyles || []).filter((x) => x.id !== id) };
     });
+  };
   return (
     <>
       <p className="hint">
@@ -653,32 +658,44 @@ function TextFamiliesFields({ site, setSite }) {
         removed family fall back to body text.
       </p>
       {styles.map((st) => (
-        <fieldset className="axis" key={st.id}>
-          <legend>{st.name}</legend>
-          <Field label="Name">
-            <input value={st.name} onChange={(e) => edit(st.id, { name: e.target.value })} />
-          </Field>
-          <NumberField label="Default size (px)" value={st.size} onChange={(px) => edit(st.id, { size: Math.max(1, px) })} />
-          <Select
-            label="Default font"
-            value={st.font || ""}
-            options={[["", st.id === "body" ? "Site font" : "Body text's font"], ...fontOptions]}
-            onChange={(font) => edit(st.id, { font })}
-          />
-          <Select
-            label="Default colour"
-            value={st.colour}
-            options={COLORS.map((c) => [c, c[0].toUpperCase() + c.slice(1)])}
-            onChange={(colour) => edit(st.id, { colour })}
-          />
-          <Select label="Tag" value={st.tag} options={TEXT_TAGS.map((t) => [t, t])} onChange={(tag) => edit(st.id, { tag })} />
-          {!st.builtin && (
-            <button type="button" onClick={() => remove(st.id)}>
-              Remove family
-            </button>
-          )}
-        </fieldset>
+        <details className="group" key={st.id}>
+          <summary>{st.name}</summary>
+          <div className="group-body">
+            <Field label="Name">
+              <input value={st.name} onChange={(e) => edit(st.id, { name: e.target.value })} />
+            </Field>
+            <NumberField label="Default size (px)" value={st.size} onChange={(px) => edit(st.id, { size: Math.max(1, px) })} />
+            <Select
+              label="Default font"
+              value={st.font || ""}
+              options={[["", st.id === "body" ? "Site font" : "Body text's font"], ...fontOptions]}
+              onChange={(font) => edit(st.id, { font })}
+            />
+            <Select
+              label="Default colour"
+              value={String(st.colour)}
+              options={palette}
+              onChange={(v) => edit(st.id, { colour: Number(v) })}
+            />
+            <Select label="Tag" value={st.tag} options={TEXT_TAGS.map((t) => [t, t])} onChange={(tag) => edit(st.id, { tag })} />
+            {st.id !== "body" && (
+              <button type="button" onClick={() => remove(st.id)}>
+                Remove family
+              </button>
+            )}
+          </div>
+        </details>
       ))}
+      {hidden.length > 0 && (
+        <div className="row">
+          <span className="hint">Removed:</span>
+          {hidden.map((x) => (
+            <button key={x.id} type="button" onClick={() => edit(x.id, { removed: false })}>
+              Restore {x.name}
+            </button>
+          ))}
+        </div>
+      )}
       <div className="row">
         <input placeholder="New family name, e.g. Quote" value={name} onChange={(e) => setName(e.target.value)} />
         <Select label="Tag" value={newTag} options={TEXT_TAGS.map((t) => [t, t])} onChange={setNewTag} />
@@ -1500,6 +1517,7 @@ export function Editor({
                   setStatus={setStatus}
                   fonts={site.fonts || []}
                   styles={textStyles(site)}
+                  palette={paletteOptions(site)}
                 />
               )}
               {status && <p className="hint warn">{status}</p>}
@@ -1865,7 +1883,7 @@ export function Editor({
 
           </Group>
           <Group title="Text families (default size, font and colour for each)">
-          <TextFamiliesFields site={site} setSite={setSite} />
+          <TextFamiliesFields site={site} setSite={setSite} palette={paletteOptions(site)} />
           </Group>
           <Group title="Palette">
           <p className="hint">
