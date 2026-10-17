@@ -252,17 +252,11 @@ export function ButtonItem({ item, editing }) {
   const onTap = (e) => {
     if (editing) return;
     if (hasAction && fx.clickFlash) setClicks((c) => c + 1);
-    if (!touch.current) return;
-    if (pinned && !hasLink) {
-      e.preventDefault();
-      setPinned(false);
-      return;
-    }
-    // Opens the card or starts the sequence; a link button follows its link on the next tap.
-    if (!pinned && (fx.card || !hasLink)) {
-      e.preventDefault();
-      setPinned(true);
-    }
+    // A link button follows its link at once. Without a link, a tap acts as hover:
+    // the first tap starts it, the next one ends it.
+    if (!touch.current || hasLink) return;
+    e.preventDefault();
+    setPinned((p) => !p);
   };
 
   const mask = base ? { WebkitMaskImage: urlCss(base), maskImage: urlCss(base) } : {};

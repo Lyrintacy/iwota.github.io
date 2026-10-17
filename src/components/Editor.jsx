@@ -605,9 +605,9 @@ function EffectFields({ fx = {}, site, onChange }) {
           onChange={set("clickFlash")}
         />
         <p className="hint">
-          Colour for the click flash is the card flash colour. On a touch screen a tap acts as
-          hover when the button has no link; a second tap ends it, and a tap elsewhere or
-          scrolling ends it too.
+          Colour for the click flash is the card flash colour. On a touch screen a button with no
+          link acts as hover on a tap; another tap, a tap elsewhere, or scrolling ends it.
+          A button with a link follows the link on the first tap.
         </p>
       </fieldset>
     </>

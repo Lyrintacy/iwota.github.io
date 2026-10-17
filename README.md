@@ -44,7 +44,7 @@ public/fonts/                 font files for text items
 - **Fonts:** the General tab lists the fonts. Each text item has a **Font** choice. A font is a CSS family (such as `Georgia, serif`), or a file in `public/fonts/` (see the readme there).
 - **Icon:** put one image in `public/icon/` named `icon.png` (or `icon.svg`, `icon.ico`, `icon.webp`, `icon.jpg`). It is linked as the site's tab icon when the site is built.
 - **Button options:** every step of a button's sequence has its own settings: shake (duration and strength), flash (duration, colour, strength), the moving band (start delay, speed, width, colour, slant), and the card (size, screen fit, open and close durations, corner radius, wait for the flash, tilt). The card also has its own shake, moving band and colour flash, and a click flash. The moving band starts on hover, without waiting for the flash or the shake.
-- **Touch screens:** a button with no link acts as hover when tapped. Tapping it again, tapping somewhere else, or scrolling ends it. A button with a card opens it on the first tap; a button with a link follows the link on the next tap.
+- **Touch screens:** a button with no link acts as hover when tapped. Tapping it again, tapping somewhere else, or scrolling ends it. A button with a link follows its link on the first tap, so on a phone its card is not opened.
 - **Panning smoothness:** General > Scrolling sets how long panning textures take to catch up with a scroll (ms, 0 is instant). It applies to every tab.
 - **Export:** copy or download `site.json` and one file per tab, then paste them over the matching files in `src/config/` (tabs go in `src/config/pages/`) on GitHub and commit.
 - **Reset to saved config…** clears unexported changes after a confirmation.
