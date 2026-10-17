@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useMedia } from "../lib/media.js";
 
 /**
@@ -30,7 +31,8 @@ export function HintWidget({ hint, count, el, style }) {
 
   if (!visible) return null;
   const left = hint.side === "left";
-  return (
+  // In the body, so nothing on the page can cover it.
+  return createPortal(
     <div ref={box} className="hint-widget" style={style} role="status" aria-live="polite">
       {img.url ? (
         <img src={img.url} alt="" />
@@ -39,6 +41,7 @@ export function HintWidget({ hint, count, el, style }) {
       ) : (
         <span className="hint-arrow">{left ? "\u2190" : "\u2192"}</span>
       )}
-    </div>
+    </div>,
+    document.body,
   );
 }

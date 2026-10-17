@@ -512,9 +512,11 @@ export default function App() {
   const toggleVars = {};
   if (rootHex(ui.toggle.text)) toggleVars["--tb-text"] = rootHex(ui.toggle.text);
   if (rootHex(ui.toggle.background)) toggleVars["--tb-bg"] = rootHex(ui.toggle.background);
+  if (rootFont(ui.toggle.font)) toggleVars["--tb-font"] = rootFont(ui.toggle.font);
   const hintVars = {};
   if (rootHex(ui.hint.background)) hintVars["--hint-bg"] = rootHex(ui.hint.background);
   if (rootHex(ui.hint.text)) hintVars["--hint-fg"] = rootHex(ui.hint.text);
+  if (rootFont(ui.hint.font)) hintVars["--hint-font"] = rootFont(ui.hint.font);
   const setVar = (key, value) => {
     if (value) vars[key] = value;
   };

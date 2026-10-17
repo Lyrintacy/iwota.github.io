@@ -1860,7 +1860,7 @@ export function Editor({
             onChange={(slide) => setUi("tabs", { slide })}
           />
           <Check
-            label="Slide between tabs on phones (for testing)"
+            label="Slide between tabs on phones"
             checked={ui.tabs.slidePhone === true}
             onChange={(slidePhone) => setUi("tabs", { slidePhone })}
           />
@@ -1899,6 +1899,12 @@ export function Editor({
             value={String(ui.toggle.background)}
             options={rootColourOptions}
             onChange={(n) => setUi("toggle", { background: Number(n) })}
+          />
+          <Select
+            label="Font"
+            value={ui.toggle.font || ""}
+            options={rootFontOptions}
+            onChange={(font) => setUi("toggle", { font })}
           />
           <Check
             label="Hide the button on phones (while the workshop is closed)"
@@ -1944,6 +1950,12 @@ export function Editor({
             label="Distance below the centre of the button (px)"
             value={ui.hint.distance ?? 12}
             onChange={(v) => setUi("hint", { distance: Math.max(0, Math.round(v)) })}
+          />
+          <Select
+            label="Font"
+            value={ui.hint.font || ""}
+            options={rootFontOptions}
+            onChange={(font) => setUi("hint", { font })}
           />
           <Select
             label="Background colour (no picture)"
