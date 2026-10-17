@@ -903,6 +903,7 @@ export function Editor({
   };
 
   const siteText = JSON.stringify(rootSite, null, 2) + "\n";
+  const mobileText = JSON.stringify(mobile, null, 2) + "\n";
   const copy = async (text, label) => {
     try {
       await navigator.clipboard.writeText(text);
@@ -1703,7 +1704,7 @@ export function Editor({
           <h4>Fonts (for text items, chosen on each text item)</h4>
           <p className="hint">
             A font is a CSS font family, such as <code>Georgia, serif</code>. Or name a
-            file in <code>public/fonts/</code> (for example <code>Display.woff2</code>)
+            file in <code>public/fonts/</code>: WOFF2, WOFF, TrueType (<code>.ttf</code>) or OpenType (<code>.otf</code>), for example <code>Display.ttf</code>
             and it is loaded from there. Removing a font makes text that used it fall back
             to the site font.
           </p>
@@ -1724,7 +1725,7 @@ export function Editor({
               <input
                 value={f.file || ""}
                 aria-label={`Font ${i + 1} file`}
-                placeholder="or file in public/fonts"
+                placeholder="or file in public/fonts (.woff2, .ttf, .otf)"
                 onChange={(e) => setFont(i, { file: e.target.value })}
               />
               <button className="danger" onClick={() => dropFont(i)} aria-label={`Remove font ${i + 1}`} title="Remove font">
@@ -1877,6 +1878,25 @@ export function Editor({
             The preview is shown at this width, so you can check how items
             shrink. The real phone width is used on actual phones.
           </p>
+          <div className="paste-guide">
+            <p className="hint">
+              <b>To save these to the site:</b> download the file below, then on GitHub open{" "}
+              <code>src/config/pages/{page.id}.json</code> and replace the value of its{" "}
+              <code>"mobile"</code> entry with the contents of the downloaded file. Keep the
+              name <code>"mobile"</code> and the braces around the object, like this:
+            </p>
+            <pre className="snippet">{`"mobile": {\n  "breakpoint": ${mobile.breakpoint},\n  ...contents of the file...\n}`}</pre>
+            <p className="hint">
+              If the file has no <code>"mobile"</code> entry yet, add one after the{" "}
+              <code>"sections"</code> entry, with a comma before it. Then commit.
+            </p>
+            <div className="row">
+              <button onClick={() => copy(mobileText, `${page.id}-phone.json`)}>Copy phone JSON</button>
+              <button onClick={() => download(`${page.id}-phone.json`, mobileText)}>
+                Download {page.id}-phone.json
+              </button>
+            </div>
+          </div>
           <Field label="Phone overrides (JSON)">
             <textarea
               rows={14}
