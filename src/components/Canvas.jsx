@@ -3,6 +3,9 @@ import { BUILTIN_TEXT_STYLES, bandTop, cornerRadius, inlineTokens, isBand, itemS
 import { useMedia } from "../lib/media.js";
 import { ButtonItem, HoverGif, HoverVideo } from "./Interactive.jsx";
 
+// A colour: a palette number, or (older items) a colour role.
+const colourOf = (v) => (typeof v === "number" || /^\d+$/.test(String(v)) ? `var(--color-${v})` : `var(--c-${v})`);
+
 // The text styles in use on this tab (set by App).
 export const TextStylesContext = createContext(BUILTIN_TEXT_STYLES);
 
@@ -14,7 +17,7 @@ function Text({ item }) {
       className={`text-body level-${Tag}`}
       style={{
         textAlign: item.align || "left",
-        color: `var(--c-${item.color || style.colour || "text"})`,
+        color: colourOf(item.color || style.colour),
         // The item's own font, else its style's font, else the site font.
         fontFamily: item.font
           ? `var(--font-${item.font})`
