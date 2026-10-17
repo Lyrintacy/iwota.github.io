@@ -17,6 +17,7 @@ import {
 } from "./lib/model.js";
 import { NavContext, pageHref } from "./lib/nav.js";
 import { Canvas, TextStylesContext } from "./components/Canvas.jsx";
+import { ErrorBoundary } from "./components/ErrorBoundary.jsx";
 import { Editor } from "./components/Editor.jsx";
 import { setPanSmoothing, startScrollEffects } from "./lib/scroll.js";
 
@@ -516,6 +517,7 @@ export default function App() {
           {editing ? "Close workshop" : "Workshop"} <kbd>F2</kbd>
         </button>
         {editing && (
+          <ErrorBoundary onClose={() => setEditing(false)}>
           <Editor
             site={general}
             rootSite={site}
@@ -541,6 +543,7 @@ export default function App() {
             previewWidth={previewWidth}
             setPreviewWidth={setPreviewWidth}
           />
+          </ErrorBoundary>
         )}
       </div>
       </TextStylesContext.Provider>
