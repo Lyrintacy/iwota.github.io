@@ -462,12 +462,15 @@ function CardsFields({ fx = {}, palette, onChange }) {
   const remove = (i) => save(cards.filter((_, k) => k !== i));
   const add = () => save([...cards, { ...DEFAULT_CARD }]);
   return (
-    <fieldset className="axis">
-      <legend>Cards over the button</legend>
+    <div className="cards-list">
       {cards.length === 0 && <p className="hint">No cards: hovering the button opens nothing.</p>}
       {cards.map((c, i) => (
-        <fieldset className="axis" key={i}>
-          <legend>Card {i + 1}</legend>
+        <details className="group card-edit" key={i}>
+          <summary>
+            Card {i + 1}
+            {c.clickable ? " (clickable)" : ""}
+          </summary>
+          <div className="group-body">
           <Check
             label="Wait for the button's flash to finish before this card opens"
             checked={c.waitFlash}
@@ -561,14 +564,15 @@ function CardsFields({ fx = {}, palette, onChange }) {
               Remove card {i + 1}
             </button>
           </div>
-        </fieldset>
+          </div>
+        </details>
       ))}
       <div className="row">
         <button type="button" onClick={add}>
           Add a card
         </button>
       </div>
-    </fieldset>
+    </div>
   );
 }
 
@@ -629,7 +633,6 @@ function EffectFields({ fx = {}, site, onChange }) {
           </>
         )}
       </fieldset>
-      <CardsFields fx={fx} palette={palette} onChange={onChange} />
       <fieldset className="axis">
         <legend>Click</legend>
         <Check
@@ -1566,6 +1569,13 @@ export function Editor({
                     site={site}
                     onChange={(fx) => patch({ fx: { ...itemView.fx, ...fx } })}
                   />
+                  </Group>
+                  <Group title="Cards over the button">
+                    <CardsFields
+                      fx={itemView.fx}
+                      palette={paletteOptions(site)}
+                      onChange={(fx) => patch({ fx: { ...itemView.fx, ...fx } })}
+                    />
                   </Group>
                 </>
               )}
