@@ -1,13 +1,37 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { useMedia } from "../lib/media.js";
 
-/** A round badge at the top corner of the tab bar, shown while a card waits for a second press. */
-export function HintWidget({ hint, count }) {
+/**
+ * A round badge placed a small distance below the centre of the button that waits for
+ * its second press. Shows the picture if set, else the message, else an arrow.
+ */
+export function HintWidget({ hint, count, el, style }) {
   const img = useMedia("image", hint.image || "");
-  if (!hint.on || !count) return null;
+  const box = useRef(null);
+  const visible = !!(hint.on && count && el);
+  const distance = Number(hint.distance) || 0;
+
+  // Follow the button while it is shown (it can scroll or move with the page).
+  useEffect(() => {
+    if (!visible) return undefined;
+    let frame;
+    const place = () => {
+      const node = box.current;
+      if (node && el.isConnected) {
+        const r = el.getBoundingClientRect();
+        node.style.left = `${r.left + r.width / 2}px`;
+        node.style.top = `${r.top + r.height / 2 + distance}px`;
+      }
+      frame = requestAnimationFrame(place);
+    };
+    place();
+    return () => cancelAnimationFrame(frame);
+  }, [visible, el, distance]);
+
+  if (!visible) return null;
   const left = hint.side === "left";
   return (
-    <div className={`hint-widget ${left ? "side-left" : "side-right"}`} role="status" aria-live="polite">
+    <div ref={box} className="hint-widget" style={style} role="status" aria-live="polite">
       {img.url ? (
         <img src={img.url} alt="" />
       ) : hint.message ? (

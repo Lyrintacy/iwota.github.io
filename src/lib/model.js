@@ -136,7 +136,8 @@ export const DEFAULT_UI = {
   // Two presses: the first press on a button opens its card, the second clicks it. Per pointer type.
   buttons: { touch: false, pc: false },
   // A round hint shown while a card waits for its second press. Image, else message, else an arrow.
-  hint: { on: false, side: "right", image: "", message: "" },
+  // distance: px below the centre of the waiting button. background/text: palette numbers (0 = default).
+  hint: { on: false, side: "right", image: "", message: "", distance: 12, background: 0, text: 0 },
 };
 export const DEFAULT_FONTS = [
   { id: "serif", name: "Serif", family: "Georgia, \"Times New Roman\", serif", file: "" },
