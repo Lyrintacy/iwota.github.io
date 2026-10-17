@@ -54,6 +54,13 @@ export const COLORS = ["text", "secondary", "highlight"];
 export const ROLES = ["background", "text", "secondary", "highlight"];
 export const DEFAULT_TEXT = { body: 16, h1: 56, h2: 36, h3: 24 };
 export const DEFAULT_SCROLL = { panSmoothMs: 240 };
+// Look of the tab bar and the workshop. Colours are palette numbers; 0 = the default.
+// fonts: "" = the site font, otherwise a font id from site.fonts.
+// maxTemporary: how many hidden tabs opened by a link can hold a slot in the bar.
+export const DEFAULT_UI = {
+  tabs: { font: "", text: 0, background: 0, active: 0, maxTemporary: 1 },
+  workshop: { font: "", text: 0, background: 0 },
+};
 export const DEFAULT_FONTS = [
   { id: "serif", name: "Serif", family: "Georgia, \"Times New Roman\", serif", file: "" },
   { id: "rounded", name: "Rounded", family: "\"Trebuchet MS\", Verdana, sans-serif", file: "" },
@@ -377,6 +384,8 @@ export function newPage(id, title) {
     id,
     title,
     useDefaults: true,
+    showInBar: true, // false: hidden from the bar (still reachable by link or button)
+    keepWhenOpened: false, // true: once opened, it stays in the bar for that browser
     canvas: { ...DEFAULT_PAGE_CANVAS },
     items: [],
     sections: [],

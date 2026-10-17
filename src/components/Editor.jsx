@@ -4,6 +4,7 @@ import {
   ANCHORS,
   COLORS,
   DEFAULT_DESIGN,
+  DEFAULT_UI,
   DEFAULT_LINK,
   DEFAULT_MOBILE,
   DEFAULT_SPEED,
@@ -22,6 +23,7 @@ import {
   uid,
 } from "../lib/model.js";
 import { hasExt, useMedia } from "../lib/media.js";
+import { fontFamily } from "../lib/model.js";
 
 const TYPE_LABEL = {
   button: "Button",
@@ -933,6 +935,30 @@ export function Editor({
     setShown(q ? visible : -1);
   });
 
+  // Look of the workshop panel (site-wide): font, text and background colour.
+  const ui = { ...DEFAULT_UI, ...(rootSite.ui || {}) };
+  const rootHex = (n) => (n ? rootSite.palette[n - 1] : undefined);
+  const rootFont = (id) => {
+    const f = (rootSite.fonts || []).find((x) => x.id === id);
+    return f ? fontFamily(f) : undefined;
+  };
+  const workshopVars = {};
+  if (rootFont(ui.workshop.font)) workshopVars["--ws-font"] = rootFont(ui.workshop.font);
+  if (rootHex(ui.workshop.text)) workshopVars["--ws-text"] = rootHex(ui.workshop.text);
+  if (rootHex(ui.workshop.background)) workshopVars["--ws-bg"] = rootHex(ui.workshop.background);
+  // Site-wide settings in rootSite.ui: changed here, saved to site.json.
+  const setUi = (group, values) =>
+    setRootSite((r) => ({
+      ...r,
+      ui: {
+        ...DEFAULT_UI,
+        ...(r.ui || {}),
+        [group]: { ...DEFAULT_UI[group], ...(r.ui?.[group] || {}), ...values },
+      },
+    }));
+  const rootColourOptions = [["0", "Default"], ...paletteOptions(rootSite)];
+  const rootFontOptions = [["", "Site font"], ...(rootSite.fonts || []).map((f) => [f.id, f.name || f.id])];
+
   const parentOptions = [
     ["", "Page"],
     ...sections.map((s) => [
@@ -946,6 +972,7 @@ export function Editor({
       className={`editor dock-${dock}`}
       aria-label="Workshop"
       ref={rootRef}
+      style={workshopVars}
     >
       <header>
         <strong>Workshop</strong>
@@ -1582,6 +1609,57 @@ export function Editor({
               : "These are the main tab's settings. Tabs that use the defaults follow them."}{" "}
             Change a tab's settings on the Tabs tab.
           </p>
+          <h4>Tab bar (site-wide)</h4>
+          <NumberField
+            label="Temporary slots for hidden tabs opened by a link"
+            value={ui.tabs.maxTemporary}
+            onChange={(v) => setUi("tabs", { maxTemporary: Math.max(0, Math.floor(v)) })}
+          />
+          <Select
+            label="Font"
+            value={ui.tabs.font || ""}
+            options={rootFontOptions}
+            onChange={(font) => setUi("tabs", { font })}
+          />
+          <Select
+            label="Text colour"
+            value={String(ui.tabs.text)}
+            options={rootColourOptions}
+            onChange={(n) => setUi("tabs", { text: Number(n) })}
+          />
+          <Select
+            label="Background colour"
+            value={String(ui.tabs.background)}
+            options={rootColourOptions}
+            onChange={(n) => setUi("tabs", { background: Number(n) })}
+          />
+          <Select
+            label="Open tab colour"
+            value={String(ui.tabs.active)}
+            options={rootColourOptions}
+            onChange={(n) => setUi("tabs", { active: Number(n) })}
+          />
+
+          <h4>Workshop look (site-wide)</h4>
+          <Select
+            label="Font"
+            value={ui.workshop.font || ""}
+            options={rootFontOptions}
+            onChange={(font) => setUi("workshop", { font })}
+          />
+          <Select
+            label="Text colour"
+            value={String(ui.workshop.text)}
+            options={rootColourOptions}
+            onChange={(n) => setUi("workshop", { text: Number(n) })}
+          />
+          <Select
+            label="Background colour"
+            value={String(ui.workshop.background)}
+            options={rootColourOptions}
+            onChange={(n) => setUi("workshop", { background: Number(n) })}
+          />
+
           <h4>Text sizes (px, applies to every text item)</h4>
           {Object.entries(TEXT_SIZE_LABELS).map(([key, label]) => (
             <NumberField
@@ -1702,7 +1780,9 @@ export function Editor({
                 >
                   {pagesApi.pages[id].title || id}
                 </button>
-                <span className="hint">{id}.json</span>
+                <span className="hint">
+                  {id}.json{pagesApi.pages[id].showInBar === false ? " · hidden" : ""}
+                </span>
                 <button onClick={() => pagesApi.move(id, -1)} disabled={i === 0} aria-label="Move tab left">
                   ↑
                 </button>
@@ -1727,6 +1807,22 @@ export function Editor({
               onChange={(e) => pagesApi.rename(page.id, e.target.value)}
             />
           </Field>
+          <Check
+            label="Show in the tab bar"
+            checked={page.showInBar !== false}
+            onChange={(on) => pagesApi.setFlags(page.id, { showInBar: on })}
+          />
+          <Check
+            label="Once opened, keep it in the bar for that browser"
+            checked={!!page.keepWhenOpened}
+            onChange={(on) => pagesApi.setFlags(page.id, { keepWhenOpened: on })}
+          />
+          <p className="hint">
+            A tab hidden from the bar can still be opened by a link or a button. Opened that
+            way, it takes a temporary slot at the end of the bar (the number of slots is set on
+            the General tab; the oldest drops out). With "keep it" ticked, it stays in the bar
+            for that visitor's browser instead.
+          </p>
           {page.id !== "main" && (
             <Check
               label="Use the main tab's general settings (palette, roles, text sizes, fonts)"
