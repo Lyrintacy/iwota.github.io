@@ -1,6 +1,6 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import images from "virtual:images";
-import { ANCHORS, COLORS, DEFAULT_DESIGN, DEFAULT_UI, DEFAULT_LINK, DEFAULT_MOBILE, DEFAULT_SPEED, DEFAULT_TEXT, ROLES, SIZE_UNITS, TYPES, UNITS, formatAt, isBand, newItem, newSection, pageSlug, removeColour, toggleFormat, uid, DEFAULT_CARD, cardsOf } from "../lib/model.js";
+import { ANCHORS, COLORS, DEFAULT_DESIGN, DEFAULT_UI, DEFAULT_LINK, DEFAULT_MOBILE, DEFAULT_SPEED, DEFAULT_TEXT, ROLES, SIZE_UNITS, TYPES, UNITS, formatAt, isBand, newItem, newSection, pageSlug, removeColour, toggleFormat, uid, DEFAULT_CARD, cardsOf, textStyles, TEXT_TAGS } from "../lib/model.js";
 import { hasExt, useMedia } from "../lib/media.js";
 import { fontFamily } from "../lib/model.js";
 
@@ -229,7 +229,7 @@ const FORMATS = [
   ["h", "Highlight", (f) => f.colour === "highlight"],
 ];
 
-function TextEditor({ item, onChange, setStatus, fonts = [] }) {
+function TextEditor({ item, onChange, setStatus, fonts = [], styles = [] }) {
   const ref = useRef(null);
   const [sel, setSel] = useState({ s: 0, e: 0 });
   const flags = formatAt(item.text, sel.s, sel.e);
@@ -286,18 +286,13 @@ function TextEditor({ item, onChange, setStatus, fonts = [] }) {
       <Select
         label="Font"
         value={item.font || ""}
-        options={[["", "Site default"], ...fonts.map((f) => [f.id, f.name || f.id])]}
+        options={[["", "Style default (see Text styles)"], ...fonts.map((f) => [f.id, f.name || f.id])]}
         onChange={(font) => onChange({ font })}
       />
       <Select
         label="Heading"
         value={item.level}
-        options={[
-          ["p", "Body text"],
-          ["h1", "Heading 1"],
-          ["h2", "Heading 2"],
-          ["h3", "Heading 3"],
-        ]}
+        options={(styles.length ? styles : textStyles({})).map((s) => [s.id === "body" ? "p" : s.id, s.name])}
         onChange={(level) => onChange({ level })}
       />
       <Select
@@ -462,12 +457,15 @@ function CardsFields({ fx = {}, palette, onChange }) {
   const remove = (i) => save(cards.filter((_, k) => k !== i));
   const add = () => save([...cards, { ...DEFAULT_CARD }]);
   return (
-    <fieldset className="axis">
-      <legend>Cards over the button</legend>
+    <div className="cards-list">
       {cards.length === 0 && <p className="hint">No cards: hovering the button opens nothing.</p>}
       {cards.map((c, i) => (
-        <fieldset className="axis" key={i}>
-          <legend>Card {i + 1}</legend>
+        <details className="group card-edit" key={i}>
+          <summary>
+            Card {i + 1}
+            {c.clickable ? " (clickable)" : ""}
+          </summary>
+          <div className="group-body">
           <Check
             label="Wait for the button's flash to finish before this card opens"
             checked={c.waitFlash}
@@ -561,14 +559,88 @@ function CardsFields({ fx = {}, palette, onChange }) {
               Remove card {i + 1}
             </button>
           </div>
-        </fieldset>
+          </div>
+        </details>
       ))}
       <div className="row">
         <button type="button" onClick={add}>
           Add a card
         </button>
       </div>
-    </fieldset>
+    </div>
+  );
+}
+
+// The text styles of the site: size and font for each, and the custom styles.
+function TextStylesFields({ site, setSite, sizes, setSize }) {
+  const [name, setName] = useState("");
+  const [newTag, setNewTag] = useState("p");
+  const styles = textStyles(site);
+  const fontOptions = [["", "(none)"], ...(site.fonts || []).map((f) => [f.id, f.name || f.id])];
+  const setFont = (id, font) =>
+    setSite((s) => ({ ...s, textFonts: { ...(s.textFonts || {}), [id]: font } }));
+  const setTag = (id, t) =>
+    setSite((s) => ({
+      ...s,
+      textStyles: (s.textStyles || []).map((x) => (x.id === id ? { ...x, tag: t } : x)),
+    }));
+  const add = () => {
+    const base = name.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "style";
+    let id = base;
+    for (let n = 2; styles.some((x) => x.id === id); n++) id = `${base}-${n}`;
+    setSite((s) => ({
+      ...s,
+      textStyles: [...(s.textStyles || []), { id, name: name.trim() || "Style", tag: newTag }],
+      text: { ...(s.text || {}), [id]: 16 },
+    }));
+    setName("");
+  };
+  const remove = (id) =>
+    setSite((s) => {
+      const text = { ...(s.text || {}) };
+      const textFonts = { ...(s.textFonts || {}) };
+      delete text[id];
+      delete textFonts[id];
+      return { ...s, text, textFonts, textStyles: (s.textStyles || []).filter((x) => x.id !== id) };
+    });
+  return (
+    <>
+      <p className="hint">
+        A text item that uses the style default takes its style's font. Headings with no font of
+        their own use the body text's font. Items that use a removed style fall back to body text.
+      </p>
+      {styles.map((st) => (
+        <fieldset className="axis" key={st.id}>
+          <legend>{st.name}</legend>
+          <NumberField label="Size (px)" value={sizes[st.id] ?? 16} onChange={(px) => setSize(st.id, px)} />
+          <Select
+            label={st.id === "body" ? "Font (empty = site font)" : "Font (empty = body text's font)"}
+            value={(site.textFonts || {})[st.id] || ""}
+            options={fontOptions}
+            onChange={(f) => setFont(st.id, f)}
+          />
+          {!st.builtin && (
+            <>
+              <Select label="Tag" value={st.tag} options={TEXT_TAGS.map((t) => [t, t])} onChange={(t) => setTag(st.id, t)} />
+              <button type="button" onClick={() => remove(st.id)}>
+                Remove style
+              </button>
+            </>
+          )}
+        </fieldset>
+      ))}
+      <div className="row">
+        <input
+          placeholder="New style name, e.g. Quote"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        <Select label="Tag" value={newTag} options={TEXT_TAGS.map((t) => [t, t])} onChange={setNewTag} />
+        <button type="button" onClick={add}>
+          Add a text style
+        </button>
+      </div>
+    </>
   );
 }
 
@@ -629,7 +701,6 @@ function EffectFields({ fx = {}, site, onChange }) {
           </>
         )}
       </fieldset>
-      <CardsFields fx={fx} palette={palette} onChange={onChange} />
       <fieldset className="axis">
         <legend>Click</legend>
         <Check
@@ -1382,6 +1453,7 @@ export function Editor({
                   onChange={patch}
                   setStatus={setStatus}
                   fonts={site.fonts || []}
+                  styles={textStyles(site)}
                 />
               )}
               {status && <p className="hint warn">{status}</p>}
@@ -1566,6 +1638,13 @@ export function Editor({
                     site={site}
                     onChange={(fx) => patch({ fx: { ...itemView.fx, ...fx } })}
                   />
+                  </Group>
+                  <Group title="Cards over the button">
+                    <CardsFields
+                      fx={itemView.fx}
+                      palette={paletteOptions(site)}
+                      onChange={(fx) => patch({ fx: { ...itemView.fx, ...fx } })}
+                    />
                   </Group>
                 </>
               )}

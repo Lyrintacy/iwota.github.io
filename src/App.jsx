@@ -3,6 +3,7 @@ import siteConfig from "./config/site.json";
 import phoneConfig from "./config/phone.json";
 import {
   DEFAULT_TEXT,
+  textStyles,
   DEFAULT_UI,
   GENERAL_KEYS,
   applyPhone,
@@ -15,7 +16,7 @@ import {
   validateSite,
 } from "./lib/model.js";
 import { NavContext, pageHref } from "./lib/nav.js";
-import { Canvas } from "./components/Canvas.jsx";
+import { Canvas, TextStylesContext } from "./components/Canvas.jsx";
 import { Editor } from "./components/Editor.jsx";
 import { setPanSmoothing, startScrollEffects } from "./lib/scroll.js";
 
@@ -487,6 +488,7 @@ export default function App() {
 
   return (
     <NavContext.Provider value={go}>
+      <TextStylesContext.Provider value={textStyles(general)}>
       <div
         className={`site dock-${dock} ${editing ? "editing" : ""} ${previewing ? "phone-preview" : ""}`}
         style={vars}
@@ -541,6 +543,7 @@ export default function App() {
           />
         )}
       </div>
+      </TextStylesContext.Provider>
     </NavContext.Provider>
   );
 }

@@ -76,6 +76,36 @@ export const SIZE_UNITS = ["px", "%", "auto"];
 export const COLORS = ["text", "secondary", "highlight"];
 export const ROLES = ["background", "text", "secondary", "highlight"];
 export const DEFAULT_TEXT = { body: 16, h1: 56, h2: 36, h3: 24 };
+// Text styles. The four built in are always there; the site can add more (general.textStyles:
+// [{ id, name, tag }], tag p|h1|h2|h3). A style's size is general.text[id] (px), its font is
+// general.textFonts[id] (a font id; "" = the body text's font, and for body the site font).
+// A text item's level names a style; "p" is the body style (the level items always had).
+export const BUILTIN_TEXT_STYLES = [
+  { id: "body", name: "Body text", tag: "p", builtin: true },
+  { id: "h1", name: "Heading 1", tag: "h1", builtin: true },
+  { id: "h2", name: "Heading 2", tag: "h2", builtin: true },
+  { id: "h3", name: "Heading 3", tag: "h3", builtin: true },
+];
+export const TEXT_TAGS = ["p", "h1", "h2", "h3"];
+/** The styles of a general settings object, each with its font (resolved). */
+export function textStyles(general = {}) {
+  const fonts = general.textFonts || {};
+  const builtIn = BUILTIN_TEXT_STYLES.map((s) => s.id);
+  const custom = (general.textStyles || []).filter((s) => s && s.id && !builtIn.includes(s.id));
+  const styles = [...BUILTIN_TEXT_STYLES, ...custom].map((s) => ({
+    ...s,
+    tag: TEXT_TAGS.includes(s.tag) ? s.tag : "p",
+    font: fonts[s.id] || "",
+  }));
+  // A style with no font of its own uses the body text's font.
+  const bodyFont = styles[0].font;
+  return styles.map((s) => (s.id === "body" || s.font ? s : { ...s, font: bodyFont }));
+}
+/** The style a text item's level names. Unknown levels use the body style. */
+export function styleOf(styles, level) {
+  const id = !level || level === "p" ? "body" : level;
+  return styles.find((s) => s.id === id) || styles[0];
+}
 export const DEFAULT_SCROLL = { panSmoothMs: 240 };
 // Look of the tab bar and the workshop. Colours are palette numbers; 0 = the default.
 // fonts: "" = the site font, otherwise a font id from site.fonts.
@@ -90,7 +120,7 @@ export const DEFAULT_FONTS = [
   { id: "mono", name: "Monospace", family: "ui-monospace, Menlo, Consolas, monospace", file: "" },
 ];
 // The general settings a tab either shares with the main tab or has of its own.
-export const GENERAL_KEYS = ["palette", "roles", "text", "fonts"];
+export const GENERAL_KEYS = ["palette", "roles", "text", "fonts", "textFonts", "textStyles"];
 export const DEFAULT_PAGE_CANVAS = { height: 1200, designWidth: 1200, designHeight: 800 };
 export const DEFAULT_MOBILE = {
   breakpoint: 700,
@@ -434,6 +464,8 @@ export function generalOf(site, page) {
       roles: site.roles,
       text: site.text,
       fonts: site.fonts,
+      textFonts: site.textFonts,
+      textStyles: site.textStyles,
     }
   );
 }
@@ -593,9 +625,9 @@ export function validateSite(site) {
   for (const f of site?.fonts || []) {
     if (!f.id || !(f.family || f.file)) errors.push(`font "${f.name || f.id || "?"}" needs an id and a family or file`);
   }
+  const styleIds = textStyles(site).map((s) => s.id);
   for (const [key, value] of Object.entries(site?.text || {}))
-    if (!(DEFAULT_TEXT[key] !== undefined && value > 0))
-      errors.push(`text.${key} must be a size in px`);
+    if (!(styleIds.includes(key) && value > 0)) errors.push(`text.${key} must be a size in px for a text style`);
   return errors;
 }
 
