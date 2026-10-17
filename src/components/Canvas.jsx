@@ -1,17 +1,27 @@
-import React, { useLayoutEffect, useRef, useState } from "react";
-import { bandTop, inlineTokens, isBand, itemStyle, pageHeight, panPos, unitFor } from "../lib/model.js";
+import React, { createContext, useContext, useLayoutEffect, useRef, useState } from "react";
+import { BUILTIN_TEXT_STYLES, bandTop, inlineTokens, isBand, itemStyle, pageHeight, panPos, styleOf, unitFor } from "../lib/model.js";
 import { useMedia } from "../lib/media.js";
 import { ButtonItem, HoverGif, HoverVideo } from "./Interactive.jsx";
 
+// The text styles in use on this tab (set by App).
+export const TextStylesContext = createContext(BUILTIN_TEXT_STYLES);
+
 function Text({ item }) {
-  const Tag = ["h1", "h2", "h3"].includes(item.level) ? item.level : "p";
+  const style = styleOf(useContext(TextStylesContext), item.level);
+  const Tag = style.tag || "p";
   return (
     <Tag
       className={`text-body level-${Tag}`}
       style={{
         textAlign: item.align || "left",
         color: `var(--c-${item.color || "text"})`,
-        fontFamily: item.font ? `var(--font-${item.font})` : undefined,
+        // The item's own font, else its style's font, else the site font.
+        fontFamily: item.font
+          ? `var(--font-${item.font})`
+          : style.font
+            ? `var(--font-${style.font})`
+            : undefined,
+        fontSize: `calc(var(--size-${style.id}, 16) * var(--u, 1px))`,
       }}
     >
       {inlineTokens(item.text).map((t, i) => (
