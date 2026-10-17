@@ -45,7 +45,7 @@ export async function findExtension(file, type) {
  * the first file found; until then (or if none exists) it uses the default.
  */
 export function useMedia(type, rawFile = "") {
-  const file = rawFile.trim();
+  const file = String(rawFile ?? "").trim();
   const needsProbe = !!file && !hasExt(file) && !isUrl(file) && !!CANDIDATES[type];
   const key = `${type}:${file}`;
   const [found, setFound] = useState({ key: "", ext: null });

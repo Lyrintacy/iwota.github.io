@@ -354,7 +354,8 @@ function imageChoices(type) {
 
 // Typing without an extension: the first existing file (png, jpeg, jpg; mp4,
 // webm for video) is found and its extension is written into the config.
-function FilePath({ label, value = "", type, onChange, placeholder }) {
+function FilePath({ label, value: rawValue, type, onChange, placeholder }) {
+  const value = typeof rawValue === "string" ? rawValue : String(rawValue ?? "");
   const { url, ext } = useMedia(type, value);
   const listId = `files-${type}`;
   useEffect(() => {
@@ -2067,7 +2068,7 @@ export function Editor({
             <Select
               key={role}
               label={role[0].toUpperCase() + role.slice(1)}
-              value={String(site.roles[role])}
+              value={String(site.roles?.[role] ?? 1)}
               options={paletteOptions(site)}
               onChange={(n) => setRole(role, Number(n))}
             />
