@@ -1,6 +1,6 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import images from "virtual:images";
-import { ANCHORS, COLORS, DEFAULT_DESIGN, DEFAULT_UI, DEFAULT_LINK, DEFAULT_MOBILE, DEFAULT_SPEED, DEFAULT_TEXT, ROLES, SIZE_UNITS, TYPES, UNITS, formatAt, isBand, newItem, newSection, pageSlug, removeColour, toggleFormat, uid, DEFAULT_CARD, cardsOf, textStyles, TEXT_TAGS, styleOf } from "../lib/model.js";
+import { ANCHORS, COLORS, DEFAULT_DESIGN, DEFAULT_UI, DEFAULT_LINK, DEFAULT_MOBILE, DEFAULT_SPEED, DEFAULT_TEXT, ROLES, SIZE_UNITS, TYPES, UNITS, formatAt, isBand, newItem, newSection, pageSlug, removeColour, toggleFormat, uid, DEFAULT_CARD, cardsOf, textStyles, TEXT_TAGS, styleOf, BUILTIN_TEXT_STYLES } from "../lib/model.js";
 import { hasExt, useMedia } from "../lib/media.js";
 import { fontFamily } from "../lib/model.js";
 
