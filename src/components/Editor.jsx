@@ -644,6 +644,36 @@ function TextStylesFields({ site, setSite, sizes, setSize }) {
   );
 }
 
+// Round corners of a picture, video or GIF. One radius for all corners, or each corner
+// on its own (set when the box is ticked).
+function CornerFields({ value, onChange }) {
+  const separate = !!value && typeof value === "object";
+  const uniform = separate ? value.tl || 0 : Number(value) || 0;
+  const corners = separate ? value : { tl: uniform, tr: uniform, br: uniform, bl: uniform };
+  const each = (key) => (v) => onChange({ ...corners, [key]: Math.max(0, v) });
+  return (
+    <fieldset className="axis">
+      <legend>Round corners</legend>
+      {!separate && (
+        <NumberField label="Radius (px, all corners)" value={uniform} onChange={(v) => onChange(Math.max(0, v))} />
+      )}
+      <Check
+        label="Set each corner separately"
+        checked={separate}
+        onChange={(on) => onChange(on ? { ...corners } : uniform)}
+      />
+      {separate && (
+        <>
+          <NumberField label="Top left (px)" value={corners.tl} onChange={each("tl")} />
+          <NumberField label="Top right (px)" value={corners.tr} onChange={each("tr")} />
+          <NumberField label="Bottom right (px)" value={corners.br} onChange={each("br")} />
+          <NumberField label="Bottom left (px)" value={corners.bl} onChange={each("bl")} />
+        </>
+      )}
+    </fieldset>
+  );
+}
+
 // Hover sequence for buttons. Each group is a step of the sequence; every
 // number is a variable, stored per item in fx.
 function EffectFields({ fx = {}, site, onChange }) {
@@ -1647,6 +1677,10 @@ export function Editor({
                     />
                   </Group>
                 </>
+              )}
+
+              {(item.type === "image" || item.type === "video" || (item.type === "gif" && !item.button)) && (
+                <CornerFields value={item.radius} onChange={(radius) => patch({ radius })} />
               )}
 
               <fieldset className="axis">

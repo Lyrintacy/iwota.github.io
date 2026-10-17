@@ -678,3 +678,15 @@ export function validatePage(page, site = null) {
     errors.push("mobile must be an object");
   return errors;
 }
+
+/**
+ * The round corners of a picture item (image, GIF, video). radius is a number (every corner
+ * the same, px) or { tl, tr, br, bl } (each corner, px). Scales with the page like text.
+ * Returns undefined for square corners.
+ */
+export function cornerRadius(radius) {
+  if (!radius) return undefined;
+  const px = (v) => `calc(${Math.max(0, Number(v) || 0)} * var(--u, 1px))`;
+  if (typeof radius === "object") return [radius.tl, radius.tr, radius.br, radius.bl].map(px).join(" ");
+  return px(radius);
+}

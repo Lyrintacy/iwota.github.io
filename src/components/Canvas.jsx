@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useLayoutEffect, useRef, useState } from "react";
-import { BUILTIN_TEXT_STYLES, bandTop, inlineTokens, isBand, itemStyle, pageHeight, panPos, styleOf, unitFor } from "../lib/model.js";
+import { BUILTIN_TEXT_STYLES, bandTop, cornerRadius, inlineTokens, isBand, itemStyle, pageHeight, panPos, styleOf, unitFor } from "../lib/model.js";
 import { useMedia } from "../lib/media.js";
 import { ButtonItem, HoverGif, HoverVideo } from "./Interactive.jsx";
 
@@ -54,6 +54,7 @@ function Media({ item }) {
         autoPlay={!!item.autoplay}
         muted={!!item.autoplay}
         playsInline
+        style={{ borderRadius: cornerRadius(item.radius) }}
       />
     );
   return (
@@ -61,7 +62,7 @@ function Media({ item }) {
       className="media"
       src={main.url || undefined}
       alt={item.alt || ""}
-      style={{ objectFit: item.fit || "contain" }}
+      style={{ objectFit: item.fit || "contain", borderRadius: cornerRadius(item.radius) }}
     />
   );
 }
