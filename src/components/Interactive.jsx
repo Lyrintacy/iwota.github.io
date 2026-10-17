@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useLayoutEffect, useRef, useState } from 
 import { createPortal } from "react-dom";
 import { useMedia } from "../lib/media.js";
 import { onPointer, refreshHover, useHoverRegion } from "../lib/hover.js";
-import { DEFAULT_CARD, DEFAULT_FX, DEFAULT_LINK, cardsOf } from "../lib/model.js";
+import { DEFAULT_CARD, DEFAULT_FX, DEFAULT_LINK, cardsOf, cornerRadius } from "../lib/model.js";
 import { NavContext, pageHref } from "../lib/nav.js";
 
 const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
@@ -50,10 +50,22 @@ export function HoverGif({ item }) {
   const fit = item.fit || "contain";
   return (
     <div ref={ref} className="hover-box">
-      {poster && <img className="media layer" src={poster} alt={item.alt || ""} style={{ objectFit: fit }} />}
+      {poster && (
+        <img
+          className="media layer"
+          src={poster}
+          alt={item.alt || ""}
+          style={{ objectFit: fit, borderRadius: cornerRadius(item.radius) }}
+        />
+      )}
       {/* Mounted only while hovered, so the GIF does not run the rest of the time. */}
       {hovered && main.url && (
-        <img className="media layer fade-in" src={main.url} alt={item.alt || ""} style={{ objectFit: fit }} />
+        <img
+          className="media layer fade-in"
+          src={main.url}
+          alt={item.alt || ""}
+          style={{ objectFit: fit, borderRadius: cornerRadius(item.radius) }}
+        />
       )}
     </div>
   );
@@ -82,6 +94,7 @@ export function HoverVideo({ item }) {
         ref={videoRef}
         className="media layer"
         src={main.url || undefined}
+        style={{ borderRadius: cornerRadius(item.radius) }}
         loop={!!item.loop}
         muted
         playsInline
@@ -89,7 +102,14 @@ export function HoverVideo({ item }) {
         onPlaying={() => setPlaying(true)}
         onPause={() => setPlaying(false)}
       />
-      {thumb.url && <img className={`media layer poster ${playing ? "is-hidden" : ""}`} src={thumb.url} alt="" />}
+      {thumb.url && (
+        <img
+          className={`media layer poster ${playing ? "is-hidden" : ""}`}
+          src={thumb.url}
+          alt=""
+          style={{ borderRadius: cornerRadius(item.radius) }}
+        />
+      )}
     </div>
   );
 }
