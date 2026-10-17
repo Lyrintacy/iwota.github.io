@@ -14,13 +14,22 @@ const isUrl = (file) => /^https?:\/\//i.test(file);
 // Works from the dev server, GitHub Pages and file:// (no fetch needed).
 function loads(url, type) {
   return new Promise((resolve) => {
-    const el = type === "video" ? document.createElement("video") : new Image();
-    if (type === "video") {
-      el.preload = "metadata";
-      el.onloadedmetadata = () => resolve(true);
-    } else el.onload = () => resolve(true);
-    el.onerror = () => resolve(false);
-    el.src = url;
+    const done = (ok) => {
+      clearTimeout(timer);
+      resolve(ok);
+    };
+    const timer = setTimeout(() => done(false), 8000);
+    try {
+      const el = type === "video" ? document.createElement("video") : new Image();
+      if (type === "video") {
+        el.preload = "metadata";
+        el.onloadedmetadata = () => done(true);
+      } else el.onload = () => done(true);
+      el.onerror = () => done(false);
+      el.src = url;
+    } catch {
+      done(false);
+    }
   });
 }
 
@@ -44,9 +53,11 @@ export function useMedia(type, rawFile = "") {
     if (!needsProbe) return;
     let live = true;
     const timer = setTimeout(() => {
-      findExtension(file, type).then((ext) => {
-        if (live) setFound({ key, ext });
-      });
+      findExtension(file, type)
+        .catch(() => null)
+        .then((ext) => {
+          if (live) setFound({ key, ext });
+        });
     }, 250);
     return () => {
       live = false;

@@ -80,6 +80,12 @@ export function startScrollEffects() {
       // Leave zoom gestures, horizontal swipes, and the workshop's own panel alone.
       if (e.ctrlKey || e.metaKey || Math.abs(e.deltaX) > Math.abs(e.deltaY))
         return;
+      // A trackpad sends many small pixel-based events (its values are not in notches of
+      // 120). Its movement is already smooth, so the browser scrolls it natively; easing it
+      // again here only adds lag. Mouse wheels (notches) keep the easing.
+      const trackpad =
+        e.deltaMode === 0 && (e.wheelDeltaY === undefined || e.wheelDeltaY % 120 !== 0);
+      if (trackpad) return;
       if (e.target.closest?.(".editor")) return;
       e.preventDefault();
       if (!wheelFrame) {
