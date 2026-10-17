@@ -13,7 +13,7 @@
       "name": "",
       "parent": "",
       "h": {
-        "anchor": "center",
+        "anchor": "start",
         "offset": 0,
         "offsetEnd": 0,
         "unit": "px",
@@ -42,6 +42,36 @@
         "axis": "x",
         "grow": true
       }
+    },
+    {
+      "id": "image-ar5jf",
+      "type": "image",
+      "name": "",
+      "parent": "section-tfih3",
+      "h": {
+        "anchor": "start",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 300,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 0,
+        "sizeUnit": "auto"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "file": "0/IMG_3586",
+      "alt": "",
+      "fit": "contain"
     },
     {
       "id": "text-ldvyg",
@@ -80,102 +110,6 @@
       }
     },
     {
-      "id": "animated-100so",
-      "type": "animated",
-      "name": "LeMovingBorder",
-      "parent": "section-mzin5",
-      "h": {
-        "anchor": "start",
-        "offset": 0,
-        "offsetEnd": 0,
-        "unit": "px",
-        "size": 300,
-        "sizeUnit": "px"
-      },
-      "v": {
-        "anchor": "stretch",
-        "offset": 1,
-        "offsetEnd": 0,
-        "unit": "px",
-        "size": 0,
-        "sizeUnit": "auto"
-      },
-      "pivot": [
-        0,
-        50
-      ],
-      "rotate": 0,
-      "file": "ui/Roof.png",
-      "tile": 50,
-      "border": {
-        "top": 100,
-        "right": 0,
-        "bottom": 1000,
-        "left": 100
-      },
-      "repeatX": true,
-      "repeatY": true,
-      "scrollX": false,
-      "speedX": -10,
-      "scrollY": true,
-      "speedY": -1.1,
-      "textureRotate": 0,
-      "offsetY": 0,
-      "offsetX": 0,
-      "shrink": {
-        "on": true,
-        "axis": "both"
-      }
-    },
-    {
-      "id": "animated-jjlwh",
-      "type": "animated",
-      "name": "RiMovingBorder",
-      "parent": "section-mzin5",
-      "h": {
-        "anchor": "end",
-        "offset": 0,
-        "offsetEnd": 0,
-        "unit": "px",
-        "size": 300,
-        "sizeUnit": "px"
-      },
-      "v": {
-        "anchor": "stretch",
-        "offset": 1,
-        "offsetEnd": 0,
-        "unit": "px",
-        "size": 0,
-        "sizeUnit": "auto"
-      },
-      "pivot": [
-        100,
-        50
-      ],
-      "rotate": 0,
-      "file": "ui/Roof.png",
-      "tile": 50,
-      "border": {
-        "top": 100,
-        "right": 0,
-        "bottom": 1000,
-        "left": 100
-      },
-      "repeatX": true,
-      "repeatY": true,
-      "scrollX": false,
-      "speedX": -1,
-      "scrollY": true,
-      "speedY": 1.1,
-      "textureRotate": 0,
-      "offsetY": 0,
-      "offsetX": 0,
-      "shrink": {
-        "on": true,
-        "axis": "both"
-      }
-    },
-    {
       "id": "text-z67a9",
       "type": "text",
       "name": "",
@@ -210,245 +144,6 @@
         "axis": "x",
         "grow": true
       }
-    },
-    {
-      "id": "image-fen8e",
-      "type": "image",
-      "name": "",
-      "parent": "",
-      "h": {
-        "anchor": "center",
-        "offset": -25,
-        "offsetEnd": 0,
-        "unit": "%",
-        "size": 300,
-        "sizeUnit": "px"
-      },
-      "v": {
-        "anchor": "start",
-        "offset": 1,
-        "offsetEnd": 0,
-        "unit": "%",
-        "size": 0,
-        "sizeUnit": "auto"
-      },
-      "pivot": [
-        50,
-        50
-      ],
-      "rotate": 0,
-      "shrink": {
-        "on": true,
-        "axis": "both"
-      },
-      "file": "start/IMG_3586.JPEG",
-      "alt": "",
-      "fit": "contain"
-    },
-    {
-      "id": "gif-ax4fw",
-      "type": "gif",
-      "name": "",
-      "parent": "",
-      "h": {
-        "anchor": "center",
-        "offset": 10,
-        "offsetEnd": 0,
-        "unit": "%",
-        "size": 300,
-        "sizeUnit": "px"
-      },
-      "v": {
-        "anchor": "start",
-        "offset": 20,
-        "offsetEnd": 0,
-        "unit": "%",
-        "size": 0,
-        "sizeUnit": "auto"
-      },
-      "pivot": [
-        50,
-        50
-      ],
-      "rotate": 0,
-      "shrink": {
-        "on": true,
-        "axis": "both"
-      },
-      "file": "start/FaraFrogGifPortfolio.gif",
-      "alt": "",
-      "fit": "contain",
-      "button": false,
-      "hoverOnly": false,
-      "fx": {
-        "card": false,
-        "shine": false,
-        "flash": false
-      }
-    },
-    {
-      "id": "gif-eh5md",
-      "type": "gif",
-      "name": "",
-      "parent": "",
-      "h": {
-        "anchor": "start",
-        "offset": 0,
-        "offsetEnd": 0,
-        "unit": "px",
-        "size": 300,
-        "sizeUnit": "px"
-      },
-      "v": {
-        "anchor": "start",
-        "offset": 0,
-        "offsetEnd": 0,
-        "unit": "px",
-        "size": 0,
-        "sizeUnit": "auto"
-      },
-      "pivot": [
-        50,
-        50
-      ],
-      "rotate": 0,
-      "shrink": {
-        "on": false,
-        "axis": "x"
-      },
-      "file": "",
-      "alt": "",
-      "fit": "contain",
-      "hoverOnly": false,
-      "thumbnail": "",
-      "button": false,
-      "link": {
-        "kind": "none",
-        "url": "",
-        "section": "",
-        "newTab": false
-      },
-      "fx": {
-        "shake": true,
-        "flash": true,
-        "shine": true,
-        "shineColour": 4,
-        "card": true,
-        "cardScale": 2.5,
-        "cardFile": ""
-      }
-    },
-    {
-      "id": "button-45pnf",
-      "type": "button",
-      "name": "",
-      "parent": "",
-      "h": {
-        "anchor": "center",
-        "offset": -20,
-        "offsetEnd": 0,
-        "unit": "%",
-        "size": 300,
-        "sizeUnit": "px"
-      },
-      "v": {
-        "anchor": "center",
-        "offset": 0,
-        "offsetEnd": 0,
-        "unit": "px",
-        "size": 300,
-        "sizeUnit": "px"
-      },
-      "pivot": [
-        50,
-        50
-      ],
-      "rotate": 0,
-      "shrink": {
-        "on": true,
-        "axis": "both"
-      },
-      "file": "start/profile.JPEG",
-      "alt": "",
-      "fit": "contain",
-      "link": {
-        "kind": "section",
-        "url": "",
-        "section": "section-tfih3",
-        "newTab": false
-      },
-      "fx": {
-        "shake": true,
-        "flash": false,
-        "shine": true,
-        "shineColour": 8,
-        "card": true,
-        "cardScale": 1.5,
-        "cardFile": "start/profile.JPEG",
-        "shineWidth": 200,
-        "shakeMs": 500,
-        "waitFlash": true,
-        "cardFlashMs": 300,
-        "cardFlashColour": 2,
-        "flashMs": 200,
-        "shineMs": 350
-      }
-    },
-    {
-      "id": "button-ex6yi",
-      "type": "button",
-      "name": "",
-      "parent": "",
-      "h": {
-        "anchor": "center",
-        "offset": 20,
-        "offsetEnd": 0,
-        "unit": "%",
-        "size": 500,
-        "sizeUnit": "px"
-      },
-      "v": {
-        "anchor": "center",
-        "offset": 0,
-        "offsetEnd": 0,
-        "unit": "px",
-        "size": 300,
-        "sizeUnit": "px"
-      },
-      "pivot": [
-        50,
-        50
-      ],
-      "rotate": 0,
-      "shrink": {
-        "on": true,
-        "axis": "both"
-      },
-      "file": "start/profile.JPEG",
-      "alt": "",
-      "fit": "contain",
-      "link": {
-        "kind": "section",
-        "url": "",
-        "section": "section-tfih3",
-        "newTab": false
-      },
-      "fx": {
-        "shake": true,
-        "flash": false,
-        "shine": true,
-        "shineColour": 8,
-        "card": true,
-        "cardScale": 1.6,
-        "cardFile": "start/FaraFrogGifPortfolio.gif",
-        "shineWidth": 200,
-        "shakeMs": 500,
-        "waitFlash": true,
-        "cardFlashMs": 300,
-        "cardFlashColour": 2,
-        "flashMs": 200,
-        "shineMs": 500
-      }
     }
   ],
   "sections": [
@@ -457,19 +152,15 @@
       "kind": "band",
       "name": "",
       "anchor": "bottom",
-      "start": 0,
+      "start": 100,
       "height": 600,
       "background": 4,
       "texture": {
         "file": "ui/LeftBorder.png",
         "size": 150,
-        "offsetX": 100,
+        "offsetX": 0,
         "offsetY": 0,
-        "rotate": 45,
-        "scrollX": true,
-        "speedX": 100,
-        "scrollY": true,
-        "speedY": 1
+        "rotate": 45
       },
       "overlay": {
         "colour": 6,
@@ -481,150 +172,5 @@
       "kind": "fixed",
       "name": ""
     }
-  ],
-  "mobile": {
-    "breakpoint": 700,
-    "canvas": {
-      "designWidth": 390,
-      "designHeight": 844
-    },
-    "items": {
-      "image-ar5jf": {
-        "h": {
-          "anchor": "start",
-          "offset": 0,
-          "offsetEnd": 0,
-          "unit": "px",
-          "size": 100,
-          "sizeUnit": "px"
-        }
-      },
-      "text-k8wgd": {
-        "h": {
-          "anchor": "end",
-          "offset": 0,
-          "offsetEnd": 0,
-          "unit": "px",
-          "size": 11,
-          "sizeUnit": "px"
-        }
-      },
-      "animated-100so": {
-        "v": {
-          "anchor": "stretch",
-          "offset": 0,
-          "offsetEnd": 0,
-          "unit": "px",
-          "size": 0,
-          "sizeUnit": "auto"
-        },
-        "h": {
-          "anchor": "start",
-          "offset": -270,
-          "offsetEnd": 0,
-          "unit": "px",
-          "size": 300,
-          "sizeUnit": "px"
-        },
-        "pivot": [
-          50,
-          50
-        ],
-        "repeatY": true,
-        "repeatX": true,
-        "shrink": {
-          "on": true,
-          "axis": "y"
-        }
-      },
-      "animated-jjlwh": {
-        "v": {
-          "anchor": "stretch",
-          "offset": 0,
-          "offsetEnd": 0,
-          "unit": "px",
-          "size": 0,
-          "sizeUnit": "auto"
-        },
-        "h": {
-          "anchor": "end",
-          "offset": -270,
-          "offsetEnd": 0,
-          "unit": "px",
-          "size": 300,
-          "sizeUnit": "px"
-        },
-        "pivot": [
-          50,
-          50
-        ],
-        "shrink": {
-          "on": true,
-          "axis": "y"
-        }
-      },
-      "text-z67a9": {
-        "shrink": {
-          "on": false,
-          "axis": "both"
-        }
-      },
-      "image-fen8e": {
-        "h": {
-          "anchor": "center",
-          "offset": 0,
-          "offsetEnd": 0,
-          "unit": "%",
-          "size": 300,
-          "sizeUnit": "px"
-        }
-      },
-      "gif-ax4fw": {
-        "h": {
-          "anchor": "center",
-          "offset": 0,
-          "offsetEnd": 0,
-          "unit": "%",
-          "size": 200,
-          "sizeUnit": "px"
-        },
-        "v": {
-          "anchor": "start",
-          "offset": 40,
-          "offsetEnd": 0,
-          "unit": "%",
-          "size": 0,
-          "sizeUnit": "auto"
-        }
-      },
-      "button-45pnf": {
-        "fx": {
-          "shake": true,
-          "flash": true,
-          "shine": true,
-          "shineColour": 8,
-          "card": true,
-          "cardScale": 2,
-          "cardFile": "start/profile.JPEG"
-        },
-        "h": {
-          "anchor": "center",
-          "offset": 0,
-          "offsetEnd": 0,
-          "unit": "px",
-          "size": 100,
-          "sizeUnit": "px"
-        },
-        "v": {
-          "anchor": "center",
-          "offset": 0,
-          "offsetEnd": 0,
-          "unit": "px",
-          "size": 100,
-          "sizeUnit": "px"
-        }
-      }
-    },
-    "sections": {}
-  }
+  ]
 }

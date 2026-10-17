@@ -58,7 +58,7 @@ export const DEFAULT_SCROLL = { panSmoothMs: 240 };
 // fonts: "" = the site font, otherwise a font id from site.fonts.
 // maxTemporary: how many hidden tabs opened by a link can hold a slot in the bar.
 export const DEFAULT_UI = {
-  tabs: { font: "", text: 0, background: 0, active: 0, maxTemporary: 1 },
+  tabs: { font: "", text: 0, background: 0, active: 0, maxTemporary: 1, slide: true },
   workshop: { font: "", text: 0, background: 0 },
 };
 export const DEFAULT_FONTS = [

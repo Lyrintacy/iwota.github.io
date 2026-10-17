@@ -25,10 +25,20 @@ const pageFiles = import.meta.glob("./config/pages/*.json", {
   import: "default",
 });
 
+// Phone overrides: one file per tab in src/config/phone/ (replaces "mobile" in the page file).
+const phoneFiles = import.meta.glob("./config/phone/*.json", {
+  eager: true,
+  import: "default",
+});
+
 function loadSaved() {
   const pages = {};
   for (const page of Object.values(pageFiles))
     if (page?.id) pages[page.id] = page;
+  for (const id of Object.keys(pages)) {
+    const phone = phoneFiles[`./config/phone/${id}.json`];
+    if (phone && typeof phone === "object") pages[id] = { ...pages[id], mobile: phone };
+  }
   const tabs = (siteConfig.tabs || []).filter((id) => pages[id]);
   for (const id of Object.keys(pages)) if (!tabs.includes(id)) tabs.push(id);
   return { site: { ...siteConfig, tabs }, pages };
@@ -288,6 +298,7 @@ export default function App() {
       // PC only: a fine pointer with hover, outside the phone layout, not reduced motion.
       const canSlide =
         !phoneViewport &&
+        ui.tabs.slide !== false &&
         window.matchMedia("(hover: hover) and (pointer: fine)").matches &&
         !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       const current = stageRef.current?.querySelector(":scope > .tab-current > .canvas");
