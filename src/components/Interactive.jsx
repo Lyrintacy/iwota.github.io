@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useLayoutEffect, useRef, useState } from 
 import { createPortal } from "react-dom";
 import { useMedia } from "../lib/media.js";
 import { onPointer, refreshHover, useHoverRegion } from "../lib/hover.js";
-import { DEFAULT_FX, DEFAULT_LINK } from "../lib/model.js";
+import { DEFAULT_CARD, DEFAULT_FX, DEFAULT_LINK, cardsOf } from "../lib/model.js";
 import { NavContext, pageHref } from "../lib/nav.js";
 
 const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
@@ -108,36 +108,50 @@ function cardSize(r, scale, fit, pageW, vh) {
   return { w, h };
 }
 
+// The union of several rectangles (the open cards), for hover.
+function unionRect(rects) {
+  if (!rects.length) return undefined;
+  return {
+    left: Math.min(...rects.map((r) => r.left)),
+    top: Math.min(...rects.map((r) => r.top)),
+    right: Math.max(...rects.map((r) => r.right)),
+    bottom: Math.max(...rects.map((r) => r.bottom)),
+  };
+}
+
 /**
  * A button: an image (or a GIF made into a button) with a hover sequence.
  * Hover (or, on touch screens, a tap) starts it: the picture shakes once, flashes,
- * and a band sweeps across inside its shape, independently of the flash. The card
- * extends from the button, wobbles and shines, tilts with the cursor, and shrinks
- * back on unhover. A click flashes in colour when there is an action. On touch,
- * a tap acts as hover; another tap, or a tap elsewhere, or scrolling, ends it.
+ * and a band sweeps across inside its shape, independently of the flash. The cards
+ * (fx.cards) open over the button together, wobble and shine, tilt with the cursor,
+ * and shrink back on unhover. A clickable card counts as a click on the button; a
+ * card that is not clickable lets clicks pass through to what is under it.
+ * On touch, a tap acts as hover; another tap, or a tap elsewhere, or scrolling, ends it.
  */
 export function ButtonItem({ item, editing }) {
   const navigate = useContext(NavContext);
   const isGif = item.type === "gif";
   const fx = { ...DEFAULT_FX, ...(item.fx || {}) };
+  const cards = cardsOf(item.fx || {});
+  const clickCard = cards[0] || DEFAULT_CARD; // the button's click flash uses the first card's colour
   const link = item.link || DEFAULT_LINK;
   const hasLink =
     (link.kind === "url" && !!link.url) ||
     (link.kind === "section" && !!link.section) ||
     (link.kind === "page" && !!link.page);
-  const hasAction = hasLink || fx.card;
+  const hasAction = hasLink || cards.length > 0;
   const img = useMedia(isGif ? "gif" : "image", item.file);
   const thumb = useMedia("image", item.thumbnail || "");
-  const cardMedia = useMedia("image", fx.cardFile || "");
   const still = useStill(img.url, isGif && !thumb.url);
   const base = isGif ? thumb.url || still : img.url;
 
   const ref = useRef(null);
-  const cardRef = useRef(null);
-  const cardShown = useRef(false); // the card counts as part of the hover area while open
-  const hovered = useHoverRegion(ref, () =>
-    cardShown.current && cardRef.current ? cardRef.current.getBoundingClientRect() : undefined,
-  );
+  const cardEls = useRef(new Set()); // the elements of the open cards
+  const cardShown = useRef(false); // the cards count as part of the hover area while open
+  const hovered = useHoverRegion(ref, () => {
+    if (!cardShown.current || cardEls.current.size === 0) return undefined;
+    return unionRect([...cardEls.current].map((el) => el.getBoundingClientRect()));
+  });
   const [pinned, setPinned] = useState(false); // touch: tapped on
   const touch = useRef(false); // the last pointer was a finger or pen
   const active = hovered || pinned;
@@ -165,7 +179,7 @@ export function ButtonItem({ item, editing }) {
       setPlayGif(false);
       if (card === "open") {
         setCard("closing");
-        later(() => setCard("none"), fx.cardCloseMs);
+        later(() => setCard("none"), Math.max(0, ...cards.map((c) => c.closeMs)));
       }
       return;
     }
@@ -184,14 +198,15 @@ export function ButtonItem({ item, editing }) {
       later(() => setShining(false), shineEnd);
     }
     later(() => setPlayGif(isGif), Math.max(flashEnd, shineEnd));
-    if (fx.card) later(() => setCard("open"), fx.waitFlash ? flashEnd : 0);
+    if (cards.length) setCard("open"); // each card waits for the flash itself (see CardView)
   }, [active]);
 
   // Touch: the tap-on stays until another tap elsewhere, a scroll, or a second tap.
   useEffect(() => {
     if (!pinned) return;
     const outside = (e) => {
-      if (ref.current?.contains(e.target) || cardRef.current?.contains(e.target)) return;
+      if (ref.current?.contains(e.target)) return;
+      if ([...cardEls.current].some((el) => el.contains(e.target))) return;
       setPinned(false);
     };
     const moved = () => setPinned(false);
@@ -203,47 +218,11 @@ export function ButtonItem({ item, editing }) {
     };
   }, [pinned]);
 
-  // Keeps the card on the button: it moves on scroll and resizes, and is sized
-  // to the screen by the fit setting.
-  const place = () => {
-    const el = cardRef.current;
-    const r = ref.current?.getBoundingClientRect();
-    if (!el || !r) return;
-    const pageW = ref.current.closest(".canvas")?.clientWidth || window.innerWidth;
-    const { w, h } = cardSize(r, fx.cardScale, fx.cardFit, pageW, window.innerHeight);
-    el.style.left = `${r.left + r.width / 2 - w / 2}px`;
-    el.style.top = `${r.top + r.height / 2 - h / 2}px`;
-    el.style.width = `${w}px`;
-    el.style.height = `${h}px`;
-    el.style.setProperty("--k0", String(Math.min(1, r.width / w)));
-    refreshHover();
-  };
+  // Runs after the cards have placed themselves, so the hover area includes them.
   useLayoutEffect(() => {
     cardShown.current = card === "open";
-    if (card === "none") return;
-    place();
-    window.addEventListener("scroll", place, { passive: true });
-    window.addEventListener("resize", place);
-    return () => {
-      window.removeEventListener("scroll", place);
-      window.removeEventListener("resize", place);
-    };
+    refreshHover();
   }, [card]);
-
-  // The card tilts toward the cursor's position inside the button.
-  useEffect(() => {
-    if (card === "none" || !fx.cardTilt) return;
-    const k = Math.max(0, fx.cardTiltStrength) / 100;
-    return onPointer((e) => {
-      const r = ref.current?.getBoundingClientRect();
-      const el = cardRef.current;
-      if (!r || !el) return;
-      const nx = clamp(((e.clientX - r.left) / r.width) * 2 - 1, -1, 1);
-      const ny = clamp(((e.clientY - r.top) / r.height) * 2 - 1, -1, 1);
-      el.style.setProperty("--rx", `${(-ny * 10 * k).toFixed(2)}deg`);
-      el.style.setProperty("--ry", `${(nx * 12 * k).toFixed(2)}deg`);
-    });
-  }, [card, fx.cardTilt, fx.cardTiltStrength]);
 
   // A tap in the page: a touch screen has no hover, so a tap acts as hover.
   const onPointerDown = (e) => {
@@ -257,6 +236,11 @@ export function ButtonItem({ item, editing }) {
     if (!touch.current || hasLink) return;
     e.preventDefault();
     setPinned((p) => !p);
+  };
+  // A click on a clickable card is a click on the button: the same link, flash and tap.
+  const onCardClick = () => {
+    if (editing) return;
+    ref.current?.click();
   };
 
   const mask = base ? { WebkitMaskImage: urlCss(base), maskImage: urlCss(base) } : {};
@@ -300,7 +284,7 @@ export function ButtonItem({ item, editing }) {
         <div className="fx-mask" key={clicks} style={mask}>
           <div
             className="fx-soft-flash"
-            style={{ "--flash-col": `var(--color-${fx.cardFlashColour || 3})`, animationDuration: `${fx.cardFlashMs}ms` }}
+            style={{ "--flash-col": `var(--color-${clickCard.flashColour || 3})`, animationDuration: `${clickCard.flashMs}ms` }}
           />
         </div>
       )}
@@ -351,7 +335,8 @@ export function ButtonItem({ item, editing }) {
     );
   }
 
-  // The card lives in the site (so palette variables apply), above everything else.
+  // The cards live in the site (so palette variables apply), above everything else.
+  // They open in list order, so a later card is on top of an earlier one.
   const host = card !== "none" ? ref.current?.closest(".site") || document.body : null;
   const closing = card === "closing";
   return (
@@ -359,41 +344,147 @@ export function ButtonItem({ item, editing }) {
       {wrapped}
       {card !== "none" &&
         createPortal(
-          <div
-            ref={cardRef}
-            className={`fx-card ${closing ? "is-closing" : ""} ${fx.cardShake && !closing ? "fx-card-shake" : ""}`}
-            style={{
-              "--shake-ms": `${fx.cardShakeMs}ms`,
-              "--shake-k": String(fx.cardShakeAmount / 100),
-              "--open-ms": `${fx.cardOpenMs}ms`,
-              "--close-ms": `${fx.cardCloseMs}ms`,
-              "--radius": `${fx.cardRadius}px`,
-            }}
-          >
-            <img src={cardMedia.url || base || undefined} alt="" />
-            {fx.cardShine && !closing && (
-              <div
-                className="fx-shine-band fx-card-shine"
-                style={{
-                  "--shine": `var(--color-${fx.cardShineColour || 4})`,
-                  "--sw": `${fx.cardShineWidth}%`,
-                  "--slant": `${fx.shineSlant}deg`,
-                  animationDuration: `${fx.cardShineMs}ms`,
-                }}
-              />
-            )}
-            {fx.cardFlash && !closing && (
-              <div
-                className="fx-soft-flash"
-                style={{
-                  "--flash-col": `var(--color-${fx.cardFlashColour || 3})`,
-                  animationDuration: `${fx.cardFlashMs}ms`,
-                }}
-              />
-            )}
-          </div>,
+          cards.map((c, i) => (
+            <CardView
+              key={i}
+              c={c}
+              base={base}
+              buttonRef={ref}
+              cardEls={cardEls}
+              closing={closing}
+              clickFlash={fx.clickFlash}
+              waitMs={fx.flash ? fx.flashMs : 0}
+              onDown={onPointerDown}
+              onClick={onCardClick}
+            />
+          )),
           host,
         )}
     </>
+  );
+}
+
+/**
+ * One card over a button. Its settings are one entry of the button's fx.cards.
+ * Clicks pass through it unless it is clickable; a clickable card flashes on click.
+ */
+function CardView({ c, base, buttonRef, cardEls, closing, clickFlash, waitMs, onDown, onClick }) {
+  const ref = useRef(null);
+  // A card that waits for the flash stays hidden until it has finished.
+  const wait = c.waitFlash && waitMs > 0;
+  const [started, setStarted] = useState(!wait);
+  useEffect(() => {
+    if (started) return;
+    const t = setTimeout(() => setStarted(true), waitMs);
+    return () => clearTimeout(t);
+  }, []);
+  const media = useMedia("image", c.file || "");
+  const picture = media.url || base;
+  const mask = picture ? { WebkitMaskImage: urlCss(picture), maskImage: urlCss(picture) } : {};
+  const [clicks, setClicks] = useState(0);
+
+  // Sized and kept on its button: it moves on scroll and resize, and fits the
+  // screen by the fit setting.
+  const place = () => {
+    const el = ref.current;
+    const r = buttonRef.current?.getBoundingClientRect();
+    if (!el || !r) return;
+    const pageW = buttonRef.current.closest(".canvas")?.clientWidth || window.innerWidth;
+    const { w, h } = cardSize(r, c.scale, c.fit, pageW, window.innerHeight);
+    el.style.left = `${r.left + r.width / 2 - w / 2}px`;
+    el.style.top = `${r.top + r.height / 2 - h / 2}px`;
+    el.style.width = `${w}px`;
+    el.style.height = `${h}px`;
+    el.style.setProperty("--k0", String(Math.min(1, r.width / w)));
+    refreshHover();
+  };
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    cardEls.current.add(el);
+    place();
+    window.addEventListener("scroll", place, { passive: true });
+    window.addEventListener("resize", place);
+    return () => {
+      cardEls.current.delete(el);
+      window.removeEventListener("scroll", place);
+      window.removeEventListener("resize", place);
+    };
+  }, [started]);
+
+  // The card tilts toward the cursor's position inside the button.
+  useEffect(() => {
+    if (!c.tilt) return;
+    const k = Math.max(0, c.tiltStrength) / 100;
+    return onPointer((e) => {
+      const r = buttonRef.current?.getBoundingClientRect();
+      const el = ref.current;
+      if (!r || !el) return;
+      const nx = clamp(((e.clientX - r.left) / r.width) * 2 - 1, -1, 1);
+      const ny = clamp(((e.clientY - r.top) / r.height) * 2 - 1, -1, 1);
+      el.style.setProperty("--rx", `${(-ny * 10 * k).toFixed(2)}deg`);
+      el.style.setProperty("--ry", `${(nx * 12 * k).toFixed(2)}deg`);
+    });
+  }, [c.tilt, c.tiltStrength]);
+
+  const handleClick = () => {
+    if (!c.clickable) return;
+    if (clickFlash) setClicks((n) => n + 1);
+    onClick();
+  };
+
+  if (!started) return null;
+  return (
+    <div
+      ref={ref}
+      className={`fx-card ${closing ? "is-closing" : ""} ${c.shake && !closing ? "fx-card-shake" : ""}`}
+      style={{
+        pointerEvents: c.clickable ? "auto" : "none",
+        cursor: c.clickable ? "pointer" : undefined,
+        "--card-bg": c.background ? `var(--color-${c.background})` : "transparent",
+        "--shake-ms": `${c.shakeMs}ms`,
+        "--shake-k": String(c.shakeAmount / 100),
+        "--open-ms": `${c.openMs}ms`,
+        "--close-ms": `${c.closeMs}ms`,
+        "--radius": `${c.radius}px`,
+      }}
+      onPointerDown={onDown}
+      onClick={handleClick}
+    >
+      <img src={picture || undefined} alt="" style={{ objectFit: c.imageFit || "cover" }} />
+      {/* The band and flash follow the picture's shape, so a transparent PNG is respected */}
+      {(c.shine || c.flash) && !closing && picture && (
+        <div className="fx-mask" style={mask}>
+          {c.shine && (
+            <div
+              className="fx-shine-band fx-card-shine"
+              style={{
+                "--shine": `var(--color-${c.shineColour || 4})`,
+                "--sw": `${c.shineWidth}%`,
+                "--slant": `${c.slant}deg`,
+                animationDuration: `${c.shineMs}ms`,
+              }}
+            />
+          )}
+          {c.flash && (
+            <div
+              className="fx-soft-flash"
+              style={{
+                "--flash-col": `var(--color-${c.flashColour || 3})`,
+                animationDuration: `${c.flashMs}ms`,
+              }}
+            />
+          )}
+        </div>
+      )}
+      {clicks > 0 && picture && (
+        <div className="fx-mask" key={clicks} style={mask}>
+          <div
+            className="fx-soft-flash"
+            style={{ "--flash-col": `var(--color-${c.flashColour || 3})`, animationDuration: `${c.flashMs}ms` }}
+          />
+        </div>
+      )}
+    </div>
   );
 }

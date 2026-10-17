@@ -1,27 +1,6 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import images from "virtual:images";
-import {
-  ANCHORS,
-  COLORS,
-  DEFAULT_DESIGN,
-  DEFAULT_UI,
-  DEFAULT_LINK,
-  DEFAULT_MOBILE,
-  DEFAULT_SPEED,
-  DEFAULT_TEXT,
-  ROLES,
-  SIZE_UNITS,
-  TYPES,
-  UNITS,
-  formatAt,
-  isBand,
-  newItem,
-  newSection,
-  pageSlug,
-  removeColour,
-  toggleFormat,
-  uid,
-} from "../lib/model.js";
+import { ANCHORS, COLORS, DEFAULT_DESIGN, DEFAULT_UI, DEFAULT_LINK, DEFAULT_MOBILE, DEFAULT_SPEED, DEFAULT_TEXT, ROLES, SIZE_UNITS, TYPES, UNITS, formatAt, isBand, newItem, newSection, pageSlug, removeColour, toggleFormat, uid, DEFAULT_CARD, cardsOf } from "../lib/model.js";
 import { hasExt, useMedia } from "../lib/media.js";
 import { fontFamily } from "../lib/model.js";
 
@@ -459,6 +438,140 @@ function LinkFields({ value, sections, pages = [], onChange }) {
   );
 }
 
+// The cards that open over a button. A button can have several; each has its own
+// look. They open together, later ones on top. Clickable: clicking the card counts as a
+// click on the button. A card that is not clickable lets clicks pass through it.
+function CardsFields({ fx = {}, palette, onChange }) {
+  const cards = cardsOf(fx);
+  // Saves the list and drops the older card fields, so they are not kept in the file.
+  const legacy = Object.fromEntries(
+    Object.keys(fx)
+      .filter((k) => k === "card" || k === "waitFlash" || /^card[A-Z]/.test(k))
+      .map((k) => [k, undefined]),
+  );
+  const save = (next) => onChange({ ...legacy, cards: next });
+  const patch = (i, p) => save(cards.map((c, k) => (k === i ? { ...c, ...p } : c)));
+  const num = (i, key) => (v) => patch(i, { [key]: Math.max(0, v) });
+  const move = (i, d) => {
+    const next = [...cards];
+    const j = i + d;
+    if (j < 0 || j >= next.length) return;
+    [next[i], next[j]] = [next[j], next[i]];
+    save(next);
+  };
+  const remove = (i) => save(cards.filter((_, k) => k !== i));
+  const add = () => save([...cards, { ...DEFAULT_CARD }]);
+  return (
+    <fieldset className="axis">
+      <legend>Cards over the button</legend>
+      {cards.length === 0 && <p className="hint">No cards: hovering the button opens nothing.</p>}
+      {cards.map((c, i) => (
+        <fieldset className="axis" key={i}>
+          <legend>Card {i + 1}</legend>
+          <Check
+            label="Wait for the button's flash to finish before this card opens"
+            checked={c.waitFlash}
+            onChange={(waitFlash) => patch(i, { waitFlash })}
+          />
+          <Check
+            label="Clicking this card counts as a click on the button (its link runs, the button flashes)"
+            checked={c.clickable}
+            onChange={(clickable) => patch(i, { clickable })}
+          />
+          <NumberField label="Card size (times the button)" value={c.scale} onChange={(v) => patch(i, { scale: Math.max(1, v) })} />
+          <Select
+            label="Keep the card on screen by"
+            value={c.fit || "both"}
+            options={[
+              ["none", "Not at all"],
+              ["x", "Width"],
+              ["y", "Height"],
+              ["both", "Width and height"],
+            ]}
+            onChange={(fit) => patch(i, { fit })}
+          />
+          <FilePath
+            label="Card picture (optional, else the button image)"
+            value={c.file || ""}
+            type="image"
+            placeholder="0/card"
+            onChange={(file) => patch(i, { file })}
+          />
+          <Select
+            label="Card background"
+            value={String(c.background ?? 0)}
+            options={[["0", "Transparent (a PNG shows its own shape)"], ...palette]}
+            onChange={(n) => patch(i, { background: Number(n) })}
+          />
+          <Select
+            label="Card picture fit"
+            value={c.imageFit || "cover"}
+            options={[
+              ["cover", "Fill the card (crops the picture)"],
+              ["contain", "Fit inside (keeps the whole picture)"],
+            ]}
+            onChange={(imageFit) => patch(i, { imageFit })}
+          />
+          <NumberField label="Open duration (ms)" value={c.openMs} onChange={num(i, "openMs")} />
+          <NumberField label="Close duration (ms)" value={c.closeMs} onChange={num(i, "closeMs")} />
+          <NumberField label="Corner radius (px)" value={c.radius} onChange={num(i, "radius")} />
+          <Check label="Tilt with the cursor" checked={c.tilt} onChange={(tilt) => patch(i, { tilt })} />
+          {c.tilt && <NumberField label="Tilt strength (%)" value={c.tiltStrength} onChange={num(i, "tiltStrength")} />}
+          <Check label="Shake when it opens" checked={c.shake} onChange={(shake) => patch(i, { shake })} />
+          {c.shake && (
+            <>
+              <NumberField label="Shake duration (ms)" value={c.shakeMs} onChange={num(i, "shakeMs")} />
+              <NumberField label="Shake strength (%)" value={c.shakeAmount} onChange={num(i, "shakeAmount")} />
+            </>
+          )}
+          <Check label="Moving band across the card" checked={c.shine} onChange={(shine) => patch(i, { shine })} />
+          {c.shine && (
+            <>
+              <Select
+                label="Band colour"
+                value={String(c.shineColour ?? 4)}
+                options={palette}
+                onChange={(n) => patch(i, { shineColour: Number(n) })}
+              />
+              <NumberField label="Band width (% of the card)" value={c.shineWidth} onChange={num(i, "shineWidth")} />
+              <NumberField label="Band speed: time to cross (ms)" value={c.shineMs} onChange={num(i, "shineMs")} />
+              <NumberField label="Band slant (degrees)" value={c.slant} onChange={num(i, "slant")} />
+            </>
+          )}
+          <Check label="Colour flash when it opens" checked={c.flash} onChange={(flash) => patch(i, { flash })} />
+          {c.flash && (
+            <>
+              <Select
+                label="Flash colour (also the click flash colour)"
+                value={String(c.flashColour ?? 3)}
+                options={palette}
+                onChange={(n) => patch(i, { flashColour: Number(n) })}
+              />
+              <NumberField label="Flash duration (ms)" value={c.flashMs} onChange={num(i, "flashMs")} />
+            </>
+          )}
+          <div className="row">
+            <button type="button" disabled={i === 0} onClick={() => move(i, -1)}>
+              Move up
+            </button>
+            <button type="button" disabled={i === cards.length - 1} onClick={() => move(i, 1)}>
+              Move down
+            </button>
+            <button type="button" onClick={() => remove(i)}>
+              Remove card {i + 1}
+            </button>
+          </div>
+        </fieldset>
+      ))}
+      <div className="row">
+        <button type="button" onClick={add}>
+          Add a card
+        </button>
+      </div>
+    </fieldset>
+  );
+}
+
 // Hover sequence for buttons. Each group is a step of the sequence; every
 // number is a variable, stored per item in fx.
 function EffectFields({ fx = {}, site, onChange }) {
@@ -516,89 +629,7 @@ function EffectFields({ fx = {}, site, onChange }) {
           </>
         )}
       </fieldset>
-      <fieldset className="axis">
-        <legend>Card</legend>
-        <Check label="Open a card over the page" checked={fx.card} onChange={set("card")} />
-        {fx.card && (
-          <>
-            <NumberField label="Card size (times the button)" value={fx.cardScale ?? 2.5} onChange={(v) => onChange({ cardScale: Math.max(1, v) })} />
-            <Select
-              label="Keep the card on screen by"
-              value={fx.cardFit || "both"}
-              options={[
-                ["none", "Not at all"],
-                ["x", "Width"],
-                ["y", "Height"],
-                ["both", "Width and height"],
-              ]}
-              onChange={(cardFit) => onChange({ cardFit })}
-            />
-            <FilePath
-              label="Card picture (optional, else the button image)"
-              value={fx.cardFile || ""}
-              type="image"
-              placeholder="0/card"
-              onChange={(cardFile) => onChange({ cardFile })}
-            />
-            <NumberField label="Open duration (ms)" value={fx.cardOpenMs ?? 450} onChange={num("cardOpenMs")} />
-            <NumberField label="Close duration (ms)" value={fx.cardCloseMs ?? 360} onChange={num("cardCloseMs")} />
-            <NumberField label="Corner radius (px)" value={fx.cardRadius ?? 6} onChange={num("cardRadius")} />
-            <Check
-              label="Wait for the button's flash to finish before opening"
-              checked={fx.waitFlash}
-              onChange={set("waitFlash")}
-            />
-            <Check label="Tilt with the cursor" checked={fx.cardTilt} onChange={set("cardTilt")} />
-            {fx.cardTilt && (
-              <NumberField label="Tilt strength (%)" value={fx.cardTiltStrength ?? 100} onChange={num("cardTiltStrength")} />
-            )}
-          </>
-        )}
-      </fieldset>
-      {fx.card && (
-        <>
-          <fieldset className="axis">
-            <legend>Card: shake</legend>
-            <Check label="Shake when it opens" checked={fx.cardShake} onChange={set("cardShake")} />
-            {fx.cardShake && (
-              <>
-                <NumberField label="Shake duration (ms)" value={fx.cardShakeMs ?? 600} onChange={num("cardShakeMs")} />
-                <NumberField label="Shake strength (%)" value={fx.cardShakeAmount ?? 100} onChange={num("cardShakeAmount")} />
-              </>
-            )}
-          </fieldset>
-          <fieldset className="axis">
-            <legend>Card: moving band (shine)</legend>
-            <Check label="Moving band across the card" checked={fx.cardShine} onChange={set("cardShine")} />
-            {fx.cardShine && (
-              <>
-                <Select
-                  label="Band colour"
-                  value={String(fx.cardShineColour ?? 4)}
-                  options={palette}
-                  onChange={(n) => onChange({ cardShineColour: Number(n) })}
-                />
-                <NumberField label="Band width (% of the card)" value={fx.cardShineWidth ?? 70} onChange={num("cardShineWidth")} />
-                <NumberField label="Band speed: time to cross (ms)" value={fx.cardShineMs ?? 700} onChange={num("cardShineMs")} />
-              </>
-            )}
-          </fieldset>
-          <fieldset className="axis">
-            <legend>Card: colour flash</legend>
-            <Check label="Colour flash when it opens" checked={fx.cardFlash} onChange={set("cardFlash")} />
-            {fx.cardFlash && (
-              <>
-                <Select
-                  label="Flash colour"
-                  value={String(fx.cardFlashColour ?? 3)}
-                  options={palette}
-                  onChange={(n) => onChange({ cardFlashColour: Number(n) })}
-                />
-              </>
-            )}
-          </fieldset>
-        </>
-      )}
+      <CardsFields fx={fx} palette={palette} onChange={onChange} />
       <fieldset className="axis">
         <legend>Click</legend>
         <Check
@@ -607,7 +638,7 @@ function EffectFields({ fx = {}, site, onChange }) {
           onChange={set("clickFlash")}
         />
         <p className="hint">
-          Colour for the click flash is the card flash colour. On a touch screen a button with no
+          Colour for the click flash is the first card's flash colour. On a touch screen a button with no
           link acts as hover on a tap; another tap, a tap elsewhere, or scrolling ends it.
           A button with a link follows the link on the first tap.
         </p>
@@ -627,10 +658,11 @@ function Group({ title, open = false, children }) {
 }
 
 // One file to copy or download, with its text in a read-only box.
-function ExportFile({ name, file = name, text, copy }) {
+function ExportFile({ name, file = name, text, edited, copy }) {
   return (
     <>
       <div className="row">
+        {edited && <span className="badge">edited</span>}
         <button onClick={() => copy(text, name)}>Copy {name}</button>
         <button onClick={() => download(file, text)}>Download {file}</button>
       </div>
@@ -666,6 +698,7 @@ function NewTab({ onAdd }) {
 export function Editor({
   site,
   rootSite,
+  edited = { changed: {}, removed: [] },
   setRootSite,
   ownSettings,
   pagesApi,
@@ -913,6 +946,25 @@ export function Editor({
   };
 
   const siteText = JSON.stringify(rootSite, null, 2) + "\n";
+  // A tab's page file has no phone overrides; they are in phone.json.
+  const pageFile = (id) => {
+    const { mobile: _phone, ...rest } = pagesApi.pages[id];
+    return JSON.stringify(rest, null, 2) + "\n";
+  };
+  const exportTabs = pagesApi.active === "main" ? ["main"] : ["main", pagesApi.active];
+  const phoneText =
+    JSON.stringify(
+      Object.fromEntries(
+        pagesApi.tabs.map((id) => [id, { ...DEFAULT_MOBILE, ...(pagesApi.pages[id].mobile || {}) }]),
+      ),
+      null,
+      2,
+    ) + "\n";
+  const editedNames = [
+    ...Object.entries(edited.changed)
+      .filter(([, on]) => on)
+      .map(([name]) => name),
+  ];
   const mobileText = JSON.stringify(mobile, null, 2) + "\n";
   const copy = async (text, label) => {
     try {
@@ -1907,16 +1959,14 @@ export function Editor({
           </p>
           <div className="paste-guide">
             <p className="hint">
-              <b>Saving phone overrides:</b> they are one file per tab,{" "}
-              <code>src/config/phone/{page.id}.json</code>. Download it, or copy it, and save it
-              there (replacing the old file). It holds only the phone overrides: the contents of
-              this box, with no wrapper. The page file is not changed.
+              <b>Saving phone overrides:</b> one file for every tab,{" "}
+              <code>src/config/phone.json</code>. It has an entry per tab, named by the tab's
+              id. Download it, or copy it, and replace the file. This tab's box below shows only
+              the current tab's entry.
             </p>
             <div className="row">
-              <button onClick={() => copy(mobileText, `phone/${page.id}.json`)}>Copy phone file</button>
-              <button onClick={() => download(`${page.id}-phone.json`, mobileText)}>
-                Download {page.id}-phone.json
-              </button>
+              <button onClick={() => copy(phoneText, "phone.json")}>Copy phone.json</button>
+              <button onClick={() => download("phone.json", phoneText)}>Download phone.json</button>
             </div>
           </div>
           <Field label="Phone overrides (JSON)">
@@ -1950,35 +2000,32 @@ export function Editor({
       {tab === "export" && (
         <div className="panel">
           <p className="hint">
-            Copy each file and paste it over the matching file in GitHub. The site settings
-            (tab order, fonts, scrolling, and the defaults) go in{" "}
-            <code>src/config/site.json</code>. Each tab's content goes in{" "}
-            <code>src/config/pages/&lt;tab&gt;.json</code>. Its phone overrides go in{" "}
-            <code>src/config/phone/&lt;tab&gt;.json</code> (the download is named{" "}
-            <code>&lt;tab&gt;-phone.json</code>: save it in that folder under the tab's name).
-            Commit, and the site rebuilds.
+            Copy each file and paste it over the matching file in GitHub, then commit. The
+            site settings go in <code>src/config/site.json</code>, each tab in{" "}
+            <code>src/config/pages/&lt;tab&gt;.json</code>, and all phone overrides in{" "}
+            <code>src/config/phone.json</code>.
           </p>
-          <ExportFile name="site.json" text={siteText} copy={copy} />
-          {pagesApi.tabs.map((id) => {
-            const { mobile: _phone, ...pageFile } = pagesApi.pages[id];
-            return (
-              <ExportFile
-                key={id}
-                name={`${id}.json`}
-                text={JSON.stringify(pageFile, null, 2) + "\n"}
-                copy={copy}
-              />
-            );
-          })}
-          {pagesApi.tabs.map((id) => (
+          {editedNames.length ? (
+            <p className="hint warn">Edited since the saved config: {editedNames.join(", ")}</p>
+          ) : (
+            <p className="hint">Nothing is edited yet.</p>
+          )}
+          {edited.removed.length > 0 && (
+            <p className="hint warn">
+              Deleted tabs (remove these files from GitHub): {edited.removed.join(", ")}
+            </p>
+          )}
+          <ExportFile name="site.json" text={siteText} edited={edited.changed["site.json"]} copy={copy} />
+          {exportTabs.map((id) => (
             <ExportFile
-              key={`phone-${id}`}
-              name={`phone/${id}.json`}
-              file={`${id}-phone.json`}
-              text={JSON.stringify({ ...DEFAULT_MOBILE, ...(pagesApi.pages[id].mobile || {}) }, null, 2) + "\n"}
+              key={id}
+              name={`${id}.json`}
+              text={pageFile(id)}
+              edited={edited.changed[`${id}.json`]}
               copy={copy}
             />
           ))}
+          <ExportFile name="phone.json" text={phoneText} edited={edited.changed["phone.json"]} copy={copy} />
           <p className="hint">
             Icon: put one image in <code>public/icon/</code>, named <code>icon.png</code> (or
             <code>.svg</code>, <code>.ico</code>, <code>.jpg</code>, <code>.webp</code>). Fonts:

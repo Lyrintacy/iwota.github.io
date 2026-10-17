@@ -20,29 +20,52 @@ export const DEFAULT_FX = {
   shineWidth: 70, // band width, % of the button
   shineColour: 4,
   shineSlant: 18, // degrees
-  // The card that opens over the page
-  card: true,
-  cardScale: 2.5, // card size, times the button
-  cardFit: "both", // keep the card on screen: none | x (width) | y (height) | both
-  cardFile: "",
-  cardOpenMs: 450,
-  cardCloseMs: 360,
-  cardRadius: 6,
-  waitFlash: true, // open the card when the button's flash has finished (not the band)
-  cardTilt: true, // tilt with the cursor
-  cardTiltStrength: 100, // % of the normal tilt
-  cardShake: true, // a one-off wobble when the card opens
-  cardShakeMs: 600,
-  cardShakeAmount: 100,
-  cardShine: true, // moving band across the card picture, starts when the card opens
-  cardShineColour: 4,
-  cardShineWidth: 70,
-  cardShineMs: 700,
-  cardFlash: true, // colour flash when the card opens
-  cardFlashColour: 3,
-  cardFlashMs: 500,
-  clickFlash: true, // colour flash on click, when the button has a link or card
+  clickFlash: true, // colour flash on click, when the button has a link or cards
 };
+// One card that opens over a button. A button has a list of these (fx.cards); they open
+// together, later ones on top. clickable: clicking the card counts as a click on the
+// button (its link runs and the button flashes). A card that is not clickable lets
+// clicks pass through to whatever is under it.
+export const DEFAULT_CARD = {
+  clickable: false,
+  waitFlash: true, // open when the button's flash has finished (not the band)
+  file: "", // picture; empty = the button's picture
+  scale: 2.5, // size, times the button
+  fit: "both", // keep on screen: none | x | y | both
+  openMs: 450,
+  closeMs: 360,
+  radius: 6,
+  background: 0, // 0 = transparent (a PNG shows its own shape); else a palette number
+  imageFit: "cover", // cover: fill (crop) | contain: keep the whole picture
+  tilt: true,
+  tiltStrength: 100,
+  shake: true,
+  shakeMs: 600,
+  shakeAmount: 100,
+  shine: true,
+  shineColour: 4,
+  shineWidth: 70,
+  shineMs: 700,
+  slant: 18,
+  flash: true,
+  flashColour: 3,
+  flashMs: 500,
+};
+/**
+ * The cards of a button. Items saved before the list existed have fx.card and fx.card*
+ * fields; those become one card with the same look as before.
+ */
+export function cardsOf(fx = {}) {
+  // waitFlash used to be one setting of the button; a card without its own value takes it.
+  const waitFlash = fx.waitFlash ?? DEFAULT_CARD.waitFlash;
+  if (Array.isArray(fx.cards)) return fx.cards.map((c) => ({ ...DEFAULT_CARD, waitFlash, ...c }));
+  if (fx.card === false) return [];
+  const old = {};
+  for (const [k, v] of Object.entries(fx)) {
+    if (/^card[A-Z]/.test(k)) old[k[4].toLowerCase() + k.slice(5)] = v;
+  }
+  return [{ ...DEFAULT_CARD, waitFlash, ...old }];
+}
 export const DEFAULT_LINK = { kind: "none", url: "", section: "", page: "", newTab: false };
 export const DEFAULT_SPEED = 0.5;
 // The size each layout was designed at. Shrinking items scale down below it.

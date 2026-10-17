@@ -1,5 +1,6 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import siteConfig from "./config/site.json";
+import phoneConfig from "./config/phone.json";
 import {
   DEFAULT_TEXT,
   DEFAULT_UI,
@@ -25,18 +26,13 @@ const pageFiles = import.meta.glob("./config/pages/*.json", {
   import: "default",
 });
 
-// Phone overrides: one file per tab in src/config/phone/ (replaces "mobile" in the page file).
-const phoneFiles = import.meta.glob("./config/phone/*.json", {
-  eager: true,
-  import: "default",
-});
-
+// Phone overrides for every tab, in one file: { "<tab id>": { breakpoint, canvas, items, sections } }.
 function loadSaved() {
   const pages = {};
   for (const page of Object.values(pageFiles))
     if (page?.id) pages[page.id] = page;
   for (const id of Object.keys(pages)) {
-    const phone = phoneFiles[`./config/phone/${id}.json`];
+    const phone = phoneConfig?.[id];
     if (phone && typeof phone === "object") pages[id] = { ...pages[id], mobile: phone };
   }
   const tabs = (siteConfig.tabs || []).filter((id) => pages[id]);
@@ -44,6 +40,28 @@ function loadSaved() {
   return { site: { ...siteConfig, tabs }, pages };
 }
 const SAVED = loadSaved();
+
+// Which files differ from the saved config (shown on the Export tab).
+const pageFileOf = (page) => {
+  const { mobile: _phone, ...rest } = page || {};
+  return JSON.stringify(rest);
+};
+const phoneOf = (pages) =>
+  JSON.stringify(
+    Object.fromEntries(
+      Object.keys(pages)
+        .sort()
+        .map((id) => [id, pages[id].mobile || {}]),
+    ),
+  );
+function editedFiles(data) {
+  const out = { "site.json": JSON.stringify(data.site) !== JSON.stringify(SAVED.site) };
+  for (const [id, page] of Object.entries(data.pages))
+    out[`${id}.json`] = pageFileOf(page) !== pageFileOf(SAVED.pages[id]);
+  out["phone.json"] = phoneOf(data.pages) !== phoneOf(SAVED.pages);
+  const removed = SAVED.site.tabs.filter((id) => !data.site.tabs.includes(id));
+  return { changed: out, removed: removed.map((id) => `${id}.json`) };
+}
 const DRAFT_KEY = "site-editor-draft-v3";
 
 // Short fingerprint of the saved config. A draft only applies to the config it
@@ -318,6 +336,7 @@ export default function App() {
           zIndex: "900",
           pointerEvents: "none",
         });
+        frozen.querySelectorAll("[id]").forEach((n) => n.removeAttribute("id")); // no duplicate ids
         stageRef.current.closest(".site").appendChild(frozen);
         pendingSlide.current = { frozen, dir };
       }
@@ -499,6 +518,7 @@ export default function App() {
             site={general}
             rootSite={site}
             setRootSite={setRootSite}
+            edited={editedFiles(data)}
             page={page}
             pagesApi={pagesApi}
             ownSettings={own}

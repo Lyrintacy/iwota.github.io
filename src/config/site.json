@@ -1,8 +1,7 @@
 {
   "version": 1,
   "tabs": [
-    "main",
-    "polar-protocol"
+    "main"
   ],
   "palette": [
     "#1B0E1F",
@@ -11,8 +10,7 @@
     "#d5ed81",
     "#151814",
     "#6b6f66",
-    "#373d30",
-    "#fff700"
+    "#373d30"
   ],
   "roles": {
     "background": 1,
@@ -47,21 +45,6 @@
     }
   ],
   "scroll": {
-    "panSmoothMs": 1000
-  },
-  "ui": {
-    "tabs": {
-      "font": "",
-      "text": 0,
-      "background": 0,
-      "active": 0,
-      "maxTemporary": 1,
-      "slide": true
-    },
-    "workshop": {
-      "font": "",
-      "text": 0,
-      "background": 0
-    }
+    "panSmoothMs": 240
   }
 }
