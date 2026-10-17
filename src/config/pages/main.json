@@ -345,9 +345,9 @@
       "parent": "",
       "h": {
         "anchor": "center",
-        "offset": 0,
+        "offset": -20,
         "offsetEnd": 0,
-        "unit": "px",
+        "unit": "%",
         "size": 300,
         "sizeUnit": "px"
       },
@@ -372,19 +372,82 @@
       "alt": "",
       "fit": "contain",
       "link": {
-        "kind": "none",
+        "kind": "section",
         "url": "",
-        "section": "",
+        "section": "section-tfih3",
         "newTab": false
       },
       "fx": {
         "shake": true,
-        "flash": true,
+        "flash": false,
         "shine": true,
         "shineColour": 8,
         "card": true,
         "cardScale": 1.5,
-        "cardFile": "start/profile.JPEG"
+        "cardFile": "start/profile.JPEG",
+        "shineWidth": 200,
+        "shakeMs": 500,
+        "waitFlash": true,
+        "cardFlashMs": 300,
+        "cardFlashColour": 2,
+        "flashMs": 200,
+        "shineMs": 350
+      }
+    },
+    {
+      "id": "button-ex6yi",
+      "type": "button",
+      "name": "",
+      "parent": "",
+      "h": {
+        "anchor": "center",
+        "offset": 20,
+        "offsetEnd": 0,
+        "unit": "%",
+        "size": 500,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "center",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 300,
+        "sizeUnit": "px"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "on": true,
+        "axis": "both"
+      },
+      "file": "start/profile.JPEG",
+      "alt": "",
+      "fit": "contain",
+      "link": {
+        "kind": "section",
+        "url": "",
+        "section": "section-tfih3",
+        "newTab": false
+      },
+      "fx": {
+        "shake": true,
+        "flash": false,
+        "shine": true,
+        "shineColour": 8,
+        "card": true,
+        "cardScale": 1.6,
+        "cardFile": "start/FaraFrogGifPortfolio.gif",
+        "shineWidth": 200,
+        "shakeMs": 500,
+        "waitFlash": true,
+        "cardFlashMs": 300,
+        "cardFlashColour": 2,
+        "flashMs": 200,
+        "shineMs": 500
       }
     }
   ],
