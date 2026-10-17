@@ -3,25 +3,47 @@
 
 export const TYPES = ["text", "image", "gif", "video", "animated", "button"];
 
-// Hover effects for buttons (and GIFs made into buttons). Palette number for the shine.
+// Hover effects for buttons (and GIFs made into buttons). Every number is a
+// variable in the workshop. Colours are palette numbers; flashColour 0 = white.
 export const DEFAULT_FX = {
+  // The button: shake (once), flash of the picture, moving band (shine)
   shake: true,
-  shakeMs: 600, // how long the shake lasts (once per hover)
+  shakeMs: 600,
+  shakeAmount: 100, // % of the normal shake strength
   flash: true,
-  flashMs: 300, // the white flash
+  flashMs: 300,
+  flashColour: 0,
+  flashStrength: 95, // peak opacity of the flash, %
   shine: true,
-  shineColour: 4, // palette number
-  shineWidth: 70, // width of the moving band, % of the button
-  shineMs: 700, // how fast the band crosses
-  waitFlash: true, // open the card only after the flash and shine finish
+  shineDelayMs: 0, // when the band starts, from hover (0 = at once, not after the flash)
+  shineMs: 700, // time for the band to cross
+  shineWidth: 70, // band width, % of the button
+  shineColour: 4,
+  shineSlant: 18, // degrees
+  // The card that opens over the page
   card: true,
   cardScale: 2.5, // card size, times the button
   cardFit: "both", // keep the card on screen: none | x (width) | y (height) | both
   cardFile: "",
-  cardFlashColour: 3, // palette number of the coloured flash on the card and on click
+  cardOpenMs: 450,
+  cardCloseMs: 360,
+  cardRadius: 6,
+  waitFlash: true, // open the card when the button's flash has finished (not the band)
+  cardTilt: true, // tilt with the cursor
+  cardTiltStrength: 100, // % of the normal tilt
+  cardShake: true, // a one-off wobble when the card opens
+  cardShakeMs: 600,
+  cardShakeAmount: 100,
+  cardShine: true, // moving band across the card picture, starts when the card opens
+  cardShineColour: 4,
+  cardShineWidth: 70,
+  cardShineMs: 700,
+  cardFlash: true, // colour flash when the card opens
+  cardFlashColour: 3,
   cardFlashMs: 500,
+  clickFlash: true, // colour flash on click, when the button has a link or card
 };
-export const DEFAULT_LINK = { kind: "none", url: "", section: "", newTab: false };
+export const DEFAULT_LINK = { kind: "none", url: "", section: "", page: "", newTab: false };
 export const DEFAULT_SPEED = 0.5;
 // The size each layout was designed at. Shrinking items scale down below it.
 export const DEFAULT_DESIGN = { designWidth: 1200, designHeight: 800 };
@@ -31,6 +53,15 @@ export const SIZE_UNITS = ["px", "%", "auto"];
 export const COLORS = ["text", "secondary", "highlight"];
 export const ROLES = ["background", "text", "secondary", "highlight"];
 export const DEFAULT_TEXT = { body: 16, h1: 56, h2: 36, h3: 24 };
+export const DEFAULT_SCROLL = { panSmoothMs: 240 };
+export const DEFAULT_FONTS = [
+  { id: "serif", name: "Serif", family: "Georgia, \"Times New Roman\", serif", file: "" },
+  { id: "rounded", name: "Rounded", family: "\"Trebuchet MS\", Verdana, sans-serif", file: "" },
+  { id: "mono", name: "Monospace", family: "ui-monospace, Menlo, Consolas, monospace", file: "" },
+];
+// The general settings a tab either shares with the main tab or has of its own.
+export const GENERAL_KEYS = ["palette", "roles", "text", "fonts"];
+export const DEFAULT_PAGE_CANVAS = { height: 1200, designWidth: 1200, designHeight: 800 };
 export const DEFAULT_MOBILE = {
   breakpoint: 700,
   canvas: {},
@@ -279,6 +310,7 @@ export function newItem(type, id, parent = "") {
   if (type === "text") {
     Object.assign(item, {
       text: "Write something here.",
+      font: "", // "" = the site's body font; otherwise a font id from site.fonts
       level: "p",
       align: "left",
       color: "text",
@@ -339,6 +371,47 @@ export function newItem(type, id, parent = "") {
  * kind "band": a background section placed from the top or bottom of the page.
  * kind "fixed": a screen overlay, always the size of the screen, fixed on scroll.
  */
+/** A new tab. It shares the main tab's general settings until it gets its own. */
+export function newPage(id, title) {
+  return {
+    id,
+    title,
+    useDefaults: true,
+    canvas: { ...DEFAULT_PAGE_CANVAS },
+    items: [],
+    sections: [],
+  };
+}
+
+/** Lower-case id for a tab name: letters, digits and dashes only. */
+export function pageSlug(name) {
+  return (
+    String(name)
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") || "tab"
+  );
+}
+
+/** The general settings a page uses: the site's, or its own. */
+export function generalOf(site, page) {
+  if (!page || page.id === "main" || page.useDefaults !== false) return site;
+  return (
+    page.settings || {
+      palette: site.palette,
+      roles: site.roles,
+      text: site.text,
+      fonts: site.fonts,
+    }
+  );
+}
+
+/** A font's CSS family: its own family list, or a font file in public/fonts. */
+export function fontFamily(font) {
+  if (!font) return "";
+  return font.file ? `"${font.name || font.id}", ${font.family || "sans-serif"}` : font.family;
+}
+
 export function newSection(kind, id, start = 0) {
   if (kind === "fixed") return { id, kind: "fixed", name: "" };
   return {
@@ -478,6 +551,9 @@ export function validateSite(site) {
     const v = site?.roles?.[role];
     if (!Number.isInteger(v) || v < 1 || v > n)
       errors.push(`roles.${role} must be a palette number from 1 to ${n}`);
+  }
+  for (const f of site?.fonts || []) {
+    if (!f.id || !(f.family || f.file)) errors.push(`font "${f.name || f.id || "?"}" needs an id and a family or file`);
   }
   for (const [key, value] of Object.entries(site?.text || {}))
     if (!(DEFAULT_TEXT[key] !== undefined && value > 0))

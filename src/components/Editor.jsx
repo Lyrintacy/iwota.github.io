@@ -16,6 +16,7 @@ import {
   isBand,
   newItem,
   newSection,
+  pageSlug,
   removeColour,
   toggleFormat,
   uid,
@@ -247,7 +248,7 @@ const FORMATS = [
   ["h", "Highlight", (f) => f.colour === "highlight"],
 ];
 
-function TextEditor({ item, onChange, setStatus }) {
+function TextEditor({ item, onChange, setStatus, fonts = [] }) {
   const ref = useRef(null);
   const [sel, setSel] = useState({ s: 0, e: 0 });
   const flags = formatAt(item.text, sel.s, sel.e);
@@ -301,6 +302,12 @@ function TextEditor({ item, onChange, setStatus }) {
           onSelect={(e) => track(e.target)}
         />
       </Field>
+      <Select
+        label="Font"
+        value={item.font || ""}
+        options={[["", "Site default"], ...fonts.map((f) => [f.id, f.name || f.id])]}
+        onChange={(font) => onChange({ font })}
+      />
       <Select
         label="Heading"
         value={item.level}
@@ -389,7 +396,7 @@ function FilePath({ label, value = "", type, onChange, placeholder }) {
 }
 
 // Where a button goes when clicked: nothing, a web address, or a section's top.
-function LinkFields({ value, sections, onChange }) {
+function LinkFields({ value, sections, pages = [], onChange }) {
   const set = (v) => onChange({ ...value, ...v });
   return (
     <fieldset className="axis">
@@ -401,6 +408,7 @@ function LinkFields({ value, sections, onChange }) {
           ["none", "Nothing"],
           ["url", "Open a web address"],
           ["section", "Go to the top of a section"],
+          ["page", "Open another tab"],
         ]}
         onChange={(kind) => set({ kind })}
       />
@@ -412,6 +420,21 @@ function LinkFields({ value, sections, onChange }) {
               onChange={(e) => set({ url: e.target.value })}
             />
           </Field>
+          <Check
+            label="Open in a new tab"
+            checked={value.newTab}
+            onChange={(newTab) => set({ newTab })}
+          />
+        </>
+      )}
+      {value.kind === "page" && (
+        <>
+          <Select
+            label="Tab"
+            value={value.page || ""}
+            options={[["", "Choose a tab"], ...pages]}
+            onChange={(page) => set({ page })}
+          />
           <Check
             label="Open in a new tab"
             checked={value.newTab}
@@ -434,106 +457,206 @@ function LinkFields({ value, sections, onChange }) {
   );
 }
 
-// Hover sequence for buttons: shake, colour flash, shine, then a card.
-// Every timing and size here is a variable (stored per item in fx).
+// Hover sequence for buttons. Each group is a step of the sequence; every
+// number is a variable, stored per item in fx.
 function EffectFields({ fx = {}, site, onChange }) {
   const palette = paletteOptions(site);
-  const num = (key, min) => (value) =>
-    onChange({ [key]: min === undefined ? value : Math.max(min, value) });
+  const set = (key) => (v) => onChange({ [key]: v });
+  const num = (key) => (v) => onChange({ [key]: Math.max(0, v) });
+  const colours = [["0", "White"], ...palette];
   return (
-    <fieldset className="axis">
-      <legend>Hover effects</legend>
-      <Check label="Shake (once)" checked={fx.shake} onChange={(shake) => onChange({ shake })} />
-      {fx.shake && (
-        <NumberField label="Shake duration (ms)" value={fx.shakeMs ?? 600} onChange={num("shakeMs", 0)} />
-      )}
-      <Check label="Flash" checked={fx.flash} onChange={(flash) => onChange({ flash })} />
-      {fx.flash && (
-        <NumberField label="Flash duration (ms)" value={fx.flashMs ?? 300} onChange={num("flashMs", 0)} />
-      )}
-      <Check
-        label="Shine across the button"
-        checked={fx.shine}
-        onChange={(shine) => onChange({ shine })}
-      />
-      {fx.shine && (
-        <>
-          <Select
-            label="Shine colour"
-            value={String(fx.shineColour ?? 4)}
-            options={palette}
-            onChange={(n) => onChange({ shineColour: Number(n) })}
-          />
-          <NumberField
-            label="Shine band width (% of button)"
-            value={fx.shineWidth ?? 70}
-            onChange={num("shineWidth", 1)}
-          />
-          <NumberField
-            label="Shine speed (ms to cross)"
-            value={fx.shineMs ?? 700}
-            onChange={num("shineMs", 0)}
-          />
-        </>
-      )}
-      <Check
-        label="Open a card over the page"
-        checked={fx.card}
-        onChange={(card) => onChange({ card })}
-      />
+    <>
+      <fieldset className="axis">
+        <legend>Button: shake</legend>
+        <Check label="Shake once on hover" checked={fx.shake} onChange={set("shake")} />
+        {fx.shake && (
+          <>
+            <NumberField label="Shake duration (ms)" value={fx.shakeMs ?? 600} onChange={num("shakeMs")} />
+            <NumberField label="Shake strength (%)" value={fx.shakeAmount ?? 100} onChange={num("shakeAmount")} />
+          </>
+        )}
+      </fieldset>
+      <fieldset className="axis">
+        <legend>Button: flash</legend>
+        <Check label="Flash the picture" checked={fx.flash} onChange={set("flash")} />
+        {fx.flash && (
+          <>
+            <NumberField label="Flash duration (ms)" value={fx.flashMs ?? 300} onChange={num("flashMs")} />
+            <Select
+              label="Flash colour"
+              value={String(fx.flashColour ?? 0)}
+              options={colours}
+              onChange={(n) => onChange({ flashColour: Number(n) })}
+            />
+            <NumberField label="Flash strength (% opacity)" value={fx.flashStrength ?? 95} onChange={num("flashStrength")} />
+          </>
+        )}
+      </fieldset>
+      <fieldset className="axis">
+        <legend>Button: moving band (shine)</legend>
+        <Check label="Moving band across the button" checked={fx.shine} onChange={set("shine")} />
+        {fx.shine && (
+          <>
+            <NumberField
+              label="Band starts after (ms from hover, 0 = at once)"
+              value={fx.shineDelayMs ?? 0}
+              onChange={num("shineDelayMs")}
+            />
+            <NumberField label="Band speed: time to cross (ms)" value={fx.shineMs ?? 700} onChange={num("shineMs")} />
+            <NumberField label="Band width (% of the button)" value={fx.shineWidth ?? 70} onChange={num("shineWidth")} />
+            <Select
+              label="Band colour"
+              value={String(fx.shineColour ?? 4)}
+              options={palette}
+              onChange={(n) => onChange({ shineColour: Number(n) })}
+            />
+            <NumberField label="Band slant (degrees)" value={fx.shineSlant ?? 18} onChange={num("shineSlant")} />
+          </>
+        )}
+      </fieldset>
+      <fieldset className="axis">
+        <legend>Card</legend>
+        <Check label="Open a card over the page" checked={fx.card} onChange={set("card")} />
+        {fx.card && (
+          <>
+            <NumberField label="Card size (times the button)" value={fx.cardScale ?? 2.5} onChange={(v) => onChange({ cardScale: Math.max(1, v) })} />
+            <Select
+              label="Keep the card on screen by"
+              value={fx.cardFit || "both"}
+              options={[
+                ["none", "Not at all"],
+                ["x", "Width"],
+                ["y", "Height"],
+                ["both", "Width and height"],
+              ]}
+              onChange={(cardFit) => onChange({ cardFit })}
+            />
+            <FilePath
+              label="Card picture (optional, else the button image)"
+              value={fx.cardFile || ""}
+              type="image"
+              placeholder="0/card"
+              onChange={(cardFile) => onChange({ cardFile })}
+            />
+            <NumberField label="Open duration (ms)" value={fx.cardOpenMs ?? 450} onChange={num("cardOpenMs")} />
+            <NumberField label="Close duration (ms)" value={fx.cardCloseMs ?? 360} onChange={num("cardCloseMs")} />
+            <NumberField label="Corner radius (px)" value={fx.cardRadius ?? 6} onChange={num("cardRadius")} />
+            <Check
+              label="Wait for the button's flash to finish before opening"
+              checked={fx.waitFlash}
+              onChange={set("waitFlash")}
+            />
+            <Check label="Tilt with the cursor" checked={fx.cardTilt} onChange={set("cardTilt")} />
+            {fx.cardTilt && (
+              <NumberField label="Tilt strength (%)" value={fx.cardTiltStrength ?? 100} onChange={num("cardTiltStrength")} />
+            )}
+          </>
+        )}
+      </fieldset>
       {fx.card && (
         <>
-          <Check
-            label="Wait for the flash and shine to finish before opening"
-            checked={fx.waitFlash}
-            onChange={(waitFlash) => onChange({ waitFlash })}
-          />
-          <NumberField
-            label="Card size (times the button)"
-            value={fx.cardScale ?? 2.5}
-            onChange={num("cardScale", 1)}
-          />
-          <Select
-            label="Keep the card on screen by"
-            value={fx.cardFit || "both"}
-            options={[
-              ["none", "Not at all"],
-              ["x", "Width"],
-              ["y", "Height"],
-              ["both", "Width and height"],
-            ]}
-            onChange={(cardFit) => onChange({ cardFit })}
-          />
-          <FilePath
-            label="Card picture (optional, else the button image)"
-            value={fx.cardFile || ""}
-            type="image"
-            placeholder="0/card"
-            onChange={(cardFile) => onChange({ cardFile })}
-          />
+          <fieldset className="axis">
+            <legend>Card: shake</legend>
+            <Check label="Shake when it opens" checked={fx.cardShake} onChange={set("cardShake")} />
+            {fx.cardShake && (
+              <>
+                <NumberField label="Shake duration (ms)" value={fx.cardShakeMs ?? 600} onChange={num("cardShakeMs")} />
+                <NumberField label="Shake strength (%)" value={fx.cardShakeAmount ?? 100} onChange={num("cardShakeAmount")} />
+              </>
+            )}
+          </fieldset>
+          <fieldset className="axis">
+            <legend>Card: moving band (shine)</legend>
+            <Check label="Moving band across the card" checked={fx.cardShine} onChange={set("cardShine")} />
+            {fx.cardShine && (
+              <>
+                <Select
+                  label="Band colour"
+                  value={String(fx.cardShineColour ?? 4)}
+                  options={palette}
+                  onChange={(n) => onChange({ cardShineColour: Number(n) })}
+                />
+                <NumberField label="Band width (% of the card)" value={fx.cardShineWidth ?? 70} onChange={num("cardShineWidth")} />
+                <NumberField label="Band speed: time to cross (ms)" value={fx.cardShineMs ?? 700} onChange={num("cardShineMs")} />
+              </>
+            )}
+          </fieldset>
+          <fieldset className="axis">
+            <legend>Card: colour flash</legend>
+            <Check label="Colour flash when it opens" checked={fx.cardFlash} onChange={set("cardFlash")} />
+            {fx.cardFlash && (
+              <>
+                <Select
+                  label="Flash colour"
+                  value={String(fx.cardFlashColour ?? 3)}
+                  options={palette}
+                  onChange={(n) => onChange({ cardFlashColour: Number(n) })}
+                />
+              </>
+            )}
+          </fieldset>
         </>
       )}
-      {(fx.card || fx.shine || fx.flash) && (
-        <>
-          <Select
-            label="Colour flash (card open and click)"
-            value={String(fx.cardFlashColour ?? 3)}
-            options={palette}
-            onChange={(n) => onChange({ cardFlashColour: Number(n) })}
-          />
-          <NumberField
-            label="Colour flash duration (ms)"
-            value={fx.cardFlashMs ?? 500}
-            onChange={num("cardFlashMs", 0)}
-          />
-        </>
-      )}
-    </fieldset>
+      <fieldset className="axis">
+        <legend>Click</legend>
+        <Check
+          label="Colour flash on click (when there is a link or card)"
+          checked={fx.clickFlash}
+          onChange={set("clickFlash")}
+        />
+        <p className="hint">
+          Colour for the click flash is the card flash colour. On a touch screen a tap acts as
+          hover when the button has no link; a second tap ends it, and a tap elsewhere or
+          scrolling ends it too.
+        </p>
+      </fieldset>
+    </>
+  );
+}
+
+// One file to copy or download, with its text in a read-only box.
+function ExportFile({ name, text, copy }) {
+  return (
+    <>
+      <div className="row">
+        <button onClick={() => copy(text, name)}>Copy {name}</button>
+        <button onClick={() => download(name, text)}>Download {name}</button>
+      </div>
+      <textarea readOnly rows={6} value={text} onFocus={(e) => e.target.select()} />
+    </>
+  );
+}
+
+// Adds a tab by name. Its file is the lower-case name with dashes.
+function NewTab({ onAdd }) {
+  const [name, setName] = useState("");
+  const add = () => {
+    if (!name.trim()) return;
+    onAdd(name);
+    setName("");
+  };
+  return (
+    <div className="row">
+      <input
+        value={name}
+        placeholder="Tab name, e.g. Projects"
+        aria-label="New tab name"
+        onChange={(e) => setName(e.target.value)}
+        onKeyDown={(e) => e.key === "Enter" && add()}
+      />
+      <button onClick={add} disabled={!pageSlug(name) || !name.trim()}>
+        + Add tab
+      </button>
+    </div>
   );
 }
 
 export function Editor({
   site,
+  rootSite,
+  setRootSite,
+  ownSettings,
+  pagesApi,
   page,
   view,
   setSite,
@@ -735,6 +858,19 @@ export function Editor({
   const setRole = (role, n) =>
     setSite((s) => ({ ...s, roles: { ...s.roles, [role]: n } }));
   const sizes = { ...DEFAULT_TEXT, ...(site.text || {}) };
+  const setFont = (i, values) =>
+    setSite((s) => ({
+      ...s,
+      fonts: s.fonts.map((f, n) => (n === i ? { ...f, ...values } : f)),
+    }));
+  const dropFont = (i) =>
+    setSite((s) => ({ ...s, fonts: s.fonts.filter((_, n) => n !== i) }));
+  const addFont = () =>
+    setSite((s) => {
+      let id = "font";
+      for (let n = 1; s.fonts.some((f) => f.id === id); n++) id = `font-${n + 1}`;
+      return { ...s, fonts: [...s.fonts, { id, name: "New font", family: "sans-serif", file: "" }] };
+    });
   const setSize = (key, px) =>
     setSite((s) => ({ ...s, text: { ...sizes, [key]: px } }));
 
@@ -764,8 +900,7 @@ export function Editor({
     setJsonText(null);
   };
 
-  const siteText = JSON.stringify(site, null, 2) + "\n";
-  const pageText = JSON.stringify(page, null, 2) + "\n";
+  const siteText = JSON.stringify(rootSite, null, 2) + "\n";
   const copy = async (text, label) => {
     try {
       await navigator.clipboard.writeText(text);
@@ -851,6 +986,7 @@ export function Editor({
         {[
           ["page", "Page"],
           ["general", "General"],
+          ["pages", "Tabs"],
           ["phone", "Phone"],
           ["export", "Export"],
         ].map(([id, label]) => (
@@ -1152,6 +1288,7 @@ export function Editor({
                   item={itemView}
                   onChange={patch}
                   setStatus={setStatus}
+                  fonts={site.fonts || []}
                 />
               )}
               {status && <p className="hint warn">{status}</p>}
@@ -1327,6 +1464,7 @@ export function Editor({
                   <LinkFields
                     value={itemView.link || DEFAULT_LINK}
                     sections={sections}
+                    pages={pagesApi.tabs.map((id) => [id, pagesApi.pages[id].title || id])}
                     onChange={(link) => patch({ link })}
                   />
                   <EffectFields
@@ -1438,6 +1576,12 @@ export function Editor({
 
       {tab === "general" && (
         <div className="panel">
+          <p className="hint">
+            {ownSettings
+              ? "These settings belong to this tab only."
+              : "These are the main tab's settings. Tabs that use the defaults follow them."}{" "}
+            Change a tab's settings on the Tabs tab.
+          </p>
           <h4>Text sizes (px, applies to every text item)</h4>
           {Object.entries(TEXT_SIZE_LABELS).map(([key, label]) => (
             <NumberField
@@ -1478,6 +1622,55 @@ export function Editor({
             <button onClick={addColour}>+ Add colour</button>
           </div>
 
+          <h4>Fonts (for text items, chosen on each text item)</h4>
+          <p className="hint">
+            A font is a CSS font family, such as <code>Georgia, serif</code>. Or name a
+            file in <code>public/fonts/</code> (for example <code>Display.woff2</code>)
+            and it is loaded from there. Removing a font makes text that used it fall back
+            to the site font.
+          </p>
+          {site.fonts.map((f, i) => (
+            <div className="font-row" key={f.id}>
+              <input
+                value={f.name}
+                aria-label={`Font ${i + 1} name`}
+                placeholder="Name"
+                onChange={(e) => setFont(i, { name: e.target.value })}
+              />
+              <input
+                value={f.family}
+                aria-label={`Font ${i + 1} family`}
+                placeholder="CSS family, e.g. Georgia, serif"
+                onChange={(e) => setFont(i, { family: e.target.value })}
+              />
+              <input
+                value={f.file || ""}
+                aria-label={`Font ${i + 1} file`}
+                placeholder="or file in public/fonts"
+                onChange={(e) => setFont(i, { file: e.target.value })}
+              />
+              <button className="danger" onClick={() => dropFont(i)} aria-label={`Remove font ${i + 1}`} title="Remove font">
+                ×
+              </button>
+            </div>
+          ))}
+          <div className="row">
+            <button onClick={addFont}>+ Add font</button>
+          </div>
+
+          <h4>Scrolling</h4>
+          <NumberField
+            label="Texture panning smoothing (ms, 0 = instant)"
+            value={rootSite.scroll?.panSmoothMs ?? 240}
+            onChange={(ms) =>
+              setRootSite((r) => ({ ...r, scroll: { ...(r.scroll || {}), panSmoothMs: Math.max(0, ms) } }))
+            }
+          />
+          <p className="hint">
+            How long the panning textures take to catch up with a scroll. Applies to the whole
+            site, every tab.
+          </p>
+
           <h4>Roles</h4>
           {ROLES.map((role) => (
             <Select
@@ -1488,6 +1681,67 @@ export function Editor({
               onChange={(n) => setRole(role, Number(n))}
             />
           ))}
+        </div>
+      )}
+
+      {tab === "pages" && (
+        <div className="panel">
+          <p className="hint">
+            Each tab is its own page, with its own items and sections. The first tab is
+            shown first in the bar at the top of the site. Each tab is a file: the main
+            tab is <code>main.json</code>, and a tab named Projects is{" "}
+            <code>projects.json</code> in <code>src/config/pages/</code>.
+          </p>
+          <ul className="page-list">
+            {pagesApi.tabs.map((id, i, all) => (
+              <li key={id} className={id === pagesApi.active ? "on" : ""}>
+                <button
+                  className="page-pick"
+                  onClick={() => pagesApi.go(id)}
+                  aria-current={id === pagesApi.active ? "true" : undefined}
+                >
+                  {pagesApi.pages[id].title || id}
+                </button>
+                <span className="hint">{id}.json</span>
+                <button onClick={() => pagesApi.move(id, -1)} disabled={i === 0} aria-label="Move tab left">
+                  ↑
+                </button>
+                <button
+                  onClick={() => pagesApi.move(id, 1)}
+                  disabled={i === all.length - 1}
+                  aria-label="Move tab right"
+                >
+                  ↓
+                </button>
+                {id !== "main" && (
+                  <button className="danger" onClick={() => pagesApi.remove(id)} aria-label="Delete tab">
+                    ×
+                  </button>
+                )}
+              </li>
+            ))}
+          </ul>
+          <Field label="Name of the open tab">
+            <input
+              value={page.title || ""}
+              onChange={(e) => pagesApi.rename(page.id, e.target.value)}
+            />
+          </Field>
+          {page.id !== "main" && (
+            <Check
+              label="Use the main tab's general settings (palette, roles, text sizes, fonts)"
+              checked={!ownSettings}
+              onChange={(on) => pagesApi.setUseDefaults(page.id, on)}
+            />
+          )}
+          {ownSettings && (
+            <p className="hint">
+              This tab has its own general settings. Edit them on the General tab. Untick
+              the box above to go back to the main tab's settings.
+            </p>
+          )}
+          <h4>New tab</h4>
+          <NewTab onAdd={pagesApi.add} />
         </div>
       )}
 
@@ -1558,39 +1812,26 @@ export function Editor({
       {tab === "export" && (
         <div className="panel">
           <p className="hint">
-            Copy each file and paste it over the matching file in GitHub:{" "}
-            <code>src/config/site.json</code> and{" "}
-            <code>src/config/pages/main.json</code>. Commit, and the site
-            rebuilds.
+            Copy each file and paste it over the matching file in GitHub. The site settings
+            (tab order, fonts, scrolling, and the defaults) go in{" "}
+            <code>src/config/site.json</code>. Each tab goes in{" "}
+            <code>src/config/pages/</code> under its own name (<code>main.json</code> for the
+            main tab). Commit, and the site rebuilds.
           </p>
-          <div className="row">
-            <button onClick={() => copy(siteText, "site.json")}>
-              Copy site.json
-            </button>
-            <button onClick={() => download("site.json", siteText)}>
-              Download site.json
-            </button>
-          </div>
-          <textarea
-            readOnly
-            rows={8}
-            value={siteText}
-            onFocus={(e) => e.target.select()}
-          />
-          <div className="row">
-            <button onClick={() => copy(pageText, "main.json")}>
-              Copy main.json
-            </button>
-            <button onClick={() => download("main.json", pageText)}>
-              Download main.json
-            </button>
-          </div>
-          <textarea
-            readOnly
-            rows={8}
-            value={pageText}
-            onFocus={(e) => e.target.select()}
-          />
+          <ExportFile name="site.json" text={siteText} copy={copy} />
+          {pagesApi.tabs.map((id) => (
+            <ExportFile
+              key={id}
+              name={`${id}.json`}
+              text={JSON.stringify(pagesApi.pages[id], null, 2) + "\n"}
+              copy={copy}
+            />
+          ))}
+          <p className="hint">
+            Icon: put one image in <code>public/icon/</code>, named <code>icon.png</code> (or
+            <code>.svg</code>, <code>.ico</code>, <code>.jpg</code>, <code>.webp</code>). Fonts:
+            files go in <code>public/fonts/</code>.
+          </p>
           {copied && <p className="hint">{copied}</p>}
         </div>
       )}

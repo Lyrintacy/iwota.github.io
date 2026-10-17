@@ -5,9 +5,12 @@ A React + Vite site built from a blank canvas. Layout lives in config files and 
 ## Where things live
 
 ```text
-src/config/site.json          palette (7 colours) and which palette number each role uses
-src/config/pages/main.json    the main page: canvas height and its items (text, images, GIFs, videos)
+src/config/site.json          the tab order, palette, roles, text sizes, fonts, and scrolling
+src/config/pages/main.json    the main tab: canvas height and its items (text, images, GIFs, videos, buttons)
+src/config/pages/<id>.json    one file per further tab (created in the Tabs tab of the workshop)
 public/images/                put your pictures, GIFs and videos here. Type them as folder/name (for example 0/profile); the extension is optional
+public/icon/                  the site icon (icon.png, or icon.svg and others)
+public/fonts/                 font files for text items
 ```
 
 ## Workshop (F2)
@@ -36,7 +39,14 @@ public/images/                put your pictures, GIFs and videos here. Type them
 - **GIF as a button:** *Make it a button* on a GIF runs the same sequence, with the thumbnail as the picture, and the GIF starts playing once the sequence ends.
 - **Images, GIFs and videos:** the file box lists every file under `public/images/` (all folders, and the top level too), so you can pick one. Typing also works: `folder/name` with the extension optional. Without one, the workshop looks for the first existing file in this order: `.png`, `.PNG`, `.jpeg`, `.JPEG`, `.jpg`, `.JPG` (videos: `.mp4`, `.webm`). When it finds one, it writes the extension into the config. The list is built when the site builds or the dev server reloads, so restart or reload after adding files.
 - **Number fields** can be cleared while you type. The **−** button next to a number adds or removes its leading minus sign.
-- **Export:** copy or download `site.json` and `main.json`, then paste them over the matching files in `src/config/` on GitHub and commit.
+- **Tabs:** the Tabs tab adds pages to the site. Each tab has its own items and sections, and its own file in `src/config/pages/` (named after its id, such as `projects.json`; the main tab is `main.json`). Tabs appear in a bar along the top once there is more than one. A tab either uses the **main tab's general settings** (palette, roles, text sizes, fonts), or has its own copy, set by the box on the Tabs tab. Move, rename or delete tabs there too. Tab order is kept in `site.json`.
+- **Buttons that open a tab:** on a button's link, choose **Open another tab**. Tab addresses are `?page=id` (the main tab is the plain address), so a tab can be linked directly.
+- **Fonts:** the General tab lists the fonts. Each text item has a **Font** choice. A font is a CSS family (such as `Georgia, serif`), or a file in `public/fonts/` (see the readme there).
+- **Icon:** put one image in `public/icon/` named `icon.png` (or `icon.svg`, `icon.ico`, `icon.webp`, `icon.jpg`). It is linked as the site's tab icon when the site is built.
+- **Button options:** every step of a button's sequence has its own settings: shake (duration and strength), flash (duration, colour, strength), the moving band (start delay, speed, width, colour, slant), and the card (size, screen fit, open and close durations, corner radius, wait for the flash, tilt). The card also has its own shake, moving band and colour flash, and a click flash. The moving band starts on hover, without waiting for the flash or the shake.
+- **Touch screens:** a button with no link acts as hover when tapped. Tapping it again, tapping somewhere else, or scrolling ends it. A button with a card opens it on the first tap; a button with a link follows the link on the next tap.
+- **Panning smoothness:** General > Scrolling sets how long panning textures take to catch up with a scroll (ms, 0 is instant). It applies to every tab.
+- **Export:** copy or download `site.json` and one file per tab, then paste them over the matching files in `src/config/` (tabs go in `src/config/pages/`) on GitHub and commit.
 - **Reset to saved config…** clears unexported changes after a confirmation.
 
 Changes are kept in this browser (the "Unsaved draft" badge shows until you reset or export and commit).

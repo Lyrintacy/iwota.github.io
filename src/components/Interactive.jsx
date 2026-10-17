@@ -1,11 +1,13 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useMedia } from "../lib/media.js";
 import { onPointer, refreshHover, useHoverRegion } from "../lib/hover.js";
-import { DEFAULT_FX } from "../lib/model.js";
+import { DEFAULT_FX, DEFAULT_LINK } from "../lib/model.js";
+import { NavContext, pageHref } from "../lib/nav.js";
 
 const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
 const urlCss = (u) => `url("${u}")`;
+const colourVar = (n) => (n ? `var(--color-${n})` : "#fff");
 
 // First frame of an image, drawn to a canvas. Used as a still picture for a
 // hover-only GIF that has no thumbnail. Returns null if it can't be drawn.
@@ -106,20 +108,24 @@ function cardSize(r, scale, fit, pageW, vh) {
   return { w, h };
 }
 
-const CLOSE_MS = 360; // the card shrinks back this long before it is removed
-
 /**
- * A button: an image (or a GIF made into a button) with a hover sequence. On hover
- * it shakes for shakeMs, flashes white, then a palette-coloured shine sweeps across
- * inside its shape. The card extends from the button (after the flash, or at once),
- * tilts with the cursor, and shrinks back on unhover. A click flashes in colour
- * when there is an action. A GIF button plays once the sequence has ended.
+ * A button: an image (or a GIF made into a button) with a hover sequence.
+ * Hover (or, on touch screens, a tap) starts it: the picture shakes once, flashes,
+ * and a band sweeps across inside its shape, independently of the flash. The card
+ * extends from the button, wobbles and shines, tilts with the cursor, and shrinks
+ * back on unhover. A click flashes in colour when there is an action. On touch,
+ * a tap acts as hover; another tap, or a tap elsewhere, or scrolling, ends it.
  */
 export function ButtonItem({ item, editing }) {
+  const navigate = useContext(NavContext);
   const isGif = item.type === "gif";
   const fx = { ...DEFAULT_FX, ...(item.fx || {}) };
-  const link = item.link || { kind: "none" };
-  const hasAction = (link.kind === "url" && !!link.url) || (link.kind === "section" && !!link.section) || fx.card;
+  const link = item.link || DEFAULT_LINK;
+  const hasLink =
+    (link.kind === "url" && !!link.url) ||
+    (link.kind === "section" && !!link.section) ||
+    (link.kind === "page" && !!link.page);
+  const hasAction = hasLink || fx.card;
   const img = useMedia(isGif ? "gif" : "image", item.file);
   const thumb = useMedia("image", item.thumbnail || "");
   const cardMedia = useMedia("image", fx.cardFile || "");
@@ -132,9 +138,13 @@ export function ButtonItem({ item, editing }) {
   const hovered = useHoverRegion(ref, () =>
     cardShown.current && cardRef.current ? cardRef.current.getBoundingClientRect() : undefined,
   );
+  const [pinned, setPinned] = useState(false); // touch: tapped on
+  const touch = useRef(false); // the last pointer was a finger or pen
+  const active = hovered || pinned;
 
-  const [phase, setPhase] = useState("idle"); // idle | flash | shine | done
-  const [run, setRun] = useState(0);
+  const [flashing, setFlashing] = useState(false);
+  const [shining, setShining] = useState(false);
+  const [run, setRun] = useState(0); // restarts the band on each hover
   const [card, setCard] = useState("none"); // none | open | closing
   const [playGif, setPlayGif] = useState(false);
   const [clicks, setClicks] = useState(0);
@@ -146,34 +156,52 @@ export function ButtonItem({ item, editing }) {
   };
   useEffect(() => clearTimers, []);
 
-  // The hover sequence. Times are the variables set in the editor.
+  // The hover sequence. Each step has its own start and length (the variables).
   useEffect(() => {
     clearTimers();
-    if (!hovered) {
-      setPhase("idle");
+    if (!active) {
+      setFlashing(false);
+      setShining(false);
       setPlayGif(false);
       if (card === "open") {
         setCard("closing");
-        later(() => setCard("none"), CLOSE_MS);
+        later(() => setCard("none"), fx.cardCloseMs);
       }
       return;
     }
-    if (card === "closing") setCard("none"); // back again before it had shrunk away
+    if (card === "closing") setCard("none"); // back before it had shrunk away
     setRun((r) => r + 1);
     const flashEnd = fx.flash ? fx.flashMs : 0;
-    const shineEnd = flashEnd + (fx.shine ? fx.shineMs : 0);
-    setPhase(fx.flash ? "flash" : fx.shine ? "shine" : "done");
-    if (fx.flash && fx.shine) later(() => setPhase("shine"), flashEnd);
-    later(() => {
-      setPhase("done");
-      setPlayGif(isGif);
-    }, shineEnd);
-    if (fx.card) {
-      const open = () => setCard("open");
-      if (fx.waitFlash) later(open, shineEnd);
-      else open();
+    const shineStart = fx.shine ? fx.shineDelayMs : 0;
+    const shineEnd = fx.shine ? shineStart + fx.shineMs : 0;
+    if (fx.flash) {
+      setFlashing(true);
+      later(() => setFlashing(false), flashEnd);
     }
-  }, [hovered]);
+    if (fx.shine) {
+      if (shineStart > 0) later(() => setShining(true), shineStart);
+      else setShining(true);
+      later(() => setShining(false), shineEnd);
+    }
+    later(() => setPlayGif(isGif), Math.max(flashEnd, shineEnd));
+    if (fx.card) later(() => setCard("open"), fx.waitFlash ? flashEnd : 0);
+  }, [active]);
+
+  // Touch: the tap-on stays until another tap elsewhere, a scroll, or a second tap.
+  useEffect(() => {
+    if (!pinned) return;
+    const outside = (e) => {
+      if (ref.current?.contains(e.target) || cardRef.current?.contains(e.target)) return;
+      setPinned(false);
+    };
+    const moved = () => setPinned(false);
+    window.addEventListener("pointerdown", outside, true);
+    window.addEventListener("scroll", moved, { passive: true });
+    return () => {
+      window.removeEventListener("pointerdown", outside, true);
+      window.removeEventListener("scroll", moved);
+    };
+  }, [pinned]);
 
   // Keeps the card on the button: it moves on scroll and resizes, and is sized
   // to the screen by the fit setting.
@@ -204,49 +232,81 @@ export function ButtonItem({ item, editing }) {
 
   // The card tilts toward the cursor's position inside the button.
   useEffect(() => {
-    if (card === "none") return;
+    if (card === "none" || !fx.cardTilt) return;
+    const k = Math.max(0, fx.cardTiltStrength) / 100;
     return onPointer((e) => {
       const r = ref.current?.getBoundingClientRect();
       const el = cardRef.current;
       if (!r || !el) return;
       const nx = clamp(((e.clientX - r.left) / r.width) * 2 - 1, -1, 1);
       const ny = clamp(((e.clientY - r.top) / r.height) * 2 - 1, -1, 1);
-      el.style.setProperty("--rx", `${(-ny * 10).toFixed(2)}deg`);
-      el.style.setProperty("--ry", `${(nx * 12).toFixed(2)}deg`);
+      el.style.setProperty("--rx", `${(-ny * 10 * k).toFixed(2)}deg`);
+      el.style.setProperty("--ry", `${(nx * 12 * k).toFixed(2)}deg`);
     });
-  }, [card]);
+  }, [card, fx.cardTilt, fx.cardTiltStrength]);
+
+  // A tap in the page: a touch screen has no hover, so a tap acts as hover.
+  const onPointerDown = (e) => {
+    touch.current = e.pointerType !== "mouse";
+  };
+  const onTap = (e) => {
+    if (editing) return;
+    if (hasAction && fx.clickFlash) setClicks((c) => c + 1);
+    if (!touch.current) return;
+    if (pinned && !hasLink) {
+      e.preventDefault();
+      setPinned(false);
+      return;
+    }
+    // Opens the card or starts the sequence; a link button follows its link on the next tap.
+    if (!pinned && (fx.card || !hasLink)) {
+      e.preventDefault();
+      setPinned(true);
+    }
+  };
 
   const mask = base ? { WebkitMaskImage: urlCss(base), maskImage: urlCss(base) } : {};
   const fit = item.fit || "contain";
-  const flashCol = `var(--color-${fx.cardFlashColour || 3})`;
+  const flashColour = colourVar(fx.flashColour);
   const body = (
-    <div className={`fx-body ${hovered && fx.shake ? "fx-shake" : ""}`} style={{ "--shake-ms": `${fx.shakeMs}ms` }}>
+    <div
+      className={`fx-body ${active && fx.shake ? "fx-shake" : ""}`}
+      style={{ "--shake-ms": `${fx.shakeMs}ms`, "--shake-k": String(fx.shakeAmount / 100) }}
+    >
       {base && <img className="media" src={base} alt={item.alt || ""} style={{ objectFit: fit }} />}
       {isGif && playGif && img.url && (
         <img className="media fade-in" src={img.url} alt={item.alt || ""} style={{ objectFit: fit }} />
       )}
-      {fx.flash && phase === "flash" && base && (
+      {fx.flash && flashing && base && (
         <div className="fx-mask" style={mask}>
-          <div className="fx-flash" style={{ animationDuration: `${fx.flashMs}ms` }} />
+          <div
+            className="fx-flash"
+            style={{
+              "--flash-col": flashColour,
+              "--flash-peak": String(fx.flashStrength / 100),
+              animationDuration: `${fx.flashMs}ms`,
+            }}
+          />
         </div>
       )}
-      {fx.shine && phase === "shine" && base && (
+      {fx.shine && shining && base && (
         <div className="fx-mask" key={run} style={mask}>
           <div
             className="fx-shine-band"
             style={{
               "--shine": `var(--color-${fx.shineColour || 4})`,
               "--sw": `${fx.shineWidth}%`,
+              "--slant": `${fx.shineSlant}deg`,
               animationDuration: `${fx.shineMs}ms`,
             }}
           />
         </div>
       )}
-      {clicks > 0 && hasAction && base && (
+      {clicks > 0 && hasAction && fx.clickFlash && base && (
         <div className="fx-mask" key={clicks} style={mask}>
           <div
             className="fx-soft-flash"
-            style={{ "--flash-col": flashCol, animationDuration: `${fx.cardFlashMs}ms` }}
+            style={{ "--flash-col": `var(--color-${fx.cardFlashColour || 3})`, animationDuration: `${fx.cardFlashMs}ms` }}
           />
         </div>
       )}
@@ -254,41 +314,52 @@ export function ButtonItem({ item, editing }) {
   );
 
   const inner = (
-    <div ref={ref} className="fx-root" onClick={() => hasAction && setClicks((c) => c + 1)}>
+    <div ref={ref} className="fx-root" onPointerDown={onPointerDown} onClick={onTap}>
       {body}
     </div>
   );
 
+  // The link: a web address, the top of a section, or another tab.
+  const linkTo = (e) => {
+    if (editing) {
+      e.preventDefault();
+      return;
+    }
+    if (e.defaultPrevented) return;
+    if (link.kind === "section" && link.section) {
+      e.preventDefault();
+      document.getElementById(`section-${link.section}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else if (link.kind === "page" && link.page) {
+      if (link.newTab || e.metaKey || e.ctrlKey || e.shiftKey) return;
+      e.preventDefault();
+      navigate(link.page);
+    }
+  };
   let wrapped = inner;
-  if (link.kind === "url" && link.url)
+  if (hasLink && link.kind !== "none") {
+    const href =
+      link.kind === "url"
+        ? link.url
+        : link.kind === "page"
+          ? pageHref(link.page)
+          : `#section-${link.section}`;
+    const newTab = link.kind === "url" || link.kind === "page" ? !!link.newTab : false;
     wrapped = (
       <a
         className="fx-link"
-        href={link.url}
-        target={link.newTab ? "_blank" : undefined}
-        rel={link.newTab ? "noopener noreferrer" : undefined}
-        onClick={(e) => editing && e.preventDefault()}
+        href={href}
+        target={newTab ? "_blank" : undefined}
+        rel={newTab ? "noopener noreferrer" : undefined}
+        onClick={linkTo}
       >
         {inner}
       </a>
     );
-  else if (link.kind === "section" && link.section)
-    wrapped = (
-      <a
-        className="fx-link"
-        href={`#section-${link.section}`}
-        onClick={(e) => {
-          e.preventDefault();
-          if (editing) return;
-          document.getElementById(`section-${link.section}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
-        }}
-      >
-        {inner}
-      </a>
-    );
+  }
 
   // The card lives in the site (so palette variables apply), above everything else.
-  const host = ref.current?.closest(".site") || document.body;
+  const host = card !== "none" ? ref.current?.closest(".site") || document.body : null;
+  const closing = card === "closing";
   return (
     <>
       {wrapped}
@@ -296,14 +367,36 @@ export function ButtonItem({ item, editing }) {
         createPortal(
           <div
             ref={cardRef}
-            className={`fx-card ${card === "closing" ? "is-closing" : ""}`}
-            style={{ "--shake-ms": `${fx.shakeMs}ms` }}
+            className={`fx-card ${closing ? "is-closing" : ""} ${fx.cardShake && !closing ? "fx-card-shake" : ""}`}
+            style={{
+              "--shake-ms": `${fx.cardShakeMs}ms`,
+              "--shake-k": String(fx.cardShakeAmount / 100),
+              "--open-ms": `${fx.cardOpenMs}ms`,
+              "--close-ms": `${fx.cardCloseMs}ms`,
+              "--radius": `${fx.cardRadius}px`,
+            }}
           >
             <img src={cardMedia.url || base || undefined} alt="" />
-            <div
-              className="fx-soft-flash"
-              style={{ "--flash-col": flashCol, animationDuration: `${fx.cardFlashMs}ms` }}
-            />
+            {fx.cardShine && !closing && (
+              <div
+                className="fx-shine-band fx-card-shine"
+                style={{
+                  "--shine": `var(--color-${fx.cardShineColour || 4})`,
+                  "--sw": `${fx.cardShineWidth}%`,
+                  "--slant": `${fx.shineSlant}deg`,
+                  animationDuration: `${fx.cardShineMs}ms`,
+                }}
+              />
+            )}
+            {fx.cardFlash && !closing && (
+              <div
+                className="fx-soft-flash"
+                style={{
+                  "--flash-col": `var(--color-${fx.cardFlashColour || 3})`,
+                  animationDuration: `${fx.cardFlashMs}ms`,
+                }}
+              />
+            )}
           </div>,
           host,
         )}

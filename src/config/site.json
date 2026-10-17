@@ -1,5 +1,8 @@
 {
   "version": 1,
+  "tabs": [
+    "main"
+  ],
   "palette": [
     "#1B0E1F",
     "#ffffff",
@@ -20,5 +23,28 @@
     "h1": 56,
     "h2": 36,
     "h3": 24
+  },
+  "fonts": [
+    {
+      "id": "serif",
+      "name": "Serif",
+      "family": "Georgia, \"Times New Roman\", serif",
+      "file": ""
+    },
+    {
+      "id": "rounded",
+      "name": "Rounded",
+      "family": "\"Trebuchet MS\", Verdana, sans-serif",
+      "file": ""
+    },
+    {
+      "id": "mono",
+      "name": "Monospace",
+      "family": "ui-monospace, Menlo, Consolas, monospace",
+      "file": ""
+    }
+  ],
+  "scroll": {
+    "panSmoothMs": 240
   }
 }

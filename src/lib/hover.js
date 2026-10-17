@@ -36,6 +36,12 @@ function attach() {
   window.addEventListener(
     "pointermove",
     (e) => {
+      // Touch has no hover: a finger drag must not leave something hovered.
+      // Taps are handled by the item itself (see ButtonItem).
+      if (e.pointerType === "touch") {
+        clear();
+        return;
+      }
       last = { x: e.clientX, y: e.clientY };
       pointerListeners.forEach((fn) => fn(e));
       check();
