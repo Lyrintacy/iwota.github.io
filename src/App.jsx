@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import siteConfig from "./config/site.json";
 import {
   DEFAULT_TEXT,
@@ -154,9 +154,9 @@ export default function App() {
   );
   const [kept, setKept] = useState(() => readList(localStorage, KEPT_KEY));
   const [temp, setTemp] = useState(() => readList(sessionStorage, TEMP_KEY));
-  // Slide between tabs: the direction (+1 right, -1 left) and the tab leaving the screen.
-  const [slide, setSlide] = useState({ dir: 0, n: 0 });
-  const [leaving, setLeaving] = useState(null);
+  // Tab switch (PC only): a frozen copy of the old page, and the stage that holds the new one.
+  const stageRef = useRef(null);
+  const pendingSlide = useRef(null);
   const [editing, setEditing] = useState(false);
   const [phone, setPhone] = useState(false); // editor: edit phone overrides
   const [selectedId, setSelectedId] = useState(null);
@@ -185,6 +185,26 @@ export default function App() {
   const phoneViewport = usePhoneViewport(page.mobile?.breakpoint || 700);
   const previewing = editing && phone;
   const view = previewing || phoneViewport ? applyPhone(page) : page;
+
+  // After a tab switch: the old copy slides out and the new page slides in, from the
+  // side of the tab it replaces. Web Animations, so React does not re-render.
+  useLayoutEffect(() => {
+    const p = pendingSlide.current;
+    if (!p) return;
+    pendingSlide.current = null;
+    const enter = stageRef.current?.querySelector(":scope > .tab-current");
+    const timing = { duration: 450, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" };
+    p.frozen
+      .animate([{ transform: "translateX(0)" }, { transform: `translateX(${-p.dir * 100}vw)` }], {
+        ...timing,
+        fill: "forwards",
+      })
+      .addEventListener("finish", () => p.frozen.remove());
+    enter?.animate([{ transform: `translateX(${p.dir * 100}vw)` }, { transform: "translateX(0)" }], {
+      ...timing,
+      fill: "none",
+    });
+  }, [activeTab]);
 
   useEffect(() => localStorage.setItem(KEPT_KEY, JSON.stringify(kept)), [kept]);
   useEffect(() => sessionStorage.setItem(TEMP_KEY, JSON.stringify(temp)), [temp]);
@@ -262,10 +282,30 @@ export default function App() {
     if (!pages[id]) return;
     if (id !== activeTab) {
       const dir = tabs.indexOf(id) > tabs.indexOf(activeTab) ? 1 : -1;
-      const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      if (!still) {
-        setLeaving({ key: `${activeTab}-${slide.n + 1}`, page: view, dir });
-        setSlide({ dir, n: slide.n + 1 });
+      // PC only: a fine pointer with hover, outside the phone layout, not reduced motion.
+      const canSlide =
+        !phoneViewport &&
+        window.matchMedia("(hover: hover) and (pointer: fine)").matches &&
+        !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const current = stageRef.current?.querySelector(":scope > .tab-current > .canvas");
+      if (canSlide && current) {
+        // Frozen copy of the old page, at the same place on screen. It is a plain copy:
+        // it no longer updates, and its videos are removed.
+        const r = current.getBoundingClientRect();
+        const frozen = current.cloneNode(true);
+        frozen.querySelectorAll("video, iframe").forEach((n) => n.remove());
+        Object.assign(frozen.style, {
+          position: "fixed",
+          top: `${r.top}px`,
+          left: `${r.left}px`,
+          width: `${r.width}px`,
+          height: `${r.height}px`,
+          margin: "0",
+          zIndex: "900",
+          pointerEvents: "none",
+        });
+        stageRef.current.closest(".site").appendChild(frozen);
+        pendingSlide.current = { frozen, dir };
       }
       noteOpened(id);
     }
@@ -426,28 +466,8 @@ export default function App() {
         {barIds.length > 1 && (
           <TabBar ids={barIds} pages={pages} active={activeTab} onPick={go} />
         )}
-        <div className="tab-stage">
-          {leaving && (
-            <div
-              key={leaving.key}
-              className="tab-leave"
-              style={{ "--dir": leaving.dir }}
-              onAnimationEnd={(e) => e.target === e.currentTarget && setLeaving(null)}
-            >
-              <Canvas
-                page={leaving.page}
-                editing={false}
-                selectedId={null}
-                onSelect={() => {}}
-                selectedSectionId={null}
-              />
-            </div>
-          )}
-          <div
-            key={`${activeTab}-${slide.n}`}
-            className={slide.n ? "tab-enter" : ""}
-            style={{ "--dir": slide.dir }}
-          >
+        <div className="tab-stage" ref={stageRef}>
+          <div key={activeTab} className="tab-current">
             <Canvas
               page={view}
               editing={editing}
