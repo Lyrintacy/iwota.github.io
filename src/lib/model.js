@@ -87,19 +87,34 @@ export const BUILTIN_TEXT_STYLES = [
   { id: "h3", name: "Heading 3", tag: "h3", builtin: true },
 ];
 export const TEXT_TAGS = ["p", "h1", "h2", "h3"];
-/** The styles of a general settings object, each with its font (resolved). */
+/**
+ * The text families of a general settings object (Text families in General), each resolved:
+ * name, tag, default size (px), default colour (a colour role), default font (a font id).
+ * A family's own settings are general.textFamilies[id]. Older keys (text sizes, textFonts and
+ * textStyles) are still read where a family has no setting of its own, and are never rewritten.
+ */
 export function textStyles(general = {}) {
-  const fonts = general.textFonts || {};
-  const builtIn = BUILTIN_TEXT_STYLES.map((s) => s.id);
-  const custom = (general.textStyles || []).filter((s) => s && s.id && !builtIn.includes(s.id));
-  const styles = [...BUILTIN_TEXT_STYLES, ...custom].map((s) => ({
-    ...s,
-    tag: TEXT_TAGS.includes(s.tag) ? s.tag : "p",
-    font: fonts[s.id] || "",
-  }));
-  // A style with no font of its own uses the body text's font.
+  const own = general.textFamilies || {};
+  const legacyFonts = general.textFonts || {};
+  const builtIn = BUILTIN_TEXT_STYLES.map((x) => x.id);
+  const custom = (general.textStyles || []).filter((x) => x && x.id && !builtIn.includes(x.id));
+  const styles = [...BUILTIN_TEXT_STYLES, ...custom].map((base) => {
+    const f = own[base.id] || {};
+    const legacy = custom.find((x) => x.id === base.id) || base;
+    const size = Number(f.size ?? general.text?.[base.id] ?? DEFAULT_TEXT[base.id] ?? 16);
+    return {
+      id: base.id,
+      name: f.name || legacy.name || base.id,
+      tag: TEXT_TAGS.includes(f.tag) ? f.tag : TEXT_TAGS.includes(legacy.tag) ? legacy.tag : "p",
+      size: size > 0 ? size : 16,
+      colour: COLORS.includes(f.colour) ? f.colour : "text",
+      font: f.font ?? legacyFonts[base.id] ?? "",
+      builtin: !!base.builtin,
+    };
+  });
+  // A family with no font of its own uses the body text's font.
   const bodyFont = styles[0].font;
-  return styles.map((s) => (s.id === "body" || s.font ? s : { ...s, font: bodyFont }));
+  return styles.map((x) => (x.id === "body" || x.font ? x : { ...x, font: bodyFont }));
 }
 /** The style a text item's level names. Unknown levels use the body style. */
 export function styleOf(styles, level) {
@@ -373,7 +388,7 @@ export function newItem(type, id, parent = "") {
       font: "", // "" = the site's body font; otherwise a font id from site.fonts
       level: "p",
       align: "left",
-      color: "text",
+      color: "", // "" = the family's colour
       shrink: { on: true, axis: "x", grow: true }, // auto size: grows and shrinks with the screen
     });
   } else if (type === "video") {
