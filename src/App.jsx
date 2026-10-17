@@ -6,6 +6,7 @@ import {
   GENERAL_KEYS,
   applyPhone,
   fontFamily,
+  fontFormat,
   generalOf,
   newPage,
   pageSlug,
@@ -118,7 +119,9 @@ function fontFaces(fonts) {
   return [...seen.values()]
     .map((f) => {
       const file = String(f.file).replace(/^\/+/, "").replace(/^fonts\//, "");
-      return `@font-face { font-family: "${f.name || f.id}"; src: url("fonts/${file}"); font-display: swap; }`;
+      const format = fontFormat(file);
+      const src = `url("fonts/${encodeURI(file)}")${format ? ` format("${format}")` : ""}`;
+      return `@font-face { font-family: "${f.name || f.id}"; src: ${src}; font-display: swap; }`;
     })
     .join("\n");
 }

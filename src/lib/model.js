@@ -415,6 +415,12 @@ export function generalOf(site, page) {
   );
 }
 
+/** CSS font format for a file name: woff2, woff, TrueType (.ttf) or OpenType (.otf). */
+export function fontFormat(file = "") {
+  const ext = String(file).split(".").pop().toLowerCase();
+  return { woff2: "woff2", woff: "woff", ttf: "truetype", otf: "opentype" }[ext] || "";
+}
+
 /** A font's CSS family: its own family list, or a font file in public/fonts. */
 export function fontFamily(font) {
   if (!font) return "";
