@@ -1,16 +1,16 @@
 {
   "version": 1,
   "tabs": [
-    "main"
+    "main",
+    "polar-protocol"
   ],
   "palette": [
     "#1B0E1F",
-    "#ffffff",
-    "#c3adf2",
-    "#d5ed81",
-    "#151814",
-    "#6b6f66",
-    "#373d30"
+    "#5F2C49",
+    "#AE0B31",
+    "#5c00be",
+    "#FFB300",
+    "#ffffff"
   ],
   "roles": {
     "background": 1,

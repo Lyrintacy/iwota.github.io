@@ -14,14 +14,14 @@ function Text({ item }) {
       className={`text-body level-${Tag}`}
       style={{
         textAlign: item.align || "left",
-        color: `var(--c-${item.color || "text"})`,
+        color: `var(--c-${item.color || style.colour || "text"})`,
         // The item's own font, else its style's font, else the site font.
         fontFamily: item.font
           ? `var(--font-${item.font})`
           : style.font
             ? `var(--font-${style.font})`
             : undefined,
-        fontSize: `calc(var(--size-${style.id}, 16) * var(--u, 1px))`,
+        fontSize: `calc(${item.size || style.size} * var(--u, 1px))`,
       }}
     >
       {inlineTokens(item.text).map((t, i) => (

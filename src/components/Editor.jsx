@@ -1,6 +1,6 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import images from "virtual:images";
-import { ANCHORS, COLORS, DEFAULT_DESIGN, DEFAULT_UI, DEFAULT_LINK, DEFAULT_MOBILE, DEFAULT_SPEED, DEFAULT_TEXT, ROLES, SIZE_UNITS, TYPES, UNITS, formatAt, isBand, newItem, newSection, pageSlug, removeColour, toggleFormat, uid, DEFAULT_CARD, cardsOf, textStyles, TEXT_TAGS } from "../lib/model.js";
+import { ANCHORS, COLORS, DEFAULT_DESIGN, DEFAULT_UI, DEFAULT_LINK, DEFAULT_MOBILE, DEFAULT_SPEED, DEFAULT_TEXT, ROLES, SIZE_UNITS, TYPES, UNITS, formatAt, isBand, newItem, newSection, pageSlug, removeColour, toggleFormat, uid, DEFAULT_CARD, cardsOf, textStyles, TEXT_TAGS, styleOf } from "../lib/model.js";
 import { hasExt, useMedia } from "../lib/media.js";
 import { fontFamily } from "../lib/model.js";
 
@@ -290,7 +290,7 @@ function TextEditor({ item, onChange, setStatus, fonts = [], styles = [] }) {
         onChange={(font) => onChange({ font })}
       />
       <Select
-        label="Heading"
+        label="Text family"
         value={item.level}
         options={(styles.length ? styles : textStyles({})).map((s) => [s.id === "body" ? "p" : s.id, s.name])}
         onChange={(level) => onChange({ level })}
@@ -305,12 +305,32 @@ function TextEditor({ item, onChange, setStatus, fonts = [], styles = [] }) {
         ]}
         onChange={(align) => onChange({ align })}
       />
-      <Select
-        label="Base colour"
-        value={item.color}
-        options={COLORS.map((c) => [c, c[0].toUpperCase() + c.slice(1)])}
-        onChange={(color) => onChange({ color })}
-      />
+      {(() => {
+        const list = styles.length ? styles : textStyles({});
+        const fam = styleOf(list, item.level);
+        const ownSize = item.size !== undefined && item.size !== null && item.size !== "";
+        return (
+          <>
+            <Check
+              label={`Own size (otherwise the family's ${fam.size}px)`}
+              checked={ownSize}
+              onChange={(on) => onChange({ size: on ? fam.size : undefined })}
+            />
+            {ownSize && (
+              <NumberField label="Size (px)" value={item.size} onChange={(v) => onChange({ size: Math.max(1, v) })} />
+            )}
+            <Select
+              label="Colour"
+              value={item.color || ""}
+              options={[
+                ["", `Family colour (${fam.colour})`],
+                ...COLORS.map((c) => [c, c[0].toUpperCase() + c.slice(1)]),
+              ]}
+              onChange={(color) => onChange({ color })}
+            />
+          </>
+        );
+      })()}
     </>
   );
 }
@@ -571,106 +591,102 @@ function CardsFields({ fx = {}, palette, onChange }) {
   );
 }
 
-// The text styles of the site: size and font for each, and the custom styles.
-function TextStylesFields({ site, setSite, sizes, setSize }) {
+// Text families: each has a default size, font and colour. A text item uses its family's
+// settings unless it sets its own.
+function TextFamiliesFields({ site, setSite }) {
   const [name, setName] = useState("");
   const [newTag, setNewTag] = useState("p");
   const styles = textStyles(site);
-  const fontOptions = [["", "(none)"], ...(site.fonts || []).map((f) => [f.id, f.name || f.id])];
-  const setFont = (id, font) =>
-    setSite((s) => ({ ...s, textFonts: { ...(s.textFonts || {}), [id]: font } }));
-  const setTag = (id, t) =>
-    setSite((s) => ({
-      ...s,
-      textStyles: (s.textStyles || []).map((x) => (x.id === id ? { ...x, tag: t } : x)),
-    }));
+  const fontOptions = (site.fonts || []).map((f) => [f.id, f.name || f.id]);
+  // Writes one setting of a family; the family's other settings are kept as they are.
+  const edit = (id, patch) =>
+    setSite((s) => {
+      const cur = textStyles(s).find((x) => x.id === id) || {};
+      return {
+        ...s,
+        textFamilies: {
+          ...(s.textFamilies || {}),
+          [id]: {
+            name: cur.name,
+            tag: cur.tag,
+            size: cur.size,
+            colour: cur.colour,
+            ...(s.textFamilies?.[id] || {}),
+            ...patch,
+          },
+        },
+      };
+    });
   const add = () => {
-    const base = name.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "style";
-    let id = base;
-    for (let n = 2; styles.some((x) => x.id === id); n++) id = `${base}-${n}`;
-    setSite((s) => ({
-      ...s,
-      textStyles: [...(s.textStyles || []), { id, name: name.trim() || "Style", tag: newTag }],
-      text: { ...(s.text || {}), [id]: 16 },
-    }));
+    const base = name.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "family";
+    setSite((s) => {
+      const ids = textStyles(s).map((x) => x.id);
+      let id = base;
+      for (let n = 2; ids.includes(id); n++) id = `${base}-${n}`;
+      const label = name.trim() || "Family";
+      return {
+        ...s,
+        textStyles: [...(s.textStyles || []), { id, name: label, tag: newTag }],
+        textFamilies: {
+          ...(s.textFamilies || {}),
+          [id]: { name: label, tag: newTag, size: 16, colour: "text", font: "" },
+        },
+      };
+    });
     setName("");
   };
   const remove = (id) =>
     setSite((s) => {
       const text = { ...(s.text || {}) };
       const textFonts = { ...(s.textFonts || {}) };
+      const textFamilies = { ...(s.textFamilies || {}) };
       delete text[id];
       delete textFonts[id];
-      return { ...s, text, textFonts, textStyles: (s.textStyles || []).filter((x) => x.id !== id) };
+      delete textFamilies[id];
+      return { ...s, text, textFonts, textFamilies, textStyles: (s.textStyles || []).filter((x) => x.id !== id) };
     });
   return (
     <>
       <p className="hint">
-        A text item that uses the style default takes its style's font. Headings with no font of
-        their own use the body text's font. Items that use a removed style fall back to body text.
+        Text items use their family's size, font and colour unless they set their own (in the
+        workshop, under the text). A family with no font uses the body text's font. Items of a
+        removed family fall back to body text.
       </p>
       {styles.map((st) => (
         <fieldset className="axis" key={st.id}>
           <legend>{st.name}</legend>
-          <NumberField label="Size (px)" value={sizes[st.id] ?? 16} onChange={(px) => setSize(st.id, px)} />
+          <Field label="Name">
+            <input value={st.name} onChange={(e) => edit(st.id, { name: e.target.value })} />
+          </Field>
+          <NumberField label="Default size (px)" value={st.size} onChange={(px) => edit(st.id, { size: Math.max(1, px) })} />
           <Select
-            label={st.id === "body" ? "Font (empty = site font)" : "Font (empty = body text's font)"}
-            value={(site.textFonts || {})[st.id] || ""}
-            options={fontOptions}
-            onChange={(f) => setFont(st.id, f)}
+            label="Default font"
+            value={st.font || ""}
+            options={[["", st.id === "body" ? "Site font" : "Body text's font"], ...fontOptions]}
+            onChange={(font) => edit(st.id, { font })}
           />
+          <Select
+            label="Default colour"
+            value={st.colour}
+            options={COLORS.map((c) => [c, c[0].toUpperCase() + c.slice(1)])}
+            onChange={(colour) => edit(st.id, { colour })}
+          />
+          <Select label="Tag" value={st.tag} options={TEXT_TAGS.map((t) => [t, t])} onChange={(tag) => edit(st.id, { tag })} />
           {!st.builtin && (
-            <>
-              <Select label="Tag" value={st.tag} options={TEXT_TAGS.map((t) => [t, t])} onChange={(t) => setTag(st.id, t)} />
-              <button type="button" onClick={() => remove(st.id)}>
-                Remove style
-              </button>
-            </>
+            <button type="button" onClick={() => remove(st.id)}>
+              Remove family
+            </button>
           )}
         </fieldset>
       ))}
       <div className="row">
-        <input
-          placeholder="New style name, e.g. Quote"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
+        <input placeholder="New family name, e.g. Quote" value={name} onChange={(e) => setName(e.target.value)} />
         <Select label="Tag" value={newTag} options={TEXT_TAGS.map((t) => [t, t])} onChange={setNewTag} />
         <button type="button" onClick={add}>
-          Add a text style
+          Add a text family
         </button>
       </div>
     </>
-  );
-}
-
-// Round corners of a picture, video or GIF. One radius for all corners, or each corner
-// on its own (set when the box is ticked).
-function CornerFields({ value, onChange }) {
-  const separate = !!value && typeof value === "object";
-  const uniform = separate ? value.tl || 0 : Number(value) || 0;
-  const corners = separate ? value : { tl: uniform, tr: uniform, br: uniform, bl: uniform };
-  const each = (key) => (v) => onChange({ ...corners, [key]: Math.max(0, v) });
-  return (
-    <fieldset className="axis">
-      <legend>Round corners</legend>
-      {!separate && (
-        <NumberField label="Radius (px, all corners)" value={uniform} onChange={(v) => onChange(Math.max(0, v))} />
-      )}
-      <Check
-        label="Set each corner separately"
-        checked={separate}
-        onChange={(on) => onChange(on ? { ...corners } : uniform)}
-      />
-      {separate && (
-        <>
-          <NumberField label="Top left (px)" value={corners.tl} onChange={each("tl")} />
-          <NumberField label="Top right (px)" value={corners.tr} onChange={each("tr")} />
-          <NumberField label="Bottom right (px)" value={corners.br} onChange={each("br")} />
-          <NumberField label="Bottom left (px)" value={corners.bl} onChange={each("bl")} />
-        </>
-      )}
-    </fieldset>
   );
 }
 
@@ -1848,16 +1864,8 @@ export function Editor({
           />
 
           </Group>
-          <Group title="Text sizes (px, applies to every text item)">
-          {Object.entries(TEXT_SIZE_LABELS).map(([key, label]) => (
-            <NumberField
-              key={key}
-              label={label}
-              value={sizes[key]}
-              onChange={(px) => setSize(key, px)}
-            />
-          ))}
-
+          <Group title="Text families (default size, font and colour for each)">
+          <TextFamiliesFields site={site} setSite={setSite} />
           </Group>
           <Group title="Palette">
           <p className="hint">
