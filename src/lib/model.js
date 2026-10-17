@@ -548,6 +548,15 @@ export function panPos(offset = 0, pan = false, speed = DEFAULT_SPEED) {
   return `calc(var(--pan, 0) * ${s} * var(--u, 1px) + ${fixed})`;
 }
 
+/**
+ * The pan shift of a repeating texture, wrapped to one tile (0..period). Used as a
+ * transform, so the browser moves the already-painted texture on the graphics chip
+ * instead of repainting it every frame. `period` is a CSS length.
+ */
+export function panShift(offset, pan, speed, period) {
+  return `mod(${panPos(offset, pan, speed)}, ${period})`;
+}
+
 /** Top edge of a band in page coordinates. */
 export function bandTop(section, pageH) {
   return section.anchor === "bottom"
