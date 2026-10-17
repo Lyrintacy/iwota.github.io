@@ -540,6 +540,21 @@ function EffectFields({ fx = {}, site, onChange }) {
               placeholder="0/card"
               onChange={(cardFile) => onChange({ cardFile })}
             />
+            <Select
+              label="Card background"
+              value={String(fx.cardBackground ?? 0)}
+              options={[["0", "Transparent (a PNG shows its own shape)"], ...palette]}
+              onChange={(n) => onChange({ cardBackground: Number(n) })}
+            />
+            <Select
+              label="Card picture fit"
+              value={fx.cardImageFit || "cover"}
+              options={[
+                ["cover", "Fill the card (crops the picture)"],
+                ["contain", "Fit inside (keeps the whole picture)"],
+              ]}
+              onChange={(cardImageFit) => onChange({ cardImageFit })}
+            />
             <NumberField label="Open duration (ms)" value={fx.cardOpenMs ?? 450} onChange={num("cardOpenMs")} />
             <NumberField label="Close duration (ms)" value={fx.cardCloseMs ?? 360} onChange={num("cardCloseMs")} />
             <NumberField label="Corner radius (px)" value={fx.cardRadius ?? 6} onChange={num("cardRadius")} />
@@ -627,10 +642,11 @@ function Group({ title, open = false, children }) {
 }
 
 // One file to copy or download, with its text in a read-only box.
-function ExportFile({ name, file = name, text, copy }) {
+function ExportFile({ name, file = name, text, edited, copy }) {
   return (
     <>
       <div className="row">
+        {edited && <span className="badge">edited</span>}
         <button onClick={() => copy(text, name)}>Copy {name}</button>
         <button onClick={() => download(file, text)}>Download {file}</button>
       </div>
@@ -666,6 +682,7 @@ function NewTab({ onAdd }) {
 export function Editor({
   site,
   rootSite,
+  edited = { changed: {}, removed: [] },
   setRootSite,
   ownSettings,
   pagesApi,
@@ -913,6 +930,25 @@ export function Editor({
   };
 
   const siteText = JSON.stringify(rootSite, null, 2) + "\n";
+  // A tab's page file has no phone overrides; they are in phone.json.
+  const pageFile = (id) => {
+    const { mobile: _phone, ...rest } = pagesApi.pages[id];
+    return JSON.stringify(rest, null, 2) + "\n";
+  };
+  const exportTabs = pagesApi.active === "main" ? ["main"] : ["main", pagesApi.active];
+  const phoneText =
+    JSON.stringify(
+      Object.fromEntries(
+        pagesApi.tabs.map((id) => [id, { ...DEFAULT_MOBILE, ...(pagesApi.pages[id].mobile || {}) }]),
+      ),
+      null,
+      2,
+    ) + "\n";
+  const editedNames = [
+    ...Object.entries(edited.changed)
+      .filter(([, on]) => on)
+      .map(([name]) => name),
+  ];
   const mobileText = JSON.stringify(mobile, null, 2) + "\n";
   const copy = async (text, label) => {
     try {
@@ -1907,16 +1943,14 @@ export function Editor({
           </p>
           <div className="paste-guide">
             <p className="hint">
-              <b>Saving phone overrides:</b> they are one file per tab,{" "}
-              <code>src/config/phone/{page.id}.json</code>. Download it, or copy it, and save it
-              there (replacing the old file). It holds only the phone overrides: the contents of
-              this box, with no wrapper. The page file is not changed.
+              <b>Saving phone overrides:</b> one file for every tab,{" "}
+              <code>src/config/phone.json</code>. It has an entry per tab, named by the tab's
+              id. Download it, or copy it, and replace the file. This tab's box below shows only
+              the current tab's entry.
             </p>
             <div className="row">
-              <button onClick={() => copy(mobileText, `phone/${page.id}.json`)}>Copy phone file</button>
-              <button onClick={() => download(`${page.id}-phone.json`, mobileText)}>
-                Download {page.id}-phone.json
-              </button>
+              <button onClick={() => copy(phoneText, "phone.json")}>Copy phone.json</button>
+              <button onClick={() => download("phone.json", phoneText)}>Download phone.json</button>
             </div>
           </div>
           <Field label="Phone overrides (JSON)">
@@ -1950,35 +1984,32 @@ export function Editor({
       {tab === "export" && (
         <div className="panel">
           <p className="hint">
-            Copy each file and paste it over the matching file in GitHub. The site settings
-            (tab order, fonts, scrolling, and the defaults) go in{" "}
-            <code>src/config/site.json</code>. Each tab's content goes in{" "}
-            <code>src/config/pages/&lt;tab&gt;.json</code>. Its phone overrides go in{" "}
-            <code>src/config/phone/&lt;tab&gt;.json</code> (the download is named{" "}
-            <code>&lt;tab&gt;-phone.json</code>: save it in that folder under the tab's name).
-            Commit, and the site rebuilds.
+            Copy each file and paste it over the matching file in GitHub, then commit. The
+            site settings go in <code>src/config/site.json</code>, each tab in{" "}
+            <code>src/config/pages/&lt;tab&gt;.json</code>, and all phone overrides in{" "}
+            <code>src/config/phone.json</code>.
           </p>
-          <ExportFile name="site.json" text={siteText} copy={copy} />
-          {pagesApi.tabs.map((id) => {
-            const { mobile: _phone, ...pageFile } = pagesApi.pages[id];
-            return (
-              <ExportFile
-                key={id}
-                name={`${id}.json`}
-                text={JSON.stringify(pageFile, null, 2) + "\n"}
-                copy={copy}
-              />
-            );
-          })}
-          {pagesApi.tabs.map((id) => (
+          {editedNames.length ? (
+            <p className="hint warn">Edited since the saved config: {editedNames.join(", ")}</p>
+          ) : (
+            <p className="hint">Nothing is edited yet.</p>
+          )}
+          {edited.removed.length > 0 && (
+            <p className="hint warn">
+              Deleted tabs (remove these files from GitHub): {edited.removed.join(", ")}
+            </p>
+          )}
+          <ExportFile name="site.json" text={siteText} edited={edited.changed["site.json"]} copy={copy} />
+          {exportTabs.map((id) => (
             <ExportFile
-              key={`phone-${id}`}
-              name={`phone/${id}.json`}
-              file={`${id}-phone.json`}
-              text={JSON.stringify({ ...DEFAULT_MOBILE, ...(pagesApi.pages[id].mobile || {}) }, null, 2) + "\n"}
+              key={id}
+              name={`${id}.json`}
+              text={pageFile(id)}
+              edited={edited.changed[`${id}.json`]}
               copy={copy}
             />
           ))}
+          <ExportFile name="phone.json" text={phoneText} edited={edited.changed["phone.json"]} copy={copy} />
           <p className="hint">
             Icon: put one image in <code>public/icon/</code>, named <code>icon.png</code> (or
             <code>.svg</code>, <code>.ico</code>, <code>.jpg</code>, <code>.webp</code>). Fonts:

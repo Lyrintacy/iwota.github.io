@@ -260,6 +260,8 @@ export function ButtonItem({ item, editing }) {
   };
 
   const mask = base ? { WebkitMaskImage: urlCss(base), maskImage: urlCss(base) } : {};
+  const cardPicture = cardMedia.url || base;
+  const cardMask = cardPicture ? { WebkitMaskImage: urlCss(cardPicture), maskImage: urlCss(cardPicture) } : {};
   const fit = item.fit || "contain";
   const flashColour = colourVar(fx.flashColour);
   const body = (
@@ -363,6 +365,7 @@ export function ButtonItem({ item, editing }) {
             ref={cardRef}
             className={`fx-card ${closing ? "is-closing" : ""} ${fx.cardShake && !closing ? "fx-card-shake" : ""}`}
             style={{
+              "--card-bg": fx.cardBackground ? `var(--color-${fx.cardBackground})` : "transparent",
               "--shake-ms": `${fx.cardShakeMs}ms`,
               "--shake-k": String(fx.cardShakeAmount / 100),
               "--open-ms": `${fx.cardOpenMs}ms`,
@@ -370,26 +373,35 @@ export function ButtonItem({ item, editing }) {
               "--radius": `${fx.cardRadius}px`,
             }}
           >
-            <img src={cardMedia.url || base || undefined} alt="" />
-            {fx.cardShine && !closing && (
-              <div
-                className="fx-shine-band fx-card-shine"
-                style={{
-                  "--shine": `var(--color-${fx.cardShineColour || 4})`,
-                  "--sw": `${fx.cardShineWidth}%`,
-                  "--slant": `${fx.shineSlant}deg`,
-                  animationDuration: `${fx.cardShineMs}ms`,
-                }}
-              />
-            )}
-            {fx.cardFlash && !closing && (
-              <div
-                className="fx-soft-flash"
-                style={{
-                  "--flash-col": `var(--color-${fx.cardFlashColour || 3})`,
-                  animationDuration: `${fx.cardFlashMs}ms`,
-                }}
-              />
+            <img
+              src={cardMedia.url || base || undefined}
+              alt=""
+              style={{ objectFit: fx.cardImageFit || "cover" }}
+            />
+            {/* The band and flash follow the picture's shape, so a transparent PNG is respected */}
+            {(fx.cardShine || fx.cardFlash) && !closing && (cardMedia.url || base) && (
+              <div className="fx-mask" style={cardMask}>
+                {fx.cardShine && (
+                  <div
+                    className="fx-shine-band fx-card-shine"
+                    style={{
+                      "--shine": `var(--color-${fx.cardShineColour || 4})`,
+                      "--sw": `${fx.cardShineWidth}%`,
+                      "--slant": `${fx.shineSlant}deg`,
+                      animationDuration: `${fx.cardShineMs}ms`,
+                    }}
+                  />
+                )}
+                {fx.cardFlash && (
+                  <div
+                    className="fx-soft-flash"
+                    style={{
+                      "--flash-col": `var(--color-${fx.cardFlashColour || 3})`,
+                      animationDuration: `${fx.cardFlashMs}ms`,
+                    }}
+                  />
+                )}
+              </div>
             )}
           </div>,
           host,

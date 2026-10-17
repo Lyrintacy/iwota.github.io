@@ -28,6 +28,8 @@ export const DEFAULT_FX = {
   cardOpenMs: 450,
   cardCloseMs: 360,
   cardRadius: 6,
+  cardBackground: 0, // 0 = transparent (a PNG shows its own shape); else a palette number
+  cardImageFit: "cover", // cover: fill the card (crop) | contain: keep the whole picture
   waitFlash: true, // open the card when the button's flash has finished (not the band)
   cardTilt: true, // tilt with the cursor
   cardTiltStrength: 100, // % of the normal tilt
