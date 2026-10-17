@@ -271,6 +271,7 @@ export default function App() {
   const ui = {
     tabs: { ...DEFAULT_UI.tabs, ...(site.ui?.tabs || {}) },
     workshop: { ...DEFAULT_UI.workshop, ...(site.ui?.workshop || {}) },
+    toggle: { ...DEFAULT_UI.toggle, ...(site.ui?.toggle || {}) },
     buttons: { ...DEFAULT_UI.buttons, ...(site.ui?.buttons || {}) },
     hint: { ...DEFAULT_UI.hint, ...(site.ui?.hint || {}) },
   };
@@ -503,6 +504,9 @@ export default function App() {
     const f = (site.fonts || []).find((x) => x.id === id);
     return f ? fontFamily(f) : undefined;
   };
+  const toggleVars = {};
+  if (rootHex(ui.toggle.text)) toggleVars["--tb-text"] = rootHex(ui.toggle.text);
+  if (rootHex(ui.toggle.background)) toggleVars["--tb-bg"] = rootHex(ui.toggle.background);
   const setVar = (key, value) => {
     if (value) vars[key] = value;
   };
@@ -520,8 +524,8 @@ export default function App() {
       <ButtonRulesContext.Provider value={ui.buttons}>
       <WaitContext.Provider value={waitApi}>
       <div
-        className={`site dock-${dock} ${editing ? "editing" : ""} ${previewing ? "phone-preview" : ""}`}
-        style={vars}
+        className={`site dock-${dock} ${editing ? "editing" : ""} ${previewing ? "phone-preview" : ""} ${ui.toggle.hidePhone ? "hide-toggle-phone" : ""}`}
+        style={{ ...vars, ...toggleVars }}
       >
         {notice && (
           <div className="notice" role="status">

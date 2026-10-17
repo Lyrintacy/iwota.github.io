@@ -1882,6 +1882,25 @@ export function Editor({
           />
 
           </Group>
+          <Group title="Workshop button (bottom corner)">
+          <Select
+            label="Text colour"
+            value={String(ui.toggle.text)}
+            options={rootColourOptions}
+            onChange={(n) => setUi("toggle", { text: Number(n) })}
+          />
+          <Select
+            label="Background colour"
+            value={String(ui.toggle.background)}
+            options={rootColourOptions}
+            onChange={(n) => setUi("toggle", { background: Number(n) })}
+          />
+          <Check
+            label="Hide the button on phones (while the workshop is closed)"
+            checked={ui.toggle.hidePhone}
+            onChange={(hidePhone) => setUi("toggle", { hidePhone })}
+          />
+          </Group>
           <Group title="Text families (default size, font and colour for each)">
           <TextFamiliesFields site={site} setSite={setSite} palette={paletteOptions(site)} />
           </Group>

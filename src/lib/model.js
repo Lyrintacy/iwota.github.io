@@ -131,6 +131,8 @@ export const DEFAULT_SCROLL = { panSmoothMs: 240 };
 export const DEFAULT_UI = {
   tabs: { font: "", text: 0, background: 0, active: 0, maxTemporary: 1, slide: true },
   workshop: { font: "", text: 0, background: 0 },
+  // The Workshop button in the corner: colours (palette numbers, 0 = default) and hidden on phones.
+  toggle: { text: 0, background: 0, hidePhone: false },
   // Two presses: the first press on a button opens its card, the second clicks it. Per pointer type.
   buttons: { touch: false, pc: false },
   // A round hint shown while a card waits for its second press. Image, else message, else an arrow.

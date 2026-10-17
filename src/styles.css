@@ -116,8 +116,8 @@ body {
   padding: 6px 10px;
   border: 1px solid #999;
   border-radius: 6px;
-  background: #fff;
-  color: #111;
+  background: var(--tb-bg, #fff);
+  color: var(--tb-text, #111);
   cursor: pointer;
 }
 .notice {
@@ -931,5 +931,12 @@ details.group > .group-body {
   }
   50% {
     transform: scale(1.12);
+  }
+}
+
+/* Phones: the Workshop button can be hidden, but not while the workshop is open (so it can be closed) */
+@media (max-width: 700px) {
+  .site.hide-toggle-phone:not(.editing) .edit-toggle {
+    display: none;
   }
 }
