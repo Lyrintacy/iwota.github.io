@@ -446,7 +446,7 @@ function CardsFields({ fx = {}, palette, onChange }) {
   // Saves the list and drops the older card fields, so they are not kept in the file.
   const legacy = Object.fromEntries(
     Object.keys(fx)
-      .filter((k) => k === "card" || /^card[A-Z]/.test(k))
+      .filter((k) => k === "card" || k === "waitFlash" || /^card[A-Z]/.test(k))
       .map((k) => [k, undefined]),
   );
   const save = (next) => onChange({ ...legacy, cards: next });
@@ -464,15 +464,15 @@ function CardsFields({ fx = {}, palette, onChange }) {
   return (
     <fieldset className="axis">
       <legend>Cards over the button</legend>
-      <Check
-        label="Wait for the button's flash to finish before opening"
-        checked={fx.waitFlash}
-        onChange={(waitFlash) => onChange({ waitFlash })}
-      />
       {cards.length === 0 && <p className="hint">No cards: hovering the button opens nothing.</p>}
       {cards.map((c, i) => (
         <fieldset className="axis" key={i}>
           <legend>Card {i + 1}</legend>
+          <Check
+            label="Wait for the button's flash to finish before this card opens"
+            checked={c.waitFlash}
+            onChange={(waitFlash) => patch(i, { waitFlash })}
+          />
           <Check
             label="Clicking this card counts as a click on the button (its link runs, the button flashes)"
             checked={c.clickable}

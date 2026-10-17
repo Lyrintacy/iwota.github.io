@@ -28,6 +28,7 @@ export const DEFAULT_FX = {
 // clicks pass through to whatever is under it.
 export const DEFAULT_CARD = {
   clickable: false,
+  waitFlash: true, // open when the button's flash has finished (not the band)
   file: "", // picture; empty = the button's picture
   scale: 2.5, // size, times the button
   fit: "both", // keep on screen: none | x | y | both
@@ -55,13 +56,15 @@ export const DEFAULT_CARD = {
  * fields; those become one card with the same look as before.
  */
 export function cardsOf(fx = {}) {
-  if (Array.isArray(fx.cards)) return fx.cards.map((c) => ({ ...DEFAULT_CARD, ...c }));
+  // waitFlash used to be one setting of the button; a card without its own value takes it.
+  const waitFlash = fx.waitFlash ?? DEFAULT_CARD.waitFlash;
+  if (Array.isArray(fx.cards)) return fx.cards.map((c) => ({ ...DEFAULT_CARD, waitFlash, ...c }));
   if (fx.card === false) return [];
   const old = {};
   for (const [k, v] of Object.entries(fx)) {
     if (/^card[A-Z]/.test(k)) old[k[4].toLowerCase() + k.slice(5)] = v;
   }
-  return [{ ...DEFAULT_CARD, ...old }];
+  return [{ ...DEFAULT_CARD, waitFlash, ...old }];
 }
 export const DEFAULT_LINK = { kind: "none", url: "", section: "", page: "", newTab: false };
 export const DEFAULT_SPEED = 0.5;

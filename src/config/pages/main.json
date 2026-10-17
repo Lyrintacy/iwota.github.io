@@ -172,5 +172,35 @@
       "kind": "fixed",
       "name": ""
     }
-  ]
+  ],
+  "mobile": {
+    "breakpoint": 700,
+    "canvas": {
+      "designWidth": 390,
+      "designHeight": 844
+    },
+    "items": {
+      "image-ar5jf": {
+        "h": {
+          "anchor": "start",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 100,
+          "sizeUnit": "px"
+        }
+      },
+      "text-k8wgd": {
+        "h": {
+          "anchor": "end",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 11,
+          "sizeUnit": "px"
+        }
+      }
+    },
+    "sections": {}
+  }
 }

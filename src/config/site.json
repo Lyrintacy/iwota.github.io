@@ -46,20 +46,5 @@
   ],
   "scroll": {
     "panSmoothMs": 240
-  },
-  "ui": {
-    "tabs": {
-      "font": "",
-      "text": 0,
-      "background": 0,
-      "active": 0,
-      "maxTemporary": 1,
-      "slide": true
-    },
-    "workshop": {
-      "font": "",
-      "text": 0,
-      "background": 0
-    }
   }
 }

@@ -198,7 +198,7 @@ export function ButtonItem({ item, editing }) {
       later(() => setShining(false), shineEnd);
     }
     later(() => setPlayGif(isGif), Math.max(flashEnd, shineEnd));
-    if (cards.length) later(() => setCard("open"), fx.waitFlash ? flashEnd : 0);
+    if (cards.length) setCard("open"); // each card waits for the flash itself (see CardView)
   }, [active]);
 
   // Touch: the tap-on stays until another tap elsewhere, a scroll, or a second tap.
@@ -353,6 +353,7 @@ export function ButtonItem({ item, editing }) {
               cardEls={cardEls}
               closing={closing}
               clickFlash={fx.clickFlash}
+              waitMs={fx.flash ? fx.flashMs : 0}
               onDown={onPointerDown}
               onClick={onCardClick}
             />
@@ -367,8 +368,16 @@ export function ButtonItem({ item, editing }) {
  * One card over a button. Its settings are one entry of the button's fx.cards.
  * Clicks pass through it unless it is clickable; a clickable card flashes on click.
  */
-function CardView({ c, base, buttonRef, cardEls, closing, clickFlash, onDown, onClick }) {
+function CardView({ c, base, buttonRef, cardEls, closing, clickFlash, waitMs, onDown, onClick }) {
   const ref = useRef(null);
+  // A card that waits for the flash stays hidden until it has finished.
+  const wait = c.waitFlash && waitMs > 0;
+  const [started, setStarted] = useState(!wait);
+  useEffect(() => {
+    if (started) return;
+    const t = setTimeout(() => setStarted(true), waitMs);
+    return () => clearTimeout(t);
+  }, []);
   const media = useMedia("image", c.file || "");
   const picture = media.url || base;
   const mask = picture ? { WebkitMaskImage: urlCss(picture), maskImage: urlCss(picture) } : {};
@@ -391,6 +400,7 @@ function CardView({ c, base, buttonRef, cardEls, closing, clickFlash, onDown, on
   };
   useLayoutEffect(() => {
     const el = ref.current;
+    if (!el) return;
     cardEls.current.add(el);
     place();
     window.addEventListener("scroll", place, { passive: true });
@@ -400,7 +410,7 @@ function CardView({ c, base, buttonRef, cardEls, closing, clickFlash, onDown, on
       window.removeEventListener("scroll", place);
       window.removeEventListener("resize", place);
     };
-  }, []);
+  }, [started]);
 
   // The card tilts toward the cursor's position inside the button.
   useEffect(() => {
@@ -423,6 +433,7 @@ function CardView({ c, base, buttonRef, cardEls, closing, clickFlash, onDown, on
     onClick();
   };
 
+  if (!started) return null;
   return (
     <div
       ref={ref}
