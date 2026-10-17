@@ -1,6 +1,24 @@
-import React, { createContext, useContext, useLayoutEffect, useRef, useState } from "react";
-import { BUILTIN_TEXT_STYLES, bandTop, cornerRadius, inlineTokens, isBand, itemStyle, pageHeight, panPos, styleOf, unitFor } from "../lib/model.js";
+import React, { createContext, useContext, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { BUILTIN_TEXT_STYLES, bandTop, cornerRadius, inlineTokens, isBand, itemStyle, pageHeight, panPos, panShift, styleOf, unitFor } from "../lib/model.js";
 import { useMedia } from "../lib/media.js";
+
+// Height / width of a picture (1 until it loads). A texture needs it for its tile's height.
+function useImageAspect(url) {
+  const [aspect, setAspect] = useState(1);
+  useEffect(() => {
+    if (!url) return undefined;
+    let live = true;
+    const img = new Image();
+    img.onload = () => {
+      if (live && img.naturalWidth) setAspect(img.naturalHeight / img.naturalWidth);
+    };
+    img.src = url;
+    return () => {
+      live = false;
+    };
+  }, [url]);
+  return aspect;
+}
 import { ButtonItem, HoverGif, HoverVideo } from "./Interactive.jsx";
 
 // A colour: a palette number, or (older items) a colour role.
@@ -86,18 +104,24 @@ function Animated({ item }) {
   }, []);
   const tile = Math.max(1, Number(item.tile) || 1);
   const diagonal = Math.ceil(Math.hypot(box.w, box.h));
+  // A repeating axis moves by transform (wrapped to one tile); the element is one tile
+  // bigger so the wrap never shows an edge. A non-repeating axis keeps the old position.
+  const period = `calc(${tile} * var(--u, 1px))`;
+  const shiftX = item.repeatX ? panShift(item.offsetX, item.scrollX, item.speedX, period) : "0px";
+  const shiftY = item.repeatY ? panShift(item.offsetY, item.scrollY, item.speedY, period) : "0px";
   return (
     <div ref={ref} className="media animated">
       <div
         className="animated-tex"
         style={{
-          width: diagonal,
-          height: diagonal,
+          width: `calc(${diagonal}px + ${2 * tile} * var(--u, 1px))`,
+          height: `calc(${diagonal}px + ${2 * tile} * var(--u, 1px))`,
           backgroundImage: media.url ? `url("${media.url}")` : undefined,
-          backgroundSize: `calc(${tile} * var(--u, 1px)) calc(${tile} * var(--u, 1px))`,
+          backgroundSize: `${period} ${period}`,
           backgroundRepeat: `${item.repeatX ? "repeat" : "no-repeat"} ${item.repeatY ? "repeat" : "no-repeat"}`,
-          backgroundPosition: `${panPos(item.offsetX, item.scrollX, item.speedX)} ${panPos(item.offsetY, item.scrollY, item.speedY)}`,
-          transform: `translate(-50%, -50%) rotate(${Number(item.textureRotate) || 0}deg)`,
+          backgroundPosition: `${item.repeatX ? "0px" : panPos(item.offsetX, item.scrollX, item.speedX)} ${item.repeatY ? "0px" : panPos(item.offsetY, item.scrollY, item.speedY)}`,
+          transform: `translate(-50%, -50%) rotate(${Number(item.textureRotate) || 0}deg) translate(${shiftX}, ${shiftY})`,
+          willChange: "transform",
         }}
       />
     </div>
@@ -109,6 +133,11 @@ function BandBackground({ section, top, selected }) {
   const tex = section.texture || {};
   const overlay = section.overlay || {};
   const texture = useMedia("image", tex.file);
+  const aspect = useImageAspect(texture.url);
+  const size = Math.max(1, tex.size || 0);
+  // Tiles: `size` wide, and as tall as the picture. Moved by transform, wrapped to one tile.
+  const tileW = `${size}px`;
+  const tileH = `${size * aspect}px`;
   return (
     <div
       id={`section-${section.id}`}
@@ -123,10 +152,13 @@ function BandBackground({ section, top, selected }) {
         <div
           className="section-texture"
           style={{
+            width: `calc(150cqmax + ${2 * size}px)`,
+            height: `calc(150cqmax + ${2 * size * aspect}px)`,
             backgroundImage: `url("${texture.url}")`,
-            backgroundSize: `${Math.max(1, tex.size || 0)}px auto`,
-            backgroundPosition: `${panPos(tex.offsetX, tex.scrollX, tex.speedX)} ${panPos(tex.offsetY, tex.scrollY, tex.speedY)}`,
-            transform: `translate(-50%, -50%) rotate(${tex.rotate || 0}deg)`,
+            backgroundSize: `${tileW} ${tileH}`,
+            backgroundPosition: "0px 0px",
+            transform: `translate(-50%, -50%) rotate(${tex.rotate || 0}deg) translate(${panShift(tex.offsetX, tex.scrollX, tex.speedX, tileW)}, ${panShift(tex.offsetY, tex.scrollY, tex.speedY, tileH)})`,
+            willChange: "transform",
           }}
         />
       )}
