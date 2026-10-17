@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import siteConfig from "./config/site.json";
 import {
   DEFAULT_TEXT,
+  DEFAULT_UI,
   GENERAL_KEYS,
   applyPhone,
   fontFamily,
@@ -92,6 +93,19 @@ function usePhoneViewport(breakpoint) {
   return small;
 }
 
+// Hidden tabs opened through a link. "kept" tabs stay in this browser's bar for good;
+// "temp" ones hold the temporary slots at the end of the bar (this session only).
+const KEPT_KEY = "site-tabs-kept";
+const TEMP_KEY = "site-tabs-temp";
+function readList(store, key) {
+  try {
+    const v = JSON.parse(store.getItem(key) || "[]");
+    return Array.isArray(v) ? v.filter((x) => typeof x === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
 const tabFromUrl = (pages, tabs) => {
   const id = new URLSearchParams(window.location.search).get("page");
   return id && tabs.includes(id) ? id : "main";
@@ -99,8 +113,9 @@ const tabFromUrl = (pages, tabs) => {
 
 // A @font-face for each font that comes from a file in public/fonts.
 function fontFaces(fonts) {
-  return fonts
-    .filter((f) => f.file)
+  const seen = new Map();
+  for (const f of fonts) if (f.file && !seen.has(f.name || f.id)) seen.set(f.name || f.id, f);
+  return [...seen.values()]
     .map((f) => {
       const file = String(f.file).replace(/^\/+/, "").replace(/^fonts\//, "");
       return `@font-face { font-family: "${f.name || f.id}"; src: url("fonts/${file}"); font-display: swap; }`;
@@ -108,10 +123,10 @@ function fontFaces(fonts) {
     .join("\n");
 }
 
-function TabBar({ tabs, pages, active, onPick }) {
+function TabBar({ ids, pages, active, onPick }) {
   return (
     <nav className="page-tabs" aria-label="Tabs">
-      {tabs.map((id) => (
+      {ids.map((id) => (
         <a
           key={id}
           href={pageHref(id)}
@@ -137,6 +152,11 @@ export default function App() {
   const [activeId, setActiveId] = useState(() =>
     tabFromUrl(initial.data.pages, initial.data.site.tabs),
   );
+  const [kept, setKept] = useState(() => readList(localStorage, KEPT_KEY));
+  const [temp, setTemp] = useState(() => readList(sessionStorage, TEMP_KEY));
+  // Slide between tabs: the direction (+1 right, -1 left) and the tab leaving the screen.
+  const [slide, setSlide] = useState({ dir: 0, n: 0 });
+  const [leaving, setLeaving] = useState(null);
   const [editing, setEditing] = useState(false);
   const [phone, setPhone] = useState(false); // editor: edit phone overrides
   const [selectedId, setSelectedId] = useState(null);
@@ -166,6 +186,32 @@ export default function App() {
   const previewing = editing && phone;
   const view = previewing || phoneViewport ? applyPhone(page) : page;
 
+  useEffect(() => localStorage.setItem(KEPT_KEY, JSON.stringify(kept)), [kept]);
+  useEffect(() => sessionStorage.setItem(TEMP_KEY, JSON.stringify(temp)), [temp]);
+
+  // The tab bar: visible tabs (and kept ones), then up to maxTemporary opened hidden tabs.
+  const ui = {
+    tabs: { ...DEFAULT_UI.tabs, ...(site.ui?.tabs || {}) },
+    workshop: { ...DEFAULT_UI.workshop, ...(site.ui?.workshop || {}) },
+  };
+  const cap = Math.max(0, Math.floor(Number(ui.tabs.maxTemporary) || 0));
+  const fixedIds = tabs.filter((id) => pages[id].showInBar !== false || kept.includes(id));
+  const tempIds = cap ? temp.filter((id) => pages[id] && !fixedIds.includes(id)).slice(-cap) : [];
+  const barIds = [...fixedIds, ...tempIds];
+
+  // Opening a hidden tab gives it a temporary slot, or keeps it for good if the tab says so.
+  const noteOpened = (id) => {
+    const p = pages[id];
+    if (!p || p.showInBar !== false) return;
+    if (p.keepWhenOpened) {
+      setKept((k) => (k.includes(id) ? k : [...k, id]));
+      setTemp((t) => t.filter((x) => x !== id));
+    } else if (!kept.includes(id) && cap) {
+      setTemp((t) => [...t.filter((x) => x !== id), id].slice(-cap));
+    }
+  };
+  useEffect(() => noteOpened(activeTab), []);
+
   const draft = JSON.stringify(data) !== JSON.stringify(SAVED);
   useEffect(() => {
     if (draft)
@@ -177,7 +223,7 @@ export default function App() {
   useEffect(() => setPanSmoothing(site.scroll?.panSmoothMs ?? 240), [site.scroll?.panSmoothMs]);
 
   // Fonts: a @font-face for each font file.
-  const fontsKey = JSON.stringify(general.fonts || []);
+  const fontsKey = JSON.stringify([...(site.fonts || []), ...(general.fonts || [])]);
   useEffect(() => {
     let el = document.getElementById("site-fonts");
     if (!el) {
@@ -185,7 +231,7 @@ export default function App() {
       el.id = "site-fonts";
       document.head.appendChild(el);
     }
-    el.textContent = fontFaces(general.fonts || []);
+    el.textContent = fontFaces([...(site.fonts || []), ...(general.fonts || [])]);
   }, [fontsKey]);
 
   useEffect(() => {
@@ -202,16 +248,27 @@ export default function App() {
   // Back and forward move between tabs.
   useEffect(() => {
     const back = () => {
-      setActiveId(tabFromUrl(pages, tabs));
+      const next = tabFromUrl(pages, tabs);
+      setActiveId(next);
+      noteOpened(next);
       setSelectedId(null);
       setSelectedSectionId(null);
     };
     window.addEventListener("popstate", back);
     return () => window.removeEventListener("popstate", back);
-  }, [pages, tabs]);
+  }, [pages, tabs, kept, temp]);
 
   const go = (id, { push = true } = {}) => {
     if (!pages[id]) return;
+    if (id !== activeTab) {
+      const dir = tabs.indexOf(id) > tabs.indexOf(activeTab) ? 1 : -1;
+      const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (!still) {
+        setLeaving({ key: `${activeTab}-${slide.n + 1}`, page: view, dir });
+        setSlide({ dir, n: slide.n + 1 });
+      }
+      noteOpened(id);
+    }
     setActiveId(id);
     setSelectedId(null);
     setSelectedSectionId(null);
@@ -248,6 +305,12 @@ export default function App() {
     pages,
     active: activeTab,
     go,
+    setFlags(id, values) {
+      setData((d) => ({
+        ...d,
+        pages: { ...d.pages, [id]: { ...d.pages[id], ...values } },
+      }));
+    },
     add(name) {
       const base = pageSlug(name);
       let id = base;
@@ -332,6 +395,19 @@ export default function App() {
   for (const [key, px] of Object.entries(sizes))
     vars[`--size-${key}`] = String(px); // unitless: scaled by --u in CSS
   for (const f of general.fonts || []) vars[`--font-${f.id}`] = fontFamily(f);
+  // The tab bar's look: palette colours and a font from the site settings.
+  const rootHex = (n) => (n ? site.palette[n - 1] : undefined);
+  const rootFont = (id) => {
+    const f = (site.fonts || []).find((x) => x.id === id);
+    return f ? fontFamily(f) : undefined;
+  };
+  const setVar = (key, value) => {
+    if (value) vars[key] = value;
+  };
+  setVar("--tab-font", rootFont(ui.tabs.font));
+  setVar("--tab-text", rootHex(ui.tabs.text));
+  setVar("--tab-bg", rootHex(ui.tabs.background));
+  setVar("--tab-active", rootHex(ui.tabs.active));
   // Screen width used for scaling: the window, or the phone preview's width.
   vars["--preview-w"] = `${previewWidth}px`;
   vars["--vw"] = previewing ? `${previewWidth}px` : "100vw";
@@ -347,17 +423,40 @@ export default function App() {
             {notice}
           </div>
         )}
-        {tabs.length > 1 && (
-          <TabBar tabs={tabs} pages={pages} active={activeTab} onPick={go} />
+        {barIds.length > 1 && (
+          <TabBar ids={barIds} pages={pages} active={activeTab} onPick={go} />
         )}
-        <Canvas
-          key={activeTab}
-          page={view}
-          editing={editing}
-          selectedId={selectedId}
-          onSelect={setSelectedId}
-          selectedSectionId={selectedSectionId}
-        />
+        <div className="tab-stage">
+          {leaving && (
+            <div
+              key={leaving.key}
+              className="tab-leave"
+              style={{ "--dir": leaving.dir }}
+              onAnimationEnd={(e) => e.target === e.currentTarget && setLeaving(null)}
+            >
+              <Canvas
+                page={leaving.page}
+                editing={false}
+                selectedId={null}
+                onSelect={() => {}}
+                selectedSectionId={null}
+              />
+            </div>
+          )}
+          <div
+            key={`${activeTab}-${slide.n}`}
+            className={slide.n ? "tab-enter" : ""}
+            style={{ "--dir": slide.dir }}
+          >
+            <Canvas
+              page={view}
+              editing={editing}
+              selectedId={selectedId}
+              onSelect={setSelectedId}
+              selectedSectionId={selectedSectionId}
+            />
+          </div>
+        </div>
         <button className="edit-toggle" onClick={() => setEditing((v) => !v)}>
           {editing ? "Close workshop" : "Workshop"} <kbd>F2</kbd>
         </button>

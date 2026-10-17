@@ -818,3 +818,55 @@ html {
   flex: 1;
   text-align: left;
 }
+
+/* Tab bar look: colours and font from the site's ui settings (--tab-*) */
+.page-tabs {
+  background: var(--tab-bg, var(--c-background, #fff));
+  font-family: var(--tab-font, inherit);
+}
+.page-tabs a {
+  color: var(--tab-text, var(--c-text, #000));
+}
+.page-tabs a.on {
+  background: var(--tab-active, var(--c-highlight, #ddd));
+}
+
+/* Workshop look: colours and font from the site's ui settings (--ws-*) */
+.editor {
+  background: var(--ws-bg, #fafafa);
+  color: var(--ws-text, #111);
+  font-family: var(--ws-font, system-ui, sans-serif);
+}
+
+/* Tab switch: the page slides in from the side of the tab it came from */
+.tab-stage {
+  position: relative;
+  overflow: hidden;
+}
+.tab-enter {
+  animation: tab-in 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.tab-leave {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+  animation: tab-out 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes tab-in {
+  from {
+    transform: translateX(calc(var(--dir, 1) * 100%));
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+@keyframes tab-out {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(var(--dir, 1) * -100%));
+  }
+}
