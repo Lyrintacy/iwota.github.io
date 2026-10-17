@@ -118,6 +118,7 @@ body {
   border-radius: 6px;
   background: var(--tb-bg, #fff);
   color: var(--tb-text, #111);
+  font-family: var(--tb-font, system-ui, sans-serif);
   cursor: pointer;
 }
 .notice {
@@ -888,7 +889,8 @@ details.group > .group-body {
 /* A round hint for a button that waits for a second press */
 .hint-widget {
   position: fixed;
-  z-index: 950;
+  z-index: 2147483000; /* above the cards and everything else */
+  font-family: var(--hint-font, inherit);
   width: 48px;
   height: 48px;
   border-radius: 50%;
