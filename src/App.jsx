@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import siteConfig from "./config/site.json";
 import phoneConfig from "./config/phone.json";
 import {
@@ -17,6 +17,8 @@ import {
 } from "./lib/model.js";
 import { NavContext, pageHref } from "./lib/nav.js";
 import { Canvas, TextStylesContext } from "./components/Canvas.jsx";
+import { ButtonRulesContext, WaitContext } from "./components/Interactive.jsx";
+import { HintWidget } from "./components/HintWidget.jsx";
 import { ErrorBoundary } from "./components/ErrorBoundary.jsx";
 import { Editor } from "./components/Editor.jsx";
 import { setPanSmoothing, startScrollEffects } from "./lib/scroll.js";
@@ -227,25 +229,50 @@ export default function App() {
     pendingSlide.current = null;
     const enter = stageRef.current?.querySelector(":scope > .tab-current");
     const timing = { duration: 450, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" };
-    p.frozen
-      .animate([{ transform: "translateX(0)" }, { transform: `translateX(${-p.dir * 100}vw)` }], {
-        ...timing,
-        fill: "forwards",
-      })
-      .addEventListener("finish", () => p.frozen.remove());
-    enter?.animate([{ transform: `translateX(${p.dir * 100}vw)` }, { transform: "translateX(0)" }], {
-      ...timing,
-      fill: "none",
-    });
+    // The frozen old page stays where it was; the new page slides in on top of it.
+    const done = () => {
+      p.frozen.remove();
+      if (enter) {
+        enter.style.position = "";
+        enter.style.zIndex = "";
+      }
+    };
+    if (enter) {
+      enter.style.position = "relative";
+      enter.style.zIndex = "901";
+    }
+    const anim = enter?.animate(
+      [{ transform: `translateX(${p.dir * 100}vw)` }, { transform: "translateX(0)" }],
+      { ...timing, fill: "both" },
+    );
+    if (anim) anim.addEventListener("finish", done);
+    else done();
   }, [activeTab]);
 
   useEffect(() => localStorage.setItem(KEPT_KEY, JSON.stringify(kept)), [kept]);
   useEffect(() => sessionStorage.setItem(TEMP_KEY, JSON.stringify(temp)), [temp]);
 
+  // Buttons waiting for a second press (the hint shows while there are any).
+  const waitSet = useRef(new Set());
+  const [waitCount, setWaitCount] = useState(0);
+  const waitApi = useMemo(
+    () => ({
+      add: (k) => {
+        waitSet.current.add(k);
+        setWaitCount(waitSet.current.size);
+      },
+      remove: (k) => {
+        if (waitSet.current.delete(k)) setWaitCount(waitSet.current.size);
+      },
+    }),
+    [],
+  );
   // The tab bar: visible tabs (and kept ones), then up to maxTemporary opened hidden tabs.
   const ui = {
     tabs: { ...DEFAULT_UI.tabs, ...(site.ui?.tabs || {}) },
     workshop: { ...DEFAULT_UI.workshop, ...(site.ui?.workshop || {}) },
+    buttons: { ...DEFAULT_UI.buttons, ...(site.ui?.buttons || {}) },
+    hint: { ...DEFAULT_UI.hint, ...(site.ui?.hint || {}) },
   };
   const cap = Math.max(0, Math.floor(Number(ui.tabs.maxTemporary) || 0));
   const fixedIds = tabs.filter((id) => pages[id].showInBar !== false || kept.includes(id));
@@ -490,6 +517,8 @@ export default function App() {
   return (
     <NavContext.Provider value={go}>
       <TextStylesContext.Provider value={textStyles(general)}>
+      <ButtonRulesContext.Provider value={ui.buttons}>
+      <WaitContext.Provider value={waitApi}>
       <div
         className={`site dock-${dock} ${editing ? "editing" : ""} ${previewing ? "phone-preview" : ""}`}
         style={vars}
@@ -502,6 +531,7 @@ export default function App() {
         {barIds.length > 1 && (
           <TabBar ids={barIds} pages={pages} active={activeTab} onPick={go} />
         )}
+        <HintWidget hint={ui.hint} count={waitCount} />
         <div className="tab-stage" ref={stageRef}>
           <div key={activeTab} className="tab-current">
             <Canvas
@@ -546,6 +576,8 @@ export default function App() {
           </ErrorBoundary>
         )}
       </div>
+      </WaitContext.Provider>
+      </ButtonRulesContext.Provider>
       </TextStylesContext.Provider>
     </NavContext.Provider>
   );

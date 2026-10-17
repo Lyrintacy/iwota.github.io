@@ -131,6 +131,10 @@ export const DEFAULT_SCROLL = { panSmoothMs: 240 };
 export const DEFAULT_UI = {
   tabs: { font: "", text: 0, background: 0, active: 0, maxTemporary: 1, slide: true },
   workshop: { font: "", text: 0, background: 0 },
+  // Two presses: the first press on a button opens its card, the second clicks it. Per pointer type.
+  buttons: { touch: false, pc: false },
+  // A round hint shown while a card waits for its second press. Image, else message, else an arrow.
+  hint: { on: false, side: "right", image: "", message: "" },
 };
 export const DEFAULT_FONTS = [
   { id: "serif", name: "Serif", family: "Georgia, \"Times New Roman\", serif", file: "" },

@@ -1885,6 +1885,48 @@ export function Editor({
           <Group title="Text families (default size, font and colour for each)">
           <TextFamiliesFields site={site} setSite={setSite} palette={paletteOptions(site)} />
           </Group>
+          <Group title="Buttons: two presses (site-wide)">
+          <p className="hint">
+            With two presses, the first press on a button opens its card and the second press
+            clicks it (follows its link, flashes). Hover does not open the card on that device.
+          </p>
+          <Check
+            label="Two presses on touch screens"
+            checked={ui.buttons.touch}
+            onChange={(touch) => setUi("buttons", { touch })}
+          />
+          <Check
+            label="Two presses on PC (mouse)"
+            checked={ui.buttons.pc}
+            onChange={(pc) => setUi("buttons", { pc })}
+          />
+          </Group>
+          <Group title="Hint for a second press (round badge by the tab bar)">
+          <Check
+            label="Show the hint while a card waits for its second press"
+            checked={ui.hint.on}
+            onChange={(on) => setUi("hint", { on })}
+          />
+          <Select
+            label="Side of the tab bar"
+            value={ui.hint.side || "right"}
+            options={[
+              ["right", "Right (arrow points right)"],
+              ["left", "Left (arrow points left)"],
+            ]}
+            onChange={(side) => setUi("hint", { side })}
+          />
+          <FilePath
+            label="Round picture (optional)"
+            value={ui.hint.image || ""}
+            type="image"
+            placeholder="0/hint"
+            onChange={(image) => setUi("hint", { image })}
+          />
+          <Field label="Message (used when there is no picture; empty = an arrow)">
+            <input value={ui.hint.message || ""} onChange={(e) => setUi("hint", { message: e.target.value })} />
+          </Field>
+          </Group>
           <Group title="Palette">
           <p className="hint">
             Edit a hex value and the whole page updates. Add or remove colours;
