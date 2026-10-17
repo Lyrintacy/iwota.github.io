@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useLayoutEffect, useRef, useState } from "react";
+import React, { createContext, useContext, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useMedia } from "../lib/media.js";
 import { onPointer, refreshHover, useHoverRegion } from "../lib/hover.js";
@@ -128,6 +128,11 @@ function cardSize(r, scale, fit, pageW, vh) {
   return { w, h };
 }
 
+// Site-wide two-press setting: { touch, pc }. Set by App from General settings.
+export const ButtonRulesContext = createContext({ touch: false, pc: false });
+// Buttons that wait for a second press register here, so the hint can show. Set by App.
+export const WaitContext = createContext({ add() {}, remove() {} });
+
 // The union of several rectangles (the open cards), for hover.
 function unionRect(rects) {
   if (!rects.length) return undefined;
@@ -175,6 +180,12 @@ export function ButtonItem({ item, editing }) {
   const [pinned, setPinned] = useState(false); // touch: tapped on
   const touch = useRef(false); // the last pointer was a finger or pen
   const active = hovered || pinned;
+  const rules = useContext(ButtonRulesContext);
+  const waiting = useContext(WaitContext);
+  const waitKey = useRef({}).current; // this button's entry in the waiting list
+  const opening = useRef(false); // this press opened the card: its link must not follow
+  // Two presses: the first press opens the card, the second clicks. Per pointer type.
+  const twoPressNow = () => (touch.current ? rules.touch : rules.pc) && cards.length > 0;
 
   const [flashing, setFlashing] = useState(false);
   const [shining, setShining] = useState(false);
@@ -218,7 +229,8 @@ export function ButtonItem({ item, editing }) {
       later(() => setShining(false), shineEnd);
     }
     later(() => setPlayGif(isGif), Math.max(flashEnd, shineEnd));
-    if (cards.length) setCard("open"); // each card waits for the flash itself (see CardView)
+    // A two-press button opens on its first press, not on hover. Each card waits for the flash itself.
+    if (cards.length && !(twoPressNow() && !pinned)) setCard("open");
   }, [active]);
 
   // Touch: the tap-on stays until another tap elsewhere, a scroll, or a second tap.
@@ -238,6 +250,17 @@ export function ButtonItem({ item, editing }) {
     };
   }, [pinned]);
 
+  // The first press of a two-press button opens its card, and the hint waits for the second.
+  useEffect(() => {
+    if (pinned && cards.length) setCard((c) => (c === "open" ? c : "open"));
+  }, [pinned]);
+  const waitingNow = pinned && twoPressNow();
+  useEffect(() => {
+    if (waitingNow) waiting.add(waitKey);
+    else waiting.remove(waitKey);
+  }, [waitingNow]);
+  useEffect(() => () => waiting.remove(waitKey), []);
+
   // Runs after the cards have placed themselves, so the hover area includes them.
   useLayoutEffect(() => {
     cardShown.current = card === "open";
@@ -250,10 +273,17 @@ export function ButtonItem({ item, editing }) {
   };
   const onTap = (e) => {
     if (editing) return;
+    // Two presses: the first opens the card (and its link waits), the second acts.
+    if (twoPressNow() && !pinned) {
+      opening.current = true;
+      setPinned(true);
+      return;
+    }
+    opening.current = false;
     if (hasAction && fx.clickFlash) setClicks((c) => c + 1);
     // A link button follows its link at once. Without a link, a tap acts as hover:
     // the first tap starts it, the next one ends it.
-    if (!touch.current || hasLink) return;
+    if (!touch.current || hasLink || twoPressNow()) return;
     e.preventDefault();
     setPinned((p) => !p);
   };
@@ -321,6 +351,10 @@ export function ButtonItem({ item, editing }) {
   const linkTo = (e) => {
     if (editing) {
       e.preventDefault();
+      return;
+    }
+    if (opening.current) {
+      e.preventDefault(); // the first press of a two-press button only opens the card
       return;
     }
     if (e.defaultPrevented) return;
