@@ -616,13 +616,23 @@ function EffectFields({ fx = {}, site, onChange }) {
   );
 }
 
+// A collapsible section of the workshop. Searching opens every group.
+function Group({ title, open = false, children }) {
+  return (
+    <details className="group" open={open}>
+      <summary>{title}</summary>
+      <div className="group-body">{children}</div>
+    </details>
+  );
+}
+
 // One file to copy or download, with its text in a read-only box.
-function ExportFile({ name, text, copy }) {
+function ExportFile({ name, file = name, text, copy }) {
   return (
     <>
       <div className="row">
         <button onClick={() => copy(text, name)}>Copy {name}</button>
-        <button onClick={() => download(name, text)}>Download {name}</button>
+        <button onClick={() => download(file, text)}>Download {file}</button>
       </div>
       <textarea readOnly rows={6} value={text} onFocus={(e) => e.target.select()} />
     </>
@@ -928,7 +938,10 @@ export function Editor({
       el.hidden = !!q && !text.toLowerCase().includes(q);
       if (!el.hidden) visible++;
     });
-    root.querySelectorAll("fieldset.axis, .details, .advanced").forEach((g) => {
+    root.querySelectorAll("details.group").forEach((d) => {
+      if (q) d.open = true;
+    });
+    root.querySelectorAll("fieldset.axis, .details, .advanced, details.group").forEach((g) => {
       const kids = g.querySelectorAll(".field, .check");
       g.hidden = !!q && (kids.length === 0 || [...kids].every((k) => k.hidden));
     });
@@ -1495,11 +1508,13 @@ export function Editor({
                     pages={pagesApi.tabs.map((id) => [id, pagesApi.pages[id].title || id])}
                     onChange={(link) => patch({ link })}
                   />
+                  <Group title="Hover effects">
                   <EffectFields
                     fx={itemView.fx}
                     site={site}
                     onChange={(fx) => patch({ fx: { ...itemView.fx, ...fx } })}
                   />
+                  </Group>
                 </>
               )}
 
@@ -1610,7 +1625,7 @@ export function Editor({
               : "These are the main tab's settings. Tabs that use the defaults follow them."}{" "}
             Change a tab's settings on the Tabs tab.
           </p>
-          <h4>Tab bar (site-wide)</h4>
+          <Group title="Tab bar (site-wide)">
           <NumberField
             label="Temporary slots for hidden tabs opened by a link"
             value={ui.tabs.maxTemporary}
@@ -1640,8 +1655,14 @@ export function Editor({
             options={rootColourOptions}
             onChange={(n) => setUi("tabs", { active: Number(n) })}
           />
+          <Check
+            label="Slide between tabs on a PC (the old page slides out, the new one slides in)"
+            checked={ui.tabs.slide !== false}
+            onChange={(slide) => setUi("tabs", { slide })}
+          />
 
-          <h4>Workshop look (site-wide)</h4>
+          </Group>
+          <Group title="Workshop look (site-wide)">
           <Select
             label="Font"
             value={ui.workshop.font || ""}
@@ -1661,7 +1682,8 @@ export function Editor({
             onChange={(n) => setUi("workshop", { background: Number(n) })}
           />
 
-          <h4>Text sizes (px, applies to every text item)</h4>
+          </Group>
+          <Group title="Text sizes (px, applies to every text item)">
           {Object.entries(TEXT_SIZE_LABELS).map(([key, label]) => (
             <NumberField
               key={key}
@@ -1671,7 +1693,8 @@ export function Editor({
             />
           ))}
 
-          <h4>Palette</h4>
+          </Group>
+          <Group title="Palette">
           <p className="hint">
             Edit a hex value and the whole page updates. Add or remove colours;
             roles and sections keep their colours when a colour is removed.
@@ -1701,7 +1724,8 @@ export function Editor({
             <button onClick={addColour}>+ Add colour</button>
           </div>
 
-          <h4>Fonts (for text items, chosen on each text item)</h4>
+          </Group>
+          <Group title="Fonts (for text items, chosen on each text item)">
           <p className="hint">
             A font is a CSS font family, such as <code>Georgia, serif</code>. Or name a
             file in <code>public/fonts/</code>: WOFF2, WOFF, TrueType (<code>.ttf</code>) or OpenType (<code>.otf</code>), for example <code>Display.ttf</code>
@@ -1737,7 +1761,8 @@ export function Editor({
             <button onClick={addFont}>+ Add font</button>
           </div>
 
-          <h4>Scrolling</h4>
+          </Group>
+          <Group title="Scrolling">
           <NumberField
             label="Texture panning smoothing (ms, 0 = instant)"
             value={rootSite.scroll?.panSmoothMs ?? 240}
@@ -1750,7 +1775,8 @@ export function Editor({
             site, every tab.
           </p>
 
-          <h4>Roles</h4>
+          </Group>
+          <Group title="Roles">
           {ROLES.map((role) => (
             <Select
               key={role}
@@ -1760,6 +1786,7 @@ export function Editor({
               onChange={(n) => setRole(role, Number(n))}
             />
           ))}
+          </Group>
         </div>
       )}
 
@@ -1880,18 +1907,13 @@ export function Editor({
           </p>
           <div className="paste-guide">
             <p className="hint">
-              <b>To save these to the site:</b> download the file below, then on GitHub open{" "}
-              <code>src/config/pages/{page.id}.json</code> and replace the value of its{" "}
-              <code>"mobile"</code> entry with the contents of the downloaded file. Keep the
-              name <code>"mobile"</code> and the braces around the object, like this:
-            </p>
-            <pre className="snippet">{`"mobile": {\n  "breakpoint": ${mobile.breakpoint},\n  ...contents of the file...\n}`}</pre>
-            <p className="hint">
-              If the file has no <code>"mobile"</code> entry yet, add one after the{" "}
-              <code>"sections"</code> entry, with a comma before it. Then commit.
+              <b>Saving phone overrides:</b> they are one file per tab,{" "}
+              <code>src/config/phone/{page.id}.json</code>. Download it, or copy it, and save it
+              there (replacing the old file). It holds only the phone overrides: the contents of
+              this box, with no wrapper. The page file is not changed.
             </p>
             <div className="row">
-              <button onClick={() => copy(mobileText, `${page.id}-phone.json`)}>Copy phone JSON</button>
+              <button onClick={() => copy(mobileText, `phone/${page.id}.json`)}>Copy phone file</button>
               <button onClick={() => download(`${page.id}-phone.json`, mobileText)}>
                 Download {page.id}-phone.json
               </button>
@@ -1930,16 +1952,30 @@ export function Editor({
           <p className="hint">
             Copy each file and paste it over the matching file in GitHub. The site settings
             (tab order, fonts, scrolling, and the defaults) go in{" "}
-            <code>src/config/site.json</code>. Each tab goes in{" "}
-            <code>src/config/pages/</code> under its own name (<code>main.json</code> for the
-            main tab). Commit, and the site rebuilds.
+            <code>src/config/site.json</code>. Each tab's content goes in{" "}
+            <code>src/config/pages/&lt;tab&gt;.json</code>. Its phone overrides go in{" "}
+            <code>src/config/phone/&lt;tab&gt;.json</code> (the download is named{" "}
+            <code>&lt;tab&gt;-phone.json</code>: save it in that folder under the tab's name).
+            Commit, and the site rebuilds.
           </p>
           <ExportFile name="site.json" text={siteText} copy={copy} />
+          {pagesApi.tabs.map((id) => {
+            const { mobile: _phone, ...pageFile } = pagesApi.pages[id];
+            return (
+              <ExportFile
+                key={id}
+                name={`${id}.json`}
+                text={JSON.stringify(pageFile, null, 2) + "\n"}
+                copy={copy}
+              />
+            );
+          })}
           {pagesApi.tabs.map((id) => (
             <ExportFile
-              key={id}
-              name={`${id}.json`}
-              text={JSON.stringify(pagesApi.pages[id], null, 2) + "\n"}
+              key={`phone-${id}`}
+              name={`phone/${id}.json`}
+              file={`${id}-phone.json`}
+              text={JSON.stringify({ ...DEFAULT_MOBILE, ...(pagesApi.pages[id].mobile || {}) }, null, 2) + "\n"}
               copy={copy}
             />
           ))}

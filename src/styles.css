@@ -860,3 +860,27 @@ html {
   font: 11px/1.4 ui-monospace, monospace;
   white-space: pre-wrap;
 }
+
+/* Collapsible workshop sections */
+details.group {
+  margin: 6px 0;
+  border-top: 1px solid #e5e5e5;
+}
+details.group > summary {
+  cursor: pointer;
+  padding: 8px 0;
+  font-weight: 600;
+  list-style: none;
+}
+details.group > summary::-webkit-details-marker {
+  display: none;
+}
+details.group > summary::before {
+  content: "\25B8  ";
+}
+details.group[open] > summary::before {
+  content: "\25BE  ";
+}
+details.group > .group-body {
+  padding-bottom: 6px;
+}
