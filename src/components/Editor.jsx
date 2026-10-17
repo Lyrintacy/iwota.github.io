@@ -1,27 +1,6 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import images from "virtual:images";
-import {
-  ANCHORS,
-  COLORS,
-  DEFAULT_DESIGN,
-  DEFAULT_UI,
-  DEFAULT_LINK,
-  DEFAULT_MOBILE,
-  DEFAULT_SPEED,
-  DEFAULT_TEXT,
-  ROLES,
-  SIZE_UNITS,
-  TYPES,
-  UNITS,
-  formatAt,
-  isBand,
-  newItem,
-  newSection,
-  pageSlug,
-  removeColour,
-  toggleFormat,
-  uid,
-} from "../lib/model.js";
+import { ANCHORS, COLORS, DEFAULT_DESIGN, DEFAULT_UI, DEFAULT_LINK, DEFAULT_MOBILE, DEFAULT_SPEED, DEFAULT_TEXT, ROLES, SIZE_UNITS, TYPES, UNITS, formatAt, isBand, newItem, newSection, pageSlug, removeColour, toggleFormat, uid, DEFAULT_CARD, cardsOf } from "../lib/model.js";
 import { hasExt, useMedia } from "../lib/media.js";
 import { fontFamily } from "../lib/model.js";
 
@@ -459,6 +438,140 @@ function LinkFields({ value, sections, pages = [], onChange }) {
   );
 }
 
+// The cards that open over a button. A button can have several; each has its own
+// look. They open together, later ones on top. Clickable: clicking the card counts as a
+// click on the button. A card that is not clickable lets clicks pass through it.
+function CardsFields({ fx = {}, palette, onChange }) {
+  const cards = cardsOf(fx);
+  // Saves the list and drops the older card fields, so they are not kept in the file.
+  const legacy = Object.fromEntries(
+    Object.keys(fx)
+      .filter((k) => k === "card" || /^card[A-Z]/.test(k))
+      .map((k) => [k, undefined]),
+  );
+  const save = (next) => onChange({ ...legacy, cards: next });
+  const patch = (i, p) => save(cards.map((c, k) => (k === i ? { ...c, ...p } : c)));
+  const num = (i, key) => (v) => patch(i, { [key]: Math.max(0, v) });
+  const move = (i, d) => {
+    const next = [...cards];
+    const j = i + d;
+    if (j < 0 || j >= next.length) return;
+    [next[i], next[j]] = [next[j], next[i]];
+    save(next);
+  };
+  const remove = (i) => save(cards.filter((_, k) => k !== i));
+  const add = () => save([...cards, { ...DEFAULT_CARD }]);
+  return (
+    <fieldset className="axis">
+      <legend>Cards over the button</legend>
+      <Check
+        label="Wait for the button's flash to finish before opening"
+        checked={fx.waitFlash}
+        onChange={(waitFlash) => onChange({ waitFlash })}
+      />
+      {cards.length === 0 && <p className="hint">No cards: hovering the button opens nothing.</p>}
+      {cards.map((c, i) => (
+        <fieldset className="axis" key={i}>
+          <legend>Card {i + 1}</legend>
+          <Check
+            label="Clicking this card counts as a click on the button (its link runs, the button flashes)"
+            checked={c.clickable}
+            onChange={(clickable) => patch(i, { clickable })}
+          />
+          <NumberField label="Card size (times the button)" value={c.scale} onChange={(v) => patch(i, { scale: Math.max(1, v) })} />
+          <Select
+            label="Keep the card on screen by"
+            value={c.fit || "both"}
+            options={[
+              ["none", "Not at all"],
+              ["x", "Width"],
+              ["y", "Height"],
+              ["both", "Width and height"],
+            ]}
+            onChange={(fit) => patch(i, { fit })}
+          />
+          <FilePath
+            label="Card picture (optional, else the button image)"
+            value={c.file || ""}
+            type="image"
+            placeholder="0/card"
+            onChange={(file) => patch(i, { file })}
+          />
+          <Select
+            label="Card background"
+            value={String(c.background ?? 0)}
+            options={[["0", "Transparent (a PNG shows its own shape)"], ...palette]}
+            onChange={(n) => patch(i, { background: Number(n) })}
+          />
+          <Select
+            label="Card picture fit"
+            value={c.imageFit || "cover"}
+            options={[
+              ["cover", "Fill the card (crops the picture)"],
+              ["contain", "Fit inside (keeps the whole picture)"],
+            ]}
+            onChange={(imageFit) => patch(i, { imageFit })}
+          />
+          <NumberField label="Open duration (ms)" value={c.openMs} onChange={num(i, "openMs")} />
+          <NumberField label="Close duration (ms)" value={c.closeMs} onChange={num(i, "closeMs")} />
+          <NumberField label="Corner radius (px)" value={c.radius} onChange={num(i, "radius")} />
+          <Check label="Tilt with the cursor" checked={c.tilt} onChange={(tilt) => patch(i, { tilt })} />
+          {c.tilt && <NumberField label="Tilt strength (%)" value={c.tiltStrength} onChange={num(i, "tiltStrength")} />}
+          <Check label="Shake when it opens" checked={c.shake} onChange={(shake) => patch(i, { shake })} />
+          {c.shake && (
+            <>
+              <NumberField label="Shake duration (ms)" value={c.shakeMs} onChange={num(i, "shakeMs")} />
+              <NumberField label="Shake strength (%)" value={c.shakeAmount} onChange={num(i, "shakeAmount")} />
+            </>
+          )}
+          <Check label="Moving band across the card" checked={c.shine} onChange={(shine) => patch(i, { shine })} />
+          {c.shine && (
+            <>
+              <Select
+                label="Band colour"
+                value={String(c.shineColour ?? 4)}
+                options={palette}
+                onChange={(n) => patch(i, { shineColour: Number(n) })}
+              />
+              <NumberField label="Band width (% of the card)" value={c.shineWidth} onChange={num(i, "shineWidth")} />
+              <NumberField label="Band speed: time to cross (ms)" value={c.shineMs} onChange={num(i, "shineMs")} />
+              <NumberField label="Band slant (degrees)" value={c.slant} onChange={num(i, "slant")} />
+            </>
+          )}
+          <Check label="Colour flash when it opens" checked={c.flash} onChange={(flash) => patch(i, { flash })} />
+          {c.flash && (
+            <>
+              <Select
+                label="Flash colour (also the click flash colour)"
+                value={String(c.flashColour ?? 3)}
+                options={palette}
+                onChange={(n) => patch(i, { flashColour: Number(n) })}
+              />
+              <NumberField label="Flash duration (ms)" value={c.flashMs} onChange={num(i, "flashMs")} />
+            </>
+          )}
+          <div className="row">
+            <button type="button" disabled={i === 0} onClick={() => move(i, -1)}>
+              Move up
+            </button>
+            <button type="button" disabled={i === cards.length - 1} onClick={() => move(i, 1)}>
+              Move down
+            </button>
+            <button type="button" onClick={() => remove(i)}>
+              Remove card {i + 1}
+            </button>
+          </div>
+        </fieldset>
+      ))}
+      <div className="row">
+        <button type="button" onClick={add}>
+          Add a card
+        </button>
+      </div>
+    </fieldset>
+  );
+}
+
 // Hover sequence for buttons. Each group is a step of the sequence; every
 // number is a variable, stored per item in fx.
 function EffectFields({ fx = {}, site, onChange }) {
@@ -516,104 +629,7 @@ function EffectFields({ fx = {}, site, onChange }) {
           </>
         )}
       </fieldset>
-      <fieldset className="axis">
-        <legend>Card</legend>
-        <Check label="Open a card over the page" checked={fx.card} onChange={set("card")} />
-        {fx.card && (
-          <>
-            <NumberField label="Card size (times the button)" value={fx.cardScale ?? 2.5} onChange={(v) => onChange({ cardScale: Math.max(1, v) })} />
-            <Select
-              label="Keep the card on screen by"
-              value={fx.cardFit || "both"}
-              options={[
-                ["none", "Not at all"],
-                ["x", "Width"],
-                ["y", "Height"],
-                ["both", "Width and height"],
-              ]}
-              onChange={(cardFit) => onChange({ cardFit })}
-            />
-            <FilePath
-              label="Card picture (optional, else the button image)"
-              value={fx.cardFile || ""}
-              type="image"
-              placeholder="0/card"
-              onChange={(cardFile) => onChange({ cardFile })}
-            />
-            <Select
-              label="Card background"
-              value={String(fx.cardBackground ?? 0)}
-              options={[["0", "Transparent (a PNG shows its own shape)"], ...palette]}
-              onChange={(n) => onChange({ cardBackground: Number(n) })}
-            />
-            <Select
-              label="Card picture fit"
-              value={fx.cardImageFit || "cover"}
-              options={[
-                ["cover", "Fill the card (crops the picture)"],
-                ["contain", "Fit inside (keeps the whole picture)"],
-              ]}
-              onChange={(cardImageFit) => onChange({ cardImageFit })}
-            />
-            <NumberField label="Open duration (ms)" value={fx.cardOpenMs ?? 450} onChange={num("cardOpenMs")} />
-            <NumberField label="Close duration (ms)" value={fx.cardCloseMs ?? 360} onChange={num("cardCloseMs")} />
-            <NumberField label="Corner radius (px)" value={fx.cardRadius ?? 6} onChange={num("cardRadius")} />
-            <Check
-              label="Wait for the button's flash to finish before opening"
-              checked={fx.waitFlash}
-              onChange={set("waitFlash")}
-            />
-            <Check label="Tilt with the cursor" checked={fx.cardTilt} onChange={set("cardTilt")} />
-            {fx.cardTilt && (
-              <NumberField label="Tilt strength (%)" value={fx.cardTiltStrength ?? 100} onChange={num("cardTiltStrength")} />
-            )}
-          </>
-        )}
-      </fieldset>
-      {fx.card && (
-        <>
-          <fieldset className="axis">
-            <legend>Card: shake</legend>
-            <Check label="Shake when it opens" checked={fx.cardShake} onChange={set("cardShake")} />
-            {fx.cardShake && (
-              <>
-                <NumberField label="Shake duration (ms)" value={fx.cardShakeMs ?? 600} onChange={num("cardShakeMs")} />
-                <NumberField label="Shake strength (%)" value={fx.cardShakeAmount ?? 100} onChange={num("cardShakeAmount")} />
-              </>
-            )}
-          </fieldset>
-          <fieldset className="axis">
-            <legend>Card: moving band (shine)</legend>
-            <Check label="Moving band across the card" checked={fx.cardShine} onChange={set("cardShine")} />
-            {fx.cardShine && (
-              <>
-                <Select
-                  label="Band colour"
-                  value={String(fx.cardShineColour ?? 4)}
-                  options={palette}
-                  onChange={(n) => onChange({ cardShineColour: Number(n) })}
-                />
-                <NumberField label="Band width (% of the card)" value={fx.cardShineWidth ?? 70} onChange={num("cardShineWidth")} />
-                <NumberField label="Band speed: time to cross (ms)" value={fx.cardShineMs ?? 700} onChange={num("cardShineMs")} />
-              </>
-            )}
-          </fieldset>
-          <fieldset className="axis">
-            <legend>Card: colour flash</legend>
-            <Check label="Colour flash when it opens" checked={fx.cardFlash} onChange={set("cardFlash")} />
-            {fx.cardFlash && (
-              <>
-                <Select
-                  label="Flash colour"
-                  value={String(fx.cardFlashColour ?? 3)}
-                  options={palette}
-                  onChange={(n) => onChange({ cardFlashColour: Number(n) })}
-                />
-              </>
-            )}
-          </fieldset>
-        </>
-      )}
+      <CardsFields fx={fx} palette={palette} onChange={onChange} />
       <fieldset className="axis">
         <legend>Click</legend>
         <Check
@@ -622,7 +638,7 @@ function EffectFields({ fx = {}, site, onChange }) {
           onChange={set("clickFlash")}
         />
         <p className="hint">
-          Colour for the click flash is the card flash colour. On a touch screen a button with no
+          Colour for the click flash is the first card's flash colour. On a touch screen a button with no
           link acts as hover on a tap; another tap, a tap elsewhere, or scrolling ends it.
           A button with a link follows the link on the first tap.
         </p>
