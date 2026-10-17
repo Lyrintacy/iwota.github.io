@@ -6,7 +6,12 @@
 //   instead of snapping. Every panning texture reads it (see panPos in model.js).
 //
 // Set both time constants to 0 (or use reduced motion) to turn smoothing off.
-const PAN_TAU_MS = 240; // time to close most of the gap between pan and target
+// Time to close most of the gap between the pan and its target. Set from the
+// site config (scroll.panSmoothMs) and changed live in the workshop.
+let PAN_TAU_MS = 240;
+export function setPanSmoothing(ms) {
+  PAN_TAU_MS = Math.max(0, Number(ms) || 0);
+}
 const WHEEL_EASE = 0.09; // share of the remaining wheel distance covered per frame
 
 const reducedMotion = () =>

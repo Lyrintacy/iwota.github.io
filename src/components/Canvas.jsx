@@ -8,7 +8,11 @@ function Text({ item }) {
   return (
     <Tag
       className={`text-body level-${Tag}`}
-      style={{ textAlign: item.align || "left", color: `var(--c-${item.color || "text"})` }}
+      style={{
+        textAlign: item.align || "left",
+        color: `var(--c-${item.color || "text"})`,
+        fontFamily: item.font ? `var(--font-${item.font})` : undefined,
+      }}
     >
       {inlineTokens(item.text).map((t, i) => (
         <span
