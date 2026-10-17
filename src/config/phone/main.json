@@ -17,11 +17,41 @@
     },
     "text-k8wgd": {
       "h": {
-        "anchor": "end",
+        "anchor": "center",
         "offset": 0,
         "offsetEnd": 0,
         "unit": "px",
         "size": 11,
+        "sizeUnit": "auto"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "v": {
+        "anchor": "start",
+        "offset": 10,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 100,
+        "sizeUnit": "px"
+      }
+    },
+    "button-ddjxs": {
+      "h": {
+        "anchor": "center",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 200,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "center",
+        "offset": -20,
+        "offsetEnd": 0,
+        "unit": "%",
+        "size": 200,
         "sizeUnit": "px"
       }
     }

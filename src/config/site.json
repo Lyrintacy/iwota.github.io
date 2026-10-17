@@ -1,7 +1,8 @@
 {
   "version": 1,
   "tabs": [
-    "main"
+    "main",
+    "polar-protocol"
   ],
   "palette": [
     "#1B0E1F",
@@ -46,7 +47,7 @@
     }
   ],
   "scroll": {
-    "panSmoothMs": 240
+    "panSmoothMs": 1000
   },
   "ui": {
     "tabs": {

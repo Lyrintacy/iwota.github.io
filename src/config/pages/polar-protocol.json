@@ -1,0 +1,14 @@
+{
+  "id": "polar-protocol",
+  "title": "Polar Protocol",
+  "useDefaults": true,
+  "showInBar": true,
+  "keepWhenOpened": false,
+  "canvas": {
+    "height": 1200,
+    "designWidth": 1200,
+    "designHeight": 800
+  },
+  "items": [],
+  "sections": []
+}
