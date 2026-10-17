@@ -253,16 +253,20 @@ export default function App() {
   useEffect(() => sessionStorage.setItem(TEMP_KEY, JSON.stringify(temp)), [temp]);
 
   // Buttons waiting for a second press (the hint shows while there are any).
-  const waitSet = useRef(new Set());
+  const waitSet = useRef(new Map());
   const [waitCount, setWaitCount] = useState(0);
+  const [waitEl, setWaitEl] = useState(null); // the button the hint points at (the latest one waiting)
   const waitApi = useMemo(
     () => ({
-      add: (k) => {
-        waitSet.current.add(k);
+      add: (k, el) => {
+        waitSet.current.set(k, el);
+        setWaitEl(el || null);
         setWaitCount(waitSet.current.size);
       },
       remove: (k) => {
-        if (waitSet.current.delete(k)) setWaitCount(waitSet.current.size);
+        if (!waitSet.current.delete(k)) return;
+        setWaitEl([...waitSet.current.values()].pop() || null);
+        setWaitCount(waitSet.current.size);
       },
     }),
     [],
@@ -344,10 +348,11 @@ export default function App() {
     if (id !== activeTab) {
       const dir = tabs.indexOf(id) > tabs.indexOf(activeTab) ? 1 : -1;
       // PC only: a fine pointer with hover, outside the phone layout, not reduced motion.
+      // Phones only with the "slide on phones" test option.
       const canSlide =
-        !phoneViewport &&
-        ui.tabs.slide !== false &&
-        window.matchMedia("(hover: hover) and (pointer: fine)").matches &&
+        (phoneViewport
+          ? ui.tabs.slidePhone === true
+          : ui.tabs.slide !== false && window.matchMedia("(hover: hover) and (pointer: fine)").matches) &&
         !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       const current = stageRef.current?.querySelector(":scope > .tab-current > .canvas");
       if (canSlide && current) {
@@ -507,6 +512,9 @@ export default function App() {
   const toggleVars = {};
   if (rootHex(ui.toggle.text)) toggleVars["--tb-text"] = rootHex(ui.toggle.text);
   if (rootHex(ui.toggle.background)) toggleVars["--tb-bg"] = rootHex(ui.toggle.background);
+  const hintVars = {};
+  if (rootHex(ui.hint.background)) hintVars["--hint-bg"] = rootHex(ui.hint.background);
+  if (rootHex(ui.hint.text)) hintVars["--hint-fg"] = rootHex(ui.hint.text);
   const setVar = (key, value) => {
     if (value) vars[key] = value;
   };
@@ -535,7 +543,7 @@ export default function App() {
         {barIds.length > 1 && (
           <TabBar ids={barIds} pages={pages} active={activeTab} onPick={go} />
         )}
-        <HintWidget hint={ui.hint} count={waitCount} />
+        <HintWidget hint={ui.hint} count={waitCount} el={waitEl} style={hintVars} />
         <div className="tab-stage" ref={stageRef}>
           <div key={activeTab} className="tab-current">
             <Canvas

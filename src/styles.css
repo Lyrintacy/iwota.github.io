@@ -888,7 +888,6 @@ details.group > .group-body {
 /* A round hint for a button that waits for a second press */
 .hint-widget {
   position: fixed;
-  top: 6px;
   z-index: 950;
   width: 48px;
   height: 48px;
@@ -897,17 +896,12 @@ details.group > .group-body {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  background: var(--tab-bg, #fff);
-  color: var(--tab-text, #111);
+  background: var(--hint-bg, #fff);
+  color: var(--hint-fg, #111);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
   pointer-events: none;
   animation: hint-pulse 1.2s ease-in-out infinite;
-}
-.hint-widget.side-right {
-  right: 8px;
-}
-.hint-widget.side-left {
-  left: 8px;
+  transform: translateX(-50%);
 }
 .hint-widget img {
   width: 100%;
@@ -927,10 +921,10 @@ details.group > .group-body {
 @keyframes hint-pulse {
   0%,
   100% {
-    transform: scale(1);
+    transform: translateX(-50%) scale(1);
   }
   50% {
-    transform: scale(1.12);
+    transform: translateX(-50%) scale(1.12);
   }
 }
 

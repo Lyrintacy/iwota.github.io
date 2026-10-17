@@ -1855,9 +1855,14 @@ export function Editor({
             onChange={(n) => setUi("tabs", { active: Number(n) })}
           />
           <Check
-            label="Slide between tabs on a PC (the old page slides out, the new one slides in)"
+            label="Slide between tabs on a PC (the new page slides in over the old one)"
             checked={ui.tabs.slide !== false}
             onChange={(slide) => setUi("tabs", { slide })}
+          />
+          <Check
+            label="Slide between tabs on phones (for testing)"
+            checked={ui.tabs.slidePhone === true}
+            onChange={(slidePhone) => setUi("tabs", { slidePhone })}
           />
 
           </Group>
@@ -1920,20 +1925,37 @@ export function Editor({
             onChange={(pc) => setUi("buttons", { pc })}
           />
           </Group>
-          <Group title="Hint for a second press (round badge by the tab bar)">
+          <Group title="Hint for a second press (round badge under the button)">
           <Check
             label="Show the hint while a card waits for its second press"
             checked={ui.hint.on}
             onChange={(on) => setUi("hint", { on })}
           />
           <Select
-            label="Side of the tab bar"
+            label="Arrow points (when there is no picture or message)"
             value={ui.hint.side || "right"}
             options={[
-              ["right", "Right (arrow points right)"],
-              ["left", "Left (arrow points left)"],
+              ["right", "Right"],
+              ["left", "Left"],
             ]}
             onChange={(side) => setUi("hint", { side })}
+          />
+          <NumberField
+            label="Distance below the centre of the button (px)"
+            value={ui.hint.distance ?? 12}
+            onChange={(v) => setUi("hint", { distance: Math.max(0, Math.round(v)) })}
+          />
+          <Select
+            label="Background colour (no picture)"
+            value={String(ui.hint.background ?? 0)}
+            options={rootColourOptions}
+            onChange={(n) => setUi("hint", { background: Number(n) })}
+          />
+          <Select
+            label="Text colour (no picture)"
+            value={String(ui.hint.text ?? 0)}
+            options={rootColourOptions}
+            onChange={(n) => setUi("hint", { text: Number(n) })}
           />
           <FilePath
             label="Round picture (optional)"

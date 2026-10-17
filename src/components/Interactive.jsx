@@ -131,7 +131,7 @@ function cardSize(r, scale, fit, pageW, vh) {
 // Site-wide two-press setting: { touch, pc }. Set by App from General settings.
 export const ButtonRulesContext = createContext({ touch: false, pc: false });
 // Buttons that wait for a second press register here, so the hint can show. Set by App.
-export const WaitContext = createContext({ add() {}, remove() {} });
+export const WaitContext = createContext({ add() {}, remove() {} }); // add(key, element)
 
 // The union of several rectangles (the open cards), for hover.
 function unionRect(rects) {
@@ -256,7 +256,7 @@ export function ButtonItem({ item, editing }) {
   }, [pinned]);
   const waitingNow = pinned && twoPressNow();
   useEffect(() => {
-    if (waitingNow) waiting.add(waitKey);
+    if (waitingNow) waiting.add(waitKey, ref.current);
     else waiting.remove(waitKey);
   }, [waitingNow]);
   useEffect(() => () => waiting.remove(waitKey), []);
