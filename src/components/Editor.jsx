@@ -1578,6 +1578,41 @@ export function Editor({
                     ]}
                     onChange={(fit) => patch({ fit })}
                   />
+                  {item.type === "image" && (
+                    <>
+                      <p className="hint">
+                        Pan moves the picture inside its frame, keeping its shape (no tiling). While
+                        panning, Fit is not used.
+                      </p>
+                      <PanControl
+                        axis="X"
+                        pan={itemView.scrollX}
+                        speed={itemView.speedX}
+                        onChange={patch}
+                      />
+                      <PanControl
+                        axis="Y"
+                        pan={itemView.scrollY}
+                        speed={itemView.speedY}
+                        onChange={patch}
+                      />
+                      <NumberField
+                        label="Offset X (px)"
+                        value={itemView.offsetX}
+                        onChange={(offsetX) => patch({ offsetX })}
+                      />
+                      <NumberField
+                        label="Offset Y (px)"
+                        value={itemView.offsetY}
+                        onChange={(offsetY) => patch({ offsetY })}
+                      />
+                      <NumberField
+                        label="Room to move (% bigger than the frame)"
+                        value={itemView.room ?? 20}
+                        onChange={(room) => patch({ room: Math.max(0, room) })}
+                      />
+                    </>
+                  )}
                 </>
               )}
               {item.type === "video" && (

@@ -62,6 +62,7 @@ function Text({ item }) {
 }
 
 function Media({ item }) {
+  if (item.type === "image" && (item.scrollX || item.scrollY)) return <PannedImage item={item} />;
   const main = useMedia(item.type, item.file);
   const poster = useMedia("image", item.poster);
   if (item.type === "video")
@@ -85,6 +86,46 @@ function Media({ item }) {
       alt={item.alt || ""}
       style={{ objectFit: item.fit || "contain", borderRadius: cornerRadius(item.radius) }}
     />
+  );
+}
+
+// A picture that keeps its shape and pans inside its frame (no tiling). It is drawn at
+// cover size, made bigger by the room, and moves within that room, stopping at its edges.
+// Negative speed moves the other way.
+function PannedImage({ item }) {
+  const media = useMedia("image", item.file);
+  const aspect = useImageAspect(media.url);
+  const ref = useRef(null);
+  const [box, setBox] = useState({ w: 0, h: 0 });
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([e]) => setBox({ w: e.contentRect.width, h: e.contentRect.height }));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  const room = Math.max(0, Number(item.room ?? 20)) / 100;
+  const W = Math.max(box.w, box.h / aspect) * (1 + room);
+  const H = W * aspect;
+  const rangeX = Math.max(0, (W - box.w) / 2);
+  const rangeY = Math.max(0, (H - box.h) / 2);
+  // Centred, then moved by the pan or offset, but never past the room on either side.
+  const move = (offset, pan, speed, range) =>
+    `calc(${-range}px + clamp(${-range}px, ${panPos(offset, pan, speed)}, ${range}px))`;
+  return (
+    <div ref={ref} className="media animated" style={{ borderRadius: cornerRadius(item.radius) }}>
+      <img
+        className="panned-img"
+        src={media.url || undefined}
+        alt={item.alt || ""}
+        style={{
+          width: W,
+          height: H,
+          transform: `translate3d(${move(item.offsetX, item.scrollX, item.speedX, rangeX)}, ${move(item.offsetY, item.scrollY, item.speedY, rangeY)}, 0)`,
+          willChange: "transform",
+        }}
+      />
+    </div>
   );
 }
 
