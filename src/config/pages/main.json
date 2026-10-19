@@ -98,7 +98,7 @@
         "sizeUnit": "%"
       },
       "v": {
-        "anchor": "start",
+        "anchor": "stretch",
         "offset": 0,
         "offsetEnd": 0,
         "unit": "px",
@@ -163,7 +163,7 @@
         "sizeUnit": "%"
       },
       "v": {
-        "anchor": "start",
+        "anchor": "stretch",
         "offset": 0,
         "offsetEnd": 0,
         "unit": "px",
@@ -222,11 +222,11 @@
       "name": "Portrait Image",
       "parent": "",
       "h": {
-        "anchor": "end",
-        "offset": 50,
+        "anchor": "start",
+        "offset": 400,
         "offsetEnd": 0,
-        "unit": "%",
-        "size": 500,
+        "unit": "px",
+        "size": 300,
         "sizeUnit": "px"
       },
       "v": {
@@ -246,7 +246,7 @@
         "on": true,
         "axis": "both"
       },
-      "file": "Me/IMG_5152.JPEG",
+      "file": "Me/IMG_5176.PNG",
       "alt": "",
       "fit": "contain",
       "hoverOnly": false,
@@ -277,9 +277,9 @@
       },
       "offsetX": 0,
       "radius": {
-        "tl": 40,
-        "tr": 40,
-        "br": 40,
+        "tl": 50,
+        "tr": 50,
+        "br": 50,
         "bl": 0
       },
       "offsetY": 0,
@@ -292,15 +292,15 @@
       "parent": "",
       "h": {
         "anchor": "start",
-        "offset": 10,
+        "offset": 120,
         "offsetEnd": 0,
-        "unit": "%",
+        "unit": "px",
         "size": 300,
         "sizeUnit": "px"
       },
       "v": {
         "anchor": "start",
-        "offset": 145,
+        "offset": 30,
         "offsetEnd": 0,
         "unit": "px",
         "size": 0,
@@ -314,10 +314,10 @@
       "text": "Oskar Wota\n",
       "level": "h1",
       "align": "left",
-      "color": "",
+      "color": 3,
       "shrink": {
-        "on": true,
         "axis": "x",
+        "on": true,
         "grow": true
       }
     },
@@ -357,6 +357,68 @@
       "level": "p",
       "align": "left",
       "color": ""
+    },
+    {
+      "id": "image-t5azo",
+      "type": "image",
+      "name": "",
+      "parent": "",
+      "h": {
+        "anchor": "center",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 300,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 450,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 5,
+        "sizeUnit": "px"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "on": false,
+        "axis": "x"
+      },
+      "file": "",
+      "alt": "",
+      "fit": "contain",
+      "hoverOnly": false,
+      "thumbnail": "",
+      "button": false,
+      "link": {
+        "kind": "none",
+        "url": "",
+        "section": "",
+        "page": "",
+        "newTab": false
+      },
+      "fx": {
+        "shake": true,
+        "shakeMs": 600,
+        "shakeAmount": 100,
+        "flash": true,
+        "flashMs": 300,
+        "flashColour": 0,
+        "flashStrength": 95,
+        "shine": true,
+        "shineDelayMs": 0,
+        "shineMs": 700,
+        "shineWidth": 70,
+        "shineColour": 4,
+        "shineSlant": 18,
+        "clickFlash": true
+      },
+      "emptyColour": 2,
+      "radius": 100
     }
   ],
   "sections": [

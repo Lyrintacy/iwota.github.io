@@ -18,24 +18,29 @@
       },
       "text-k8wgd": {
         "h": {
-          "anchor": "center",
-          "offset": -40,
+          "anchor": "start",
+          "offset": 40,
           "offsetEnd": 0,
           "unit": "px",
-          "size": 11,
-          "sizeUnit": "auto"
+          "size": 400,
+          "sizeUnit": "px"
         },
         "v": {
           "anchor": "start",
-          "offset": 10,
+          "offset": 40,
           "offsetEnd": 0,
           "unit": "px",
           "size": 0,
           "sizeUnit": "auto"
         },
-        "text": "Oskar Wota\n",
+        "text": "O\nA\nK\nA\nR\n..................Wota\n",
         "align": "left",
-        "size": 40
+        "size": 50,
+        "shrink": {
+          "axis": "x",
+          "on": false,
+          "grow": true
+        }
       },
       "image-cr3wj": {
         "offsetX": -30,
@@ -46,6 +51,14 @@
           "unit": "px",
           "size": 10,
           "sizeUnit": "%"
+        },
+        "v": {
+          "anchor": "stretch",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 1000,
+          "sizeUnit": "px"
         }
       },
       "image-hd3re": {
@@ -139,6 +152,16 @@
           "size": 150,
           "sizeUnit": "px"
         }
+      },
+      "image-t5azo": {
+        "v": {
+          "anchor": "start",
+          "offset": 550,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 5,
+          "sizeUnit": "px"
+        }
       }
     },
     "sections": {}
@@ -146,7 +169,26 @@
   "polar-protocol": {
     "breakpoint": 700,
     "canvas": {},
-    "items": {},
+    "items": {
+      "button-i3dfp": {
+        "h": {
+          "anchor": "center",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 150,
+          "sizeUnit": "px"
+        },
+        "v": {
+          "anchor": "center",
+          "offset": -25,
+          "offsetEnd": 0,
+          "unit": "%",
+          "size": 150,
+          "sizeUnit": "px"
+        }
+      }
+    },
     "sections": {}
   }
 }
