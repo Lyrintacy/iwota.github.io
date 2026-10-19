@@ -200,6 +200,11 @@ export default function App() {
   const [dock, setDock] = useState(() =>
     localStorage.getItem("editor-dock") === "right" ? "right" : "left",
   );
+  // Simulated screen width for the workshop (0 = the real window).
+  const [screenPreview, setScreenPreview] = useState(
+    () => Number(localStorage.getItem("screen-preview")) || 0,
+  );
+  useEffect(() => localStorage.setItem("screen-preview", String(screenPreview)), [screenPreview]);
   const [previewWidth, setPreviewWidth] = useState(
     () => Number(localStorage.getItem("preview-width")) || 390,
   );
@@ -525,8 +530,23 @@ export default function App() {
   setVar("--tab-bg", rootHex(ui.tabs.background));
   setVar("--tab-active", rootHex(ui.tabs.active));
   // Screen width used for scaling: the window, or the phone preview's width.
-  vars["--preview-w"] = `${previewWidth}px`;
-  vars["--vw"] = previewing ? `${previewWidth}px` : "100vw";
+  // A simulated screen is shown at its width, and scaled down to fit beside the workshop.
+  const screenW = editing && !previewing ? screenPreview : 0;
+  vars["--preview-w"] = `${screenW || previewWidth}px`;
+  vars["--vw"] = previewing ? `${previewWidth}px` : screenW ? `${screenW}px` : "100vw";
+  useLayoutEffect(() => {
+    const site = document.querySelector(".site");
+    if (!site) return undefined;
+    const fit = () => {
+      if (!screenW) return;
+      const editorW = document.querySelector(".editor")?.getBoundingClientRect().width || 0;
+      const room = Math.max(200, window.innerWidth - editorW - 32);
+      site.style.setProperty("--fit", String(Math.min(1, room / screenW)));
+    };
+    fit();
+    window.addEventListener("resize", fit);
+    return () => window.removeEventListener("resize", fit);
+  }, [screenW, editing, dock]);
 
   return (
     <NavContext.Provider value={go}>
@@ -534,7 +554,7 @@ export default function App() {
       <ButtonRulesContext.Provider value={ui.buttons}>
       <WaitContext.Provider value={waitApi}>
       <div
-        className={`site dock-${dock} ${editing ? "editing" : ""} ${previewing ? "phone-preview" : ""} ${ui.toggle.hidePhone ? "hide-toggle-phone" : ""}`}
+        className={`site dock-${dock} ${editing ? "editing" : ""} ${previewing ? "phone-preview" : ""} ${screenW ? "screen-preview" : ""} ${ui.toggle.hidePhone ? "hide-toggle-phone" : ""}`}
         style={{ ...vars, ...toggleVars }}
       >
         {notice && (
@@ -585,6 +605,8 @@ export default function App() {
             dock={dock}
             setDock={setDock}
             previewWidth={previewWidth}
+            screenPreview={screenPreview}
+            setScreenPreview={setScreenPreview}
             setPreviewWidth={setPreviewWidth}
           />
           </ErrorBoundary>

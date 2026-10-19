@@ -458,6 +458,49 @@ body {
   flex: 1;
   min-width: 0;
 }
+.swatch-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 2px 0 8px;
+}
+.swatch-pick {
+  min-width: 34px;
+  height: 34px;
+  padding: 0 6px;
+  border: 2px solid #888;
+  border-radius: 6px;
+  font: 12px system-ui, sans-serif;
+  cursor: pointer;
+}
+.swatch-pick.on {
+  outline: 2px solid #2d6cdf;
+  outline-offset: 2px;
+}
+.swatch-pick.none {
+  background: #fff;
+  color: #111;
+}
+.screen-pick {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font: 12px system-ui, sans-serif;
+}
+/* A simulated screen: the page at its width, scaled to fit beside the workshop */
+.site.screen-preview .tab-stage {
+  zoom: var(--fit, 1);
+}
+.site.screen-preview .canvas {
+  width: var(--preview-w, 1920px);
+  margin: 0 auto;
+}
+.site.screen-preview .fixed-frame {
+  left: calc(var(--sx) + (100% - var(--sx) - var(--ex) - var(--preview-w, 1920px)) / 2);
+  right: auto;
+  width: var(--preview-w, 1920px);
+}
+
 .swatch {
   flex: none;
   width: 18px;

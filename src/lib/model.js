@@ -326,9 +326,12 @@ export function unitFor(item, canvas = {}) {
   const byW = `calc(var(--vw, 100vw) / ${dw})`;
   const byH = `calc(100vh / ${dh})`;
   const parts = sh.axis === "y" ? [byH] : sh.axis === "both" ? [byW, byH] : [byW];
-  // grow (auto size) follows the screen both ways; otherwise it is capped at the design.
-  if (sh.grow) return parts.length === 1 ? parts[0] : `min(${parts.join(", ")})`;
-  return `min(1px, ${parts.join(", ")})`;
+  // Mode: "both" (grow and shrink), "down" (never above the design), "up" (never below it).
+  // Items saved before modes: grow = both, otherwise down.
+  const mode = sh.mode || (sh.grow ? "both" : "down");
+  const scale = parts.length === 1 ? parts[0] : `min(${parts.join(", ")})`;
+  if (mode === "both") return scale;
+  return mode === "up" ? `max(1px, ${scale})` : `min(1px, ${scale})`;
 }
 
 /** Converts an item's constraints into CSS (its --u is set by the canvas). */
