@@ -12,7 +12,8 @@
     "#5c00be",
     "#FFB300",
     "#ffffff",
-    "#b1ff3d"
+    "#b1ff3d",
+    "#ff47a0"
   ],
   "roles": {
     "background": 1,
@@ -113,7 +114,7 @@
     "body": {
       "name": "Body text",
       "tag": "p",
-      "size": 16,
+      "size": 18,
       "colour": 6,
       "font": "font"
     },
@@ -123,6 +124,20 @@
       "size": 56,
       "colour": 7,
       "font": "font-3"
+    },
+    "secondary-text": {
+      "name": "Secondary Text",
+      "tag": "p",
+      "size": 15,
+      "colour": 6,
+      "font": ""
     }
-  }
+  },
+  "textStyles": [
+    {
+      "id": "secondary-text",
+      "name": "Secondary Text",
+      "tag": "p"
+    }
+  ]
 }

@@ -46,7 +46,7 @@
         "offsetX": -30,
         "h": {
           "anchor": "start",
-          "offset": 0,
+          "offset": -10,
           "offsetEnd": 0,
           "unit": "px",
           "size": 10,
@@ -59,6 +59,10 @@
           "unit": "px",
           "size": 1000,
           "sizeUnit": "px"
+        },
+        "shrink": {
+          "on": false,
+          "axis": "x"
         }
       },
       "image-hd3re": {
@@ -70,7 +74,7 @@
         },
         "h": {
           "anchor": "end",
-          "offset": 0,
+          "offset": -10,
           "offsetEnd": 0,
           "unit": "px",
           "size": 10,
@@ -128,7 +132,7 @@
         },
         "v": {
           "anchor": "start",
-          "offset": 600,
+          "offset": 2000,
           "offsetEnd": 0,
           "unit": "px",
           "size": 100,
@@ -156,17 +160,25 @@
       "image-t5azo": {
         "v": {
           "anchor": "start",
-          "offset": 550,
+          "offset": 450,
           "offsetEnd": 0,
           "unit": "px",
           "size": 5,
+          "sizeUnit": "px"
+        },
+        "h": {
+          "anchor": "center",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 300,
           "sizeUnit": "px"
         }
       },
       "button-r58rq": {
         "h": {
           "anchor": "start",
-          "offset": 30,
+          "offset": 10,
           "offsetEnd": 0,
           "unit": "px",
           "size": 40,
@@ -183,8 +195,8 @@
       },
       "button-vblgs": {
         "h": {
-          "anchor": "start",
-          "offset": 85,
+          "anchor": "end",
+          "offset": 10,
           "offsetEnd": 0,
           "unit": "px",
           "size": 40,
@@ -227,9 +239,69 @@
           "size": 200,
           "sizeUnit": "px"
         }
+      },
+      "text-91m65": {
+        "h": {
+          "anchor": "center",
+          "offset": 20,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 380,
+          "sizeUnit": "px"
+        },
+        "v": {
+          "anchor": "start",
+          "offset": 365,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 0,
+          "sizeUnit": "auto"
+        }
+      },
+      "text-tdwz7": {
+        "v": {
+          "anchor": "start",
+          "offset": 1300,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 0,
+          "sizeUnit": "auto"
+        },
+        "h": {
+          "anchor": "center",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 300,
+          "sizeUnit": "px"
+        },
+        "text": "Hands on Experience and Creative Thinking \n⬇\n"
+      },
+      "text-17y6v": {
+        "v": {
+          "anchor": "start",
+          "offset": 550,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 100,
+          "sizeUnit": "auto"
+        },
+        "h": {
+          "anchor": "center",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 300,
+          "sizeUnit": "px"
+        },
+        "color": ""
       }
     },
-    "sections": {}
+    "sections": {
+      "section-ky6g3": {
+        "start": 1250
+      }
+    }
   },
   "polar-protocol": {
     "breakpoint": 700,

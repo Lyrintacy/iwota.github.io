@@ -283,8 +283,8 @@
       "name": "Portrait Image",
       "parent": "",
       "h": {
-        "anchor": "start",
-        "offset": 400,
+        "anchor": "center",
+        "offset": -350,
         "offsetEnd": 0,
         "unit": "px",
         "size": 300,
@@ -304,8 +304,8 @@
       ],
       "rotate": 0,
       "shrink": {
-        "on": true,
-        "axis": "both"
+        "on": false,
+        "axis": "x"
       },
       "file": "Me/IMG_5176.PNG",
       "alt": "",
@@ -352,8 +352,8 @@
       "name": "Name",
       "parent": "",
       "h": {
-        "anchor": "start",
-        "offset": 120,
+        "anchor": "center",
+        "offset": -600,
         "offsetEnd": 0,
         "unit": "px",
         "size": 300,
@@ -378,6 +378,82 @@
       "color": 3,
       "shrink": {
         "axis": "x",
+        "mode": "down",
+        "on": true,
+        "grow": true
+      },
+      "size": 100
+    },
+    {
+      "id": "text-91m65",
+      "type": "text",
+      "name": "Name",
+      "parent": "",
+      "h": {
+        "anchor": "center",
+        "offset": -525,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 380,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 300,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 0,
+        "sizeUnit": "auto"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "text": "Game Designer\n",
+      "level": "h2",
+      "align": "left",
+      "color": 3,
+      "shrink": {
+        "axis": "x",
+        "mode": "down",
+        "on": true,
+        "grow": true
+      }
+    },
+    {
+      "id": "text-tdwz7",
+      "type": "text",
+      "name": "Exp",
+      "parent": "",
+      "h": {
+        "anchor": "center",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 800,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 500,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 0,
+        "sizeUnit": "auto"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "text": "⬇ Hands on Experience and Creative Thinking ⬇\n",
+      "level": "h2",
+      "align": "center",
+      "color": 3,
+      "shrink": {
+        "axis": "x",
+        "mode": "down",
         "on": true,
         "grow": true
       }
@@ -385,19 +461,19 @@
     {
       "id": "text-nxpvz",
       "type": "text",
-      "name": "",
+      "name": "Section 2 ",
       "parent": "",
       "h": {
         "anchor": "center",
-        "offset": 0,
+        "offset": -350,
         "offsetEnd": 0,
-        "unit": "%",
+        "unit": "px",
         "size": 500,
         "sizeUnit": "px"
       },
       "v": {
         "anchor": "start",
-        "offset": 350,
+        "offset": 1000,
         "offsetEnd": 0,
         "unit": "px",
         "size": 100,
@@ -411,12 +487,14 @@
       "shrink": {
         "on": true,
         "axis": "x",
-        "grow": true
+        "grow": true,
+        "mode": "down"
       },
-      "text": "Write something here.Write something here.Write something here.Write something here.Write something here.Write something here.Write something here.Write something here.",
+      "text": "Fascinated by systems that create possibilities.\nCreating worlds to explore, encounters to discover, and experiences that feel different with every playthrough. I believe the strongest systems combine depth and replayability with a distinct artistic identity, supported by the care and polish that make them intuitive, engaging, and satisfying to play.,
+      ",: null,
       "font": "",
       "level": "p",
-      "align": "left",
+      "align": "center",
       "color": ""
     },
     {
@@ -657,8 +735,8 @@
       "name": "ProfileSuprise",
       "parent": "",
       "h": {
-        "anchor": "start",
-        "offset": 450,
+        "anchor": "center",
+        "offset": -350,
         "offsetEnd": 0,
         "unit": "px",
         "size": 200,
@@ -734,6 +812,79 @@
           }
         ]
       }
+    },
+    {
+      "id": "text-17y6v",
+      "type": "text",
+      "name": "",
+      "parent": "",
+      "h": {
+        "anchor": "center",
+        "offset": 220,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 750,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 100,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 100,
+        "sizeUnit": "auto"
+      },
+      "pivot": [
+        0,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "axis": "x",
+        "mode": "down",
+        "on": true,
+        "grow": true
+      },
+      "text": "An artistic game designer who thinks in mechanics, and designs **gameplay **for the **experience **as a whole.,
+      "\\n" "\\n",
+      {
+        "h": "I’m",
+        "interested" "in",
+        "the" "ideas",
+        "systems",
+        "and" "visual",
+        "details" "that",
+        "make" "a",
+        "game" "unmistakably",
+        "its" "own.",
+        "\\n"
+      }
+      "\\nFrom",
+      "designing",
+      "procedural" "worlds",
+      "to" "shaping",
+      "the" "moment-to-moment",
+      "player" "experience",
+      "I" "enjoy",
+      "bringing" "different",
+      "parts" "of",
+      "game" "design",
+      "together" "to",
+      "create" "something",
+      "cohesive",
+      "expressive",
+      "and" "memorable.",
+      "\\nRefining" "how",
+      "a" "game",
+      "looks",
+      "feels",
+      "and" "communicates",
+      "with" "the",
+      "player\",": null,
+      "font": "",
+      "level": "p",
+      "align": "left",
+      "color": ""
     }
   ],
   "sections": [
@@ -770,7 +921,7 @@
       "kind": "band",
       "name": "",
       "anchor": "top",
-      "start": 800,
+      "start": 1000,
       "height": 6400,
       "background": 2,
       "texture": {
