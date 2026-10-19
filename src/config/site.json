@@ -102,9 +102,9 @@
       "side": "right",
       "image": "",
       "message": "",
-      "distance": 12,
-      "background": 1,
-      "text": 5,
+      "distance": 40,
+      "background": 7,
+      "text": 2,
       "font": "font-4"
     }
   },
