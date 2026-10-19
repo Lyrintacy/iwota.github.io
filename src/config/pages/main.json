@@ -2,149 +2,11 @@
   "id": "main",
   "title": "Main",
   "canvas": {
-    "height": 2000,
+    "height": 8000,
     "designWidth": 1200,
     "designHeight": 800
   },
   "items": [
-    {
-      "id": "text-k8wgd",
-      "type": "text",
-      "name": "",
-      "parent": "",
-      "h": {
-        "anchor": "center",
-        "offset": 0,
-        "offsetEnd": 0,
-        "unit": "px",
-        "size": 300,
-        "sizeUnit": "px"
-      },
-      "v": {
-        "anchor": "start",
-        "offset": 10,
-        "offsetEnd": 0,
-        "unit": "px",
-        "size": 0,
-        "sizeUnit": "auto"
-      },
-      "pivot": [
-        50,
-        50
-      ],
-      "rotate": 0,
-      "text": "Write something here.",
-      "level": "p",
-      "align": "left",
-      "color": "text",
-      "shrink": {
-        "on": true,
-        "axis": "x",
-        "grow": true
-      }
-    },
-    {
-      "id": "image-ar5jf",
-      "type": "image",
-      "name": "",
-      "parent": "section-tfih3",
-      "h": {
-        "anchor": "start",
-        "offset": 0,
-        "offsetEnd": 0,
-        "unit": "px",
-        "size": 300,
-        "sizeUnit": "px"
-      },
-      "v": {
-        "anchor": "start",
-        "offset": 0,
-        "offsetEnd": 0,
-        "unit": "px",
-        "size": 0,
-        "sizeUnit": "auto"
-      },
-      "pivot": [
-        50,
-        50
-      ],
-      "rotate": 0,
-      "file": "0/IMG_3586",
-      "alt": "",
-      "fit": "contain"
-    },
-    {
-      "id": "text-ldvyg",
-      "type": "text",
-      "name": "",
-      "parent": "section-tfih3",
-      "h": {
-        "anchor": "center",
-        "offset": 0,
-        "offsetEnd": 0,
-        "unit": "px",
-        "size": 300,
-        "sizeUnit": "auto"
-      },
-      "v": {
-        "anchor": "start",
-        "offset": 0,
-        "offsetEnd": 0,
-        "unit": "px",
-        "size": 0,
-        "sizeUnit": "auto"
-      },
-      "pivot": [
-        50,
-        50
-      ],
-      "rotate": 0,
-      "text": "fjsdo-e-odfiesoisjdijdasijdasidjwidjaei[djas[dijasdsa[dasidsaij\n",
-      "level": "p",
-      "align": "left",
-      "color": "text",
-      "shrink": {
-        "on": true,
-        "axis": "x",
-        "grow": true
-      }
-    },
-    {
-      "id": "text-z67a9",
-      "type": "text",
-      "name": "",
-      "parent": "section-mzin5",
-      "h": {
-        "anchor": "start",
-        "offset": 0,
-        "offsetEnd": 0,
-        "unit": "px",
-        "size": 300,
-        "sizeUnit": "px"
-      },
-      "v": {
-        "anchor": "start",
-        "offset": 0,
-        "offsetEnd": 0,
-        "unit": "px",
-        "size": 0,
-        "sizeUnit": "auto"
-      },
-      "pivot": [
-        50,
-        50
-      ],
-      "rotate": 0,
-      "text": "Oskar Wota\n",
-      "level": "p",
-      "align": "left",
-      "color": "text",
-      "shrink": {
-        "on": true,
-        "axis": "x",
-        "grow": true
-      }
-    },
     {
       "id": "button-ddjxs",
       "type": "button",
@@ -221,6 +83,280 @@
         "cardFlashMs": 500,
         "clickFlash": true
       }
+    },
+    {
+      "id": "image-cr3wj",
+      "type": "image",
+      "name": "LeftOverlayBorder",
+      "parent": "section-mzin5",
+      "h": {
+        "anchor": "start",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 12,
+        "sizeUnit": "%"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 1000,
+        "sizeUnit": "px"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "on": false,
+        "axis": "x"
+      },
+      "file": "ui/BDL.png",
+      "alt": "",
+      "fit": "fill",
+      "hoverOnly": false,
+      "thumbnail": "",
+      "button": false,
+      "link": {
+        "kind": "none",
+        "url": "",
+        "section": "",
+        "page": "",
+        "newTab": false
+      },
+      "fx": {
+        "shake": true,
+        "shakeMs": 600,
+        "shakeAmount": 100,
+        "flash": true,
+        "flashMs": 300,
+        "flashColour": 0,
+        "flashStrength": 95,
+        "shine": true,
+        "shineDelayMs": 0,
+        "shineMs": 700,
+        "shineWidth": 70,
+        "shineColour": 4,
+        "shineSlant": 18,
+        "clickFlash": true
+      },
+      "scrollY": true,
+      "scrollX": false,
+      "room": 0,
+      "speedY": 0.3,
+      "loopY": true
+    },
+    {
+      "id": "image-hd3re",
+      "type": "image",
+      "name": "RightOverlayBorder",
+      "parent": "section-mzin5",
+      "h": {
+        "anchor": "end",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 12,
+        "sizeUnit": "%"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 1000,
+        "sizeUnit": "px"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "on": false,
+        "axis": "x"
+      },
+      "file": "ui/BDR.png",
+      "alt": "",
+      "fit": "fill",
+      "hoverOnly": false,
+      "thumbnail": "",
+      "button": false,
+      "link": {
+        "kind": "none",
+        "url": "",
+        "section": "",
+        "page": "",
+        "newTab": false
+      },
+      "fx": {
+        "shake": true,
+        "shakeMs": 600,
+        "shakeAmount": 100,
+        "flash": true,
+        "flashMs": 300,
+        "flashColour": 0,
+        "flashStrength": 95,
+        "shine": true,
+        "shineDelayMs": 0,
+        "shineMs": 700,
+        "shineWidth": 70,
+        "shineColour": 4,
+        "shineSlant": 18,
+        "clickFlash": true
+      },
+      "scrollX": false,
+      "loopX": false,
+      "room": 0,
+      "scrollY": true,
+      "loopY": true,
+      "speedX": 0.5,
+      "speedY": 0.3
+    },
+    {
+      "id": "image-ie2xv",
+      "type": "image",
+      "name": "Portrait Image",
+      "parent": "",
+      "h": {
+        "anchor": "end",
+        "offset": 50,
+        "offsetEnd": 0,
+        "unit": "%",
+        "size": 500,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 30,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 0,
+        "sizeUnit": "auto"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "on": true,
+        "axis": "both"
+      },
+      "file": "Me/IMG_5152.JPEG",
+      "alt": "",
+      "fit": "contain",
+      "hoverOnly": false,
+      "thumbnail": "",
+      "button": false,
+      "link": {
+        "kind": "none",
+        "url": "",
+        "section": "",
+        "page": "",
+        "newTab": false
+      },
+      "fx": {
+        "shake": true,
+        "shakeMs": 600,
+        "shakeAmount": 100,
+        "flash": true,
+        "flashMs": 300,
+        "flashColour": 0,
+        "flashStrength": 95,
+        "shine": true,
+        "shineDelayMs": 0,
+        "shineMs": 700,
+        "shineWidth": 70,
+        "shineColour": 4,
+        "shineSlant": 18,
+        "clickFlash": true
+      },
+      "offsetX": 0,
+      "radius": {
+        "tl": 40,
+        "tr": 40,
+        "br": 40,
+        "bl": 0
+      },
+      "offsetY": 0,
+      "room": 20
+    },
+    {
+      "id": "text-k8wgd",
+      "type": "text",
+      "name": "Name",
+      "parent": "",
+      "h": {
+        "anchor": "start",
+        "offset": 10,
+        "offsetEnd": 0,
+        "unit": "%",
+        "size": 300,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 145,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 0,
+        "sizeUnit": "auto"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "text": "Oskar Wota\n",
+      "level": "h1",
+      "align": "left",
+      "color": "",
+      "shrink": {
+        "on": true,
+        "axis": "x",
+        "grow": true
+      }
+    },
+    {
+      "id": "text-nxpvz",
+      "type": "text",
+      "name": "",
+      "parent": "",
+      "h": {
+        "anchor": "center",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "%",
+        "size": 500,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 350,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 100,
+        "sizeUnit": "auto"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "on": true,
+        "axis": "x",
+        "grow": true
+      },
+      "text": "Write something here.Write something here.Write something here.Write something here.Write something here.Write something here.Write something here.Write something here.",
+      "font": "",
+      "level": "p",
+      "align": "left",
+      "color": ""
     }
   ],
   "sections": [
@@ -251,36 +387,30 @@
       "id": "section-mzin5",
       "kind": "fixed",
       "name": ""
-    }
-  ],
-  "mobile": {
-    "breakpoint": 700,
-    "canvas": {
-      "designWidth": 390,
-      "designHeight": 844
     },
-    "items": {
-      "image-ar5jf": {
-        "h": {
-          "anchor": "start",
-          "offset": 0,
-          "offsetEnd": 0,
-          "unit": "px",
-          "size": 100,
-          "sizeUnit": "px"
-        }
+    {
+      "id": "section-ky6g3",
+      "kind": "band",
+      "name": "",
+      "anchor": "top",
+      "start": 800,
+      "height": 6400,
+      "background": 2,
+      "texture": {
+        "file": "Backgrounds/IMG_4544.png",
+        "size": 1000,
+        "offsetX": 0,
+        "offsetY": 0,
+        "scrollX": true,
+        "speedX": 0.05,
+        "scrollY": true,
+        "speedY": 0.1,
+        "rotate": 0
       },
-      "text-k8wgd": {
-        "h": {
-          "anchor": "end",
-          "offset": 0,
-          "offsetEnd": 0,
-          "unit": "px",
-          "size": 11,
-          "sizeUnit": "px"
-        }
+      "overlay": {
+        "colour": 1,
+        "opacity": 90
       }
-    },
-    "sections": {}
-  }
+    }
+  ]
 }

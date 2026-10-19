@@ -18,15 +18,135 @@
       },
       "text-k8wgd": {
         "h": {
+          "anchor": "center",
+          "offset": -40,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 11,
+          "sizeUnit": "auto"
+        },
+        "v": {
+          "anchor": "start",
+          "offset": 10,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 0,
+          "sizeUnit": "auto"
+        },
+        "text": "Oskar Wota\n",
+        "align": "left",
+        "size": 40
+      },
+      "image-cr3wj": {
+        "offsetX": -30,
+        "h": {
+          "anchor": "start",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 10,
+          "sizeUnit": "%"
+        }
+      },
+      "image-hd3re": {
+        "offsetX": 35,
+        "offsetY": -30,
+        "shrink": {
+          "on": false,
+          "axis": "x"
+        },
+        "h": {
           "anchor": "end",
           "offset": 0,
           "offsetEnd": 0,
           "unit": "px",
-          "size": 11,
+          "size": 10,
+          "sizeUnit": "%"
+        },
+        "v": {
+          "anchor": "start",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 1000,
+          "sizeUnit": "px"
+        },
+        "fit": "contain",
+        "loopX": true,
+        "scrollX": false
+      },
+      "image-ie2xv": {
+        "h": {
+          "anchor": "center",
+          "offset": 2,
+          "offsetEnd": 0,
+          "unit": "%",
+          "size": 300,
+          "sizeUnit": "px"
+        },
+        "v": {
+          "anchor": "start",
+          "offset": 50,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 200,
+          "sizeUnit": "auto"
+        },
+        "radius": {
+          "tl": 4,
+          "tr": 40,
+          "br": 40,
+          "bl": 0
+        },
+        "shrink": {
+          "on": true,
+          "axis": "x"
+        },
+        "scrollY": false
+      },
+      "text-nxpvz": {
+        "h": {
+          "anchor": "center",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "%",
+          "size": 300,
+          "sizeUnit": "px"
+        },
+        "v": {
+          "anchor": "start",
+          "offset": 600,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 100,
+          "sizeUnit": "auto"
+        }
+      },
+      "button-ddjxs": {
+        "h": {
+          "anchor": "center",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 150,
+          "sizeUnit": "px"
+        },
+        "v": {
+          "anchor": "center",
+          "offset": -25,
+          "offsetEnd": 0,
+          "unit": "%",
+          "size": 150,
           "sizeUnit": "px"
         }
       }
     },
+    "sections": {}
+  },
+  "polar-protocol": {
+    "breakpoint": 700,
+    "canvas": {},
+    "items": {},
     "sections": {}
   }
 }

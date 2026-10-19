@@ -10,11 +10,12 @@
     "#AE0B31",
     "#5c00be",
     "#FFB300",
-    "#ffffff"
+    "#ffffff",
+    "#b1ff3d"
   ],
   "roles": {
     "background": 1,
-    "text": 2,
+    "text": 6,
     "secondary": 6,
     "highlight": 3
   },
@@ -42,9 +43,85 @@
       "name": "Monospace",
       "family": "ui-monospace, Menlo, Consolas, monospace",
       "file": ""
+    },
+    {
+      "id": "font",
+      "name": "Sans",
+      "family": "Comic Sans MS",
+      "file": ""
+    },
+    {
+      "id": "font-2",
+      "name": "Kids",
+      "family": "KidsplaypersonaluseBold-YzjBy",
+      "file": ""
+    },
+    {
+      "id": "font-3",
+      "name": "Papyrus",
+      "family": "papyrus",
+      "file": ""
+    },
+    {
+      "id": "font-4",
+      "name": "Mario",
+      "family": "SuperMabroz-j93xO",
+      "file": ""
     }
   ],
   "scroll": {
     "panSmoothMs": 240
+  },
+  "ui": {
+    "tabs": {
+      "font": "font-3",
+      "text": 7,
+      "background": 2,
+      "active": 3,
+      "maxTemporary": 1,
+      "slide": true,
+      "slidePhone": true
+    },
+    "workshop": {
+      "font": "",
+      "text": 0,
+      "background": 0
+    },
+    "toggle": {
+      "text": 7,
+      "background": 2,
+      "hidePhone": false,
+      "font": "font-3"
+    },
+    "buttons": {
+      "touch": true,
+      "pc": false
+    },
+    "hint": {
+      "on": true,
+      "side": "right",
+      "image": "",
+      "message": "",
+      "distance": 12,
+      "background": 1,
+      "text": 5,
+      "font": "font-4"
+    }
+  },
+  "textFamilies": {
+    "body": {
+      "name": "Body text",
+      "tag": "p",
+      "size": 16,
+      "colour": 6,
+      "font": "font"
+    },
+    "h1": {
+      "name": "Heading 1",
+      "tag": "h1",
+      "size": 56,
+      "colour": 7,
+      "font": "font-3"
+    }
   }
 }
