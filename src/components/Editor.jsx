@@ -128,16 +128,18 @@ function PanControl({ axis, pan, speed, onChange }) {
   );
 }
 
-// Copies a component from another tab into this one. The copy gets its own id, goes to the
-// top of this tab's list, and keeps its phone changes. A band's frame is not on this tab,
-// so a copy from a band goes on the page.
-function CopyFromTab({ pagesApi, page, setPage, setSelectedId, disabled }) {
+// Copies a component, or a whole screen overlay with its components, from another tab into
+// this one. Copies get their own ids and keep their phone changes. A band's frame is not on
+// this tab, so a copy from a band goes on the page.
+function CopyFromTab({ pagesApi, page, setPage, setSelectedId, setSelectedSectionId, disabled }) {
   const others = pagesApi.tabs.filter((id) => id !== pagesApi.active && pagesApi.pages[id]);
   const [tabId, setTabId] = useState("");
-  const [itemId, setItemId] = useState("");
+  const [choice, setChoice] = useState("");
   const src = tabId ? pagesApi.pages[tabId] : null;
-  const items = src?.items || [];
-  const copy = () => {
+  const overlays = (src?.sections || []).filter((s) => !isBand(s));
+  const overlayIds = new Set(overlays.map((s) => s.id));
+  const items = (src?.items || []).filter((i) => !overlayIds.has(i.parent));
+  const copyItem = (itemId) => {
     const it = items.find((i) => i.id === itemId);
     if (!it) return;
     const newId = uid(it.type);
@@ -159,34 +161,74 @@ function CopyFromTab({ pagesApi, page, setPage, setSelectedId, disabled }) {
     }));
     setSelectedId(newId);
   };
+  const copyOverlay = (sec) => {
+    const newSecId = uid("section");
+    const kids = (src.items || []).filter((i) => i.parent === sec.id);
+    const ids = {};
+    kids.forEach((k) => (ids[k.id] = uid(k.type)));
+    const newSec = { ...structuredClone(sec), id: newSecId };
+    const newItems = kids.map((k) => ({ ...structuredClone(k), id: ids[k.id], parent: newSecId }));
+    const phoneItems = {};
+    kids.forEach((k) => {
+      const o = src.mobile?.items?.[k.id];
+      if (o) phoneItems[ids[k.id]] = structuredClone(o);
+    });
+    const phoneSec = src.mobile?.sections?.[sec.id];
+    setPage((p) => ({
+      ...p,
+      sections: [...(p.sections || []), newSec],
+      items: [...p.items, ...newItems],
+      mobile: {
+        ...p.mobile,
+        sections: {
+          ...(p.mobile?.sections || {}),
+          ...(phoneSec ? { [newSecId]: structuredClone(phoneSec) } : {}),
+        },
+        items: { ...(p.mobile?.items || {}), ...phoneItems },
+      },
+    }));
+    setSelectedSectionId(newSecId);
+  };
+  const copy = () => {
+    const [kind, id] = choice.split(":");
+    if (kind === "overlay") {
+      const sec = overlays.find((s) => s.id === id);
+      if (sec) copyOverlay(sec);
+    } else if (kind === "item") copyItem(id);
+    setChoice("");
+  };
   if (!others.length)
     return <p className="hint">Add another tab to copy components between tabs.</p>;
   return (
-    <Group title="Copy a component from another tab">
+    <Group title="Copy from another tab">
       <Select
         label="From tab"
         value={tabId}
         options={[["", "Choose a tab"], ...others.map((id) => [id, pagesApi.pages[id].title || id])]}
         onChange={(v) => {
           setTabId(v);
-          setItemId("");
+          setChoice("");
         }}
       />
       <Select
-        label="Component"
-        value={itemId}
+        label="What to copy"
+        value={choice}
         options={[
-          ["", tabId ? "Choose a component" : "Choose a tab first"],
-          ...items.map((it) => [it.id, `${TYPE_LABEL[it.type] || it.type} · ${it.id}`]),
+          ["", tabId ? "Choose a component or overlay" : "Choose a tab first"],
+          ...overlays.map((s) => [
+            `overlay:${s.id}`,
+            `Screen overlay (with its components) · ${s.id}`,
+          ]),
+          ...items.map((it) => [`item:${it.id}`, `${TYPE_LABEL[it.type] || it.type} · ${it.id}`]),
         ]}
-        onChange={setItemId}
+        onChange={setChoice}
       />
-      <button disabled={disabled || !itemId} onClick={copy}>
+      <button disabled={disabled || !choice} onClick={copy}>
         Copy into this tab
       </button>
       <p className="hint">
-        Copies one component (text, picture, button and so on). Its sections and links to other tabs
-        are not copied. Not available in phone mode.
+        Copies a component, or a screen overlay with everything in it. Sections and links to other
+        tabs are not copied. Not available in phone mode.
       </p>
     </Group>
   );
@@ -206,7 +248,43 @@ function Check({ label, checked, onChange }) {
   );
 }
 
+// Light text on dark colours, dark text on light ones.
+const inkOn = (hex) => {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex || "");
+  if (!m) return "#111";
+  const n = parseInt(m[1], 16);
+  const lum = 0.299 * ((n >> 16) & 255) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255);
+  return lum > 150 ? "#111" : "#fff";
+};
+
 function Select({ label, value, options, onChange }) {
+  // Palette options carry their colour: show every colour as a square, the chosen one marked.
+  if (options.some((o) => o[2])) {
+    return (
+      <div className="field">
+        <span>{label}</span>
+        <div className="swatch-grid" role="radiogroup" aria-label={label}>
+          {options.map(([v, l, hex]) => {
+            const on = String(value) === String(v);
+            return (
+              <button
+                key={v}
+                type="button"
+                role="radio"
+                aria-checked={on}
+                title={l}
+                className={`swatch-pick ${on ? "on" : ""} ${hex ? "" : "none"}`}
+                style={hex ? { background: hex, color: inkOn(hex) } : undefined}
+                onClick={() => onChange(v)}
+              >
+                {hex ? v : l}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
   // A palette option has a colour: show it as a small square beside the picker.
   const swatch = options.find(([v]) => v === String(value))?.[2];
   return (
@@ -952,6 +1030,8 @@ export function Editor({
   dock,
   setDock,
   previewWidth,
+  screenPreview,
+  setScreenPreview,
   setPreviewWidth,
 }) {
   const [tab, setTab] = useState("page");
@@ -1277,6 +1357,19 @@ export function Editor({
       <header>
         <strong>Workshop</strong>
         {draft && <span className="badge">Unsaved draft</span>}
+        <label className="screen-pick">
+          <span>Preview as</span>
+          <select
+            value={String(screenPreview || 0)}
+            onChange={(e) => setScreenPreview(Number(e.target.value))}
+          >
+            <option value="0">This window</option>
+            <option value="1366">Laptop 1366</option>
+            <option value="1920">Full HD 1920</option>
+            <option value="2560">2K 2560</option>
+            <option value="3840">4K 3840</option>
+          </select>
+        </label>
         <button
           className="dock-toggle"
           onClick={() => setDock(dock === "left" ? "right" : "left")}
@@ -1354,6 +1447,7 @@ export function Editor({
             page={page}
             setPage={setPage}
             setSelectedId={setSelectedId}
+            setSelectedSectionId={setSelectedSectionId}
             disabled={phone}
           />
 
@@ -1883,20 +1977,34 @@ export function Editor({
               <fieldset className="axis">
                 <legend>Scale with the screen</legend>
                 {item.type === "text" ? (
-                  <Check
-                    label="Auto size: grow and shrink with the screen width"
-                    checked={!!itemView.shrink?.on}
-                    onChange={(on) =>
-                      patch({
-                        shrink: {
-                          axis: "x",
-                          ...itemView.shrink,
-                          on,
-                          grow: true,
-                        },
-                      })
-                    }
-                  />
+                  <>
+                    <Check
+                      label="Auto size: follow the screen width"
+                      checked={!!itemView.shrink?.on}
+                      onChange={(on) =>
+                        patch({
+                          shrink: {
+                            axis: "x",
+                            mode: "both",
+                            ...itemView.shrink,
+                            on,
+                          },
+                        })
+                      }
+                    />
+                    {itemView.shrink?.on && (
+                      <Select
+                        label="Size changes"
+                        value={itemView.shrink.mode || (itemView.shrink.grow === false ? "down" : "both")}
+                        options={[
+                          ["both", "Grow and shrink"],
+                          ["down", "Only shrink (never bigger than the design)"],
+                          ["up", "Only grow (never smaller than the design)"],
+                        ]}
+                        onChange={(mode) => patch({ shrink: { ...itemView.shrink, mode } })}
+                      />
+                    )}
+                  </>
                 ) : (
                   <>
                     <Check
