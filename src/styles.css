@@ -446,6 +446,25 @@ body {
   position: relative;
   overflow: hidden;
 }
+.plain-square {
+  display: block;
+}
+.select-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.select-row select {
+  flex: 1;
+  min-width: 0;
+}
+.swatch {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  border: 1px solid #888;
+  border-radius: 4px;
+}
 .panned-inner {
   position: absolute;
   left: 0;

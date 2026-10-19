@@ -41,8 +41,9 @@ const TEXT_SIZE_LABELS = {
   h2: "Heading 2",
   h3: "Heading 3",
 };
+// [value, label, colour]: the colour is shown as a swatch next to the picker.
 const paletteOptions = (site) =>
-  site.palette.map((c, i) => [String(i + 1), `${i + 1} · ${c}`]);
+  site.palette.map((c, i) => [String(i + 1), `${i + 1} · ${c}`, c]);
 
 function download(name, text) {
   const url = URL.createObjectURL(
@@ -142,15 +143,20 @@ function Check({ label, checked, onChange }) {
 }
 
 function Select({ label, value, options, onChange }) {
+  // A palette option has a colour: show it as a small square beside the picker.
+  const swatch = options.find(([v]) => v === String(value))?.[2];
   return (
     <Field label={label}>
-      <select value={value} onChange={(e) => onChange(e.target.value)}>
-        {options.map(([v, l]) => (
-          <option key={v} value={v}>
-            {l}
-          </option>
-        ))}
-      </select>
+      <span className="select-row">
+        <select value={value} onChange={(e) => onChange(e.target.value)}>
+          {options.map(([v, l]) => (
+            <option key={v} value={v}>
+              {l}
+            </option>
+          ))}
+        </select>
+        {swatch && <span className="swatch" style={{ background: swatch }} aria-hidden="true" />}
+      </span>
     </Field>
   );
 }
@@ -1578,55 +1584,12 @@ export function Editor({
                     ]}
                     onChange={(fit) => patch({ fit })}
                   />
-                  {item.type === "image" && (
-                    <>
-                      <p className="hint">
-                        Pan moves the picture inside its frame, keeping its shape (no tiling). While
-                        panning, Fit is not used.
-                      </p>
-                      <PanControl
-                        axis="X"
-                        pan={itemView.scrollX}
-                        speed={itemView.speedX}
-                        onChange={patch}
-                      />
-                      {itemView.scrollX && (
-                        <Check
-                          label="Repeat endlessly on X (no edges)"
-                          checked={!!itemView.loopX}
-                          onChange={(loopX) => patch({ loopX })}
-                        />
-                      )}
-                      <PanControl
-                        axis="Y"
-                        pan={itemView.scrollY}
-                        speed={itemView.speedY}
-                        onChange={patch}
-                      />
-                      {itemView.scrollY && (
-                        <Check
-                          label="Repeat endlessly on Y (no edges)"
-                          checked={!!itemView.loopY}
-                          onChange={(loopY) => patch({ loopY })}
-                        />
-                      )}
-                      <NumberField
-                        label="Offset X (px)"
-                        value={itemView.offsetX}
-                        onChange={(offsetX) => patch({ offsetX })}
-                      />
-                      <NumberField
-                        label="Offset Y (px)"
-                        value={itemView.offsetY}
-                        onChange={(offsetY) => patch({ offsetY })}
-                      />
-                      <NumberField
-                        label="Room to move (% bigger than the frame)"
-                        value={itemView.room ?? 20}
-                        onChange={(room) => patch({ room: Math.max(0, room) })}
-                      />
-                    </>
-                  )}
+                  <Select
+                    label="Colour when there is no picture (plain square)"
+                    value={String(itemView.emptyColour || 0)}
+                    options={[["0", "Light grey"], ...paletteOptions(site)]}
+                    onChange={(n) => patch({ emptyColour: Number(n) })}
+                  />
                 </>
               )}
               {item.type === "video" && (
@@ -1794,6 +1757,56 @@ export function Editor({
 
               {(item.type === "image" || item.type === "video" || (item.type === "gif" && !item.button)) && (
                 <CornerFields value={item.radius} onChange={(radius) => patch({ radius })} />
+              )}
+              {item.type === "image" && (
+                <details className="group">
+                  <summary>Panning (moves the picture inside its frame)</summary>
+                      <p className="hint">
+                        Pan moves the picture inside its frame, keeping its shape (no tiling). While
+                        panning, Fit is not used.
+                      </p>
+                      <PanControl
+                        axis="X"
+                        pan={itemView.scrollX}
+                        speed={itemView.speedX}
+                        onChange={patch}
+                      />
+                      {itemView.scrollX && (
+                        <Check
+                          label="Repeat endlessly on X (no edges)"
+                          checked={!!itemView.loopX}
+                          onChange={(loopX) => patch({ loopX })}
+                        />
+                      )}
+                      <PanControl
+                        axis="Y"
+                        pan={itemView.scrollY}
+                        speed={itemView.speedY}
+                        onChange={patch}
+                      />
+                      {itemView.scrollY && (
+                        <Check
+                          label="Repeat endlessly on Y (no edges)"
+                          checked={!!itemView.loopY}
+                          onChange={(loopY) => patch({ loopY })}
+                        />
+                      )}
+                      <NumberField
+                        label="Offset X (px)"
+                        value={itemView.offsetX}
+                        onChange={(offsetX) => patch({ offsetX })}
+                      />
+                      <NumberField
+                        label="Offset Y (px)"
+                        value={itemView.offsetY}
+                        onChange={(offsetY) => patch({ offsetY })}
+                      />
+                      <NumberField
+                        label="Room to move (% bigger than the frame)"
+                        value={itemView.room ?? 20}
+                        onChange={(room) => patch({ room: Math.max(0, room) })}
+                      />
+                </details>
               )}
 
               <fieldset className="axis">
