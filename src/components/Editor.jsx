@@ -128,6 +128,70 @@ function PanControl({ axis, pan, speed, onChange }) {
   );
 }
 
+// Copies a component from another tab into this one. The copy gets its own id, goes to the
+// top of this tab's list, and keeps its phone changes. A band's frame is not on this tab,
+// so a copy from a band goes on the page.
+function CopyFromTab({ pagesApi, page, setPage, setSelectedId, disabled }) {
+  const others = pagesApi.tabs.filter((id) => id !== pagesApi.active && pagesApi.pages[id]);
+  const [tabId, setTabId] = useState("");
+  const [itemId, setItemId] = useState("");
+  const src = tabId ? pagesApi.pages[tabId] : null;
+  const items = src?.items || [];
+  const copy = () => {
+    const it = items.find((i) => i.id === itemId);
+    if (!it) return;
+    const newId = uid(it.type);
+    const made = { ...structuredClone(it), id: newId };
+    const here = (page.sections || []).map((s) => s.id);
+    if (made.parent && !here.includes(made.parent)) made.parent = "";
+    const phoneCopy = src.mobile?.items?.[itemId];
+    setPage((p) => ({
+      ...p,
+      items: [...p.items, made],
+      ...(phoneCopy
+        ? {
+            mobile: {
+              ...p.mobile,
+              items: { ...(p.mobile?.items || {}), [newId]: structuredClone(phoneCopy) },
+            },
+          }
+        : {}),
+    }));
+    setSelectedId(newId);
+  };
+  if (!others.length)
+    return <p className="hint">Add another tab to copy components between tabs.</p>;
+  return (
+    <Group title="Copy a component from another tab">
+      <Select
+        label="From tab"
+        value={tabId}
+        options={[["", "Choose a tab"], ...others.map((id) => [id, pagesApi.pages[id].title || id])]}
+        onChange={(v) => {
+          setTabId(v);
+          setItemId("");
+        }}
+      />
+      <Select
+        label="Component"
+        value={itemId}
+        options={[
+          ["", tabId ? "Choose a component" : "Choose a tab first"],
+          ...items.map((it) => [it.id, `${TYPE_LABEL[it.type] || it.type} · ${it.id}`]),
+        ]}
+        onChange={setItemId}
+      />
+      <button disabled={disabled || !itemId} onClick={copy}>
+        Copy into this tab
+      </button>
+      <p className="hint">
+        Copies one component (text, picture, button and so on). Its sections and links to other tabs
+        are not copied. Not available in phone mode.
+      </p>
+    </Group>
+  );
+}
+
 // A tick box with a label (searchable, like the other fields).
 function Check({ label, checked, onChange }) {
   return (
@@ -1285,6 +1349,13 @@ export function Editor({
               + Screen overlay
             </button>
           </div>
+          <CopyFromTab
+            pagesApi={pagesApi}
+            page={page}
+            setPage={setPage}
+            setSelectedId={setSelectedId}
+            disabled={phone}
+          />
 
           <NumberField
             label="Page height (px) — grows to fit sections"
