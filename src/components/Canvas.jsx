@@ -62,9 +62,20 @@ function Text({ item }) {
 }
 
 function Media({ item }) {
-  if (item.type === "image" && (item.scrollX || item.scrollY)) return <PannedImage item={item} />;
   const main = useMedia(item.type, item.file);
   const poster = useMedia("image", item.poster);
+  // A picture with no file is a plain square of the chosen colour, with the same edges.
+  if ((item.type === "image" || item.type === "gif") && !String(item.file || "").trim())
+    return (
+      <div
+        className="media plain-square"
+        style={{
+          background: item.emptyColour ? `var(--color-${item.emptyColour})` : "#ddd",
+          borderRadius: cornerRadius(item.radius),
+        }}
+      />
+    );
+  if (item.type === "image" && (item.scrollX || item.scrollY)) return <PannedImage item={item} />;
   if (item.type === "video")
     return (
       <video

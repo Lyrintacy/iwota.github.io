@@ -41,8 +41,9 @@ const TEXT_SIZE_LABELS = {
   h2: "Heading 2",
   h3: "Heading 3",
 };
+// [value, label, colour]: the colour is shown as a swatch next to the picker.
 const paletteOptions = (site) =>
-  site.palette.map((c, i) => [String(i + 1), `${i + 1} · ${c}`]);
+  site.palette.map((c, i) => [String(i + 1), `${i + 1} · ${c}`, c]);
 
 function download(name, text) {
   const url = URL.createObjectURL(
@@ -127,6 +128,70 @@ function PanControl({ axis, pan, speed, onChange }) {
   );
 }
 
+// Copies a component from another tab into this one. The copy gets its own id, goes to the
+// top of this tab's list, and keeps its phone changes. A band's frame is not on this tab,
+// so a copy from a band goes on the page.
+function CopyFromTab({ pagesApi, page, setPage, setSelectedId, disabled }) {
+  const others = pagesApi.tabs.filter((id) => id !== pagesApi.active && pagesApi.pages[id]);
+  const [tabId, setTabId] = useState("");
+  const [itemId, setItemId] = useState("");
+  const src = tabId ? pagesApi.pages[tabId] : null;
+  const items = src?.items || [];
+  const copy = () => {
+    const it = items.find((i) => i.id === itemId);
+    if (!it) return;
+    const newId = uid(it.type);
+    const made = { ...structuredClone(it), id: newId };
+    const here = (page.sections || []).map((s) => s.id);
+    if (made.parent && !here.includes(made.parent)) made.parent = "";
+    const phoneCopy = src.mobile?.items?.[itemId];
+    setPage((p) => ({
+      ...p,
+      items: [...p.items, made],
+      ...(phoneCopy
+        ? {
+            mobile: {
+              ...p.mobile,
+              items: { ...(p.mobile?.items || {}), [newId]: structuredClone(phoneCopy) },
+            },
+          }
+        : {}),
+    }));
+    setSelectedId(newId);
+  };
+  if (!others.length)
+    return <p className="hint">Add another tab to copy components between tabs.</p>;
+  return (
+    <Group title="Copy a component from another tab">
+      <Select
+        label="From tab"
+        value={tabId}
+        options={[["", "Choose a tab"], ...others.map((id) => [id, pagesApi.pages[id].title || id])]}
+        onChange={(v) => {
+          setTabId(v);
+          setItemId("");
+        }}
+      />
+      <Select
+        label="Component"
+        value={itemId}
+        options={[
+          ["", tabId ? "Choose a component" : "Choose a tab first"],
+          ...items.map((it) => [it.id, `${TYPE_LABEL[it.type] || it.type} · ${it.id}`]),
+        ]}
+        onChange={setItemId}
+      />
+      <button disabled={disabled || !itemId} onClick={copy}>
+        Copy into this tab
+      </button>
+      <p className="hint">
+        Copies one component (text, picture, button and so on). Its sections and links to other tabs
+        are not copied. Not available in phone mode.
+      </p>
+    </Group>
+  );
+}
+
 // A tick box with a label (searchable, like the other fields).
 function Check({ label, checked, onChange }) {
   return (
@@ -142,15 +207,20 @@ function Check({ label, checked, onChange }) {
 }
 
 function Select({ label, value, options, onChange }) {
+  // A palette option has a colour: show it as a small square beside the picker.
+  const swatch = options.find(([v]) => v === String(value))?.[2];
   return (
     <Field label={label}>
-      <select value={value} onChange={(e) => onChange(e.target.value)}>
-        {options.map(([v, l]) => (
-          <option key={v} value={v}>
-            {l}
-          </option>
-        ))}
-      </select>
+      <span className="select-row">
+        <select value={value} onChange={(e) => onChange(e.target.value)}>
+          {options.map(([v, l]) => (
+            <option key={v} value={v}>
+              {l}
+            </option>
+          ))}
+        </select>
+        {swatch && <span className="swatch" style={{ background: swatch }} aria-hidden="true" />}
+      </span>
     </Field>
   );
 }
@@ -1279,6 +1349,13 @@ export function Editor({
               + Screen overlay
             </button>
           </div>
+          <CopyFromTab
+            pagesApi={pagesApi}
+            page={page}
+            setPage={setPage}
+            setSelectedId={setSelectedId}
+            disabled={phone}
+          />
 
           <NumberField
             label="Page height (px) — grows to fit sections"
@@ -1578,55 +1655,12 @@ export function Editor({
                     ]}
                     onChange={(fit) => patch({ fit })}
                   />
-                  {item.type === "image" && (
-                    <>
-                      <p className="hint">
-                        Pan moves the picture inside its frame, keeping its shape (no tiling). While
-                        panning, Fit is not used.
-                      </p>
-                      <PanControl
-                        axis="X"
-                        pan={itemView.scrollX}
-                        speed={itemView.speedX}
-                        onChange={patch}
-                      />
-                      {itemView.scrollX && (
-                        <Check
-                          label="Repeat endlessly on X (no edges)"
-                          checked={!!itemView.loopX}
-                          onChange={(loopX) => patch({ loopX })}
-                        />
-                      )}
-                      <PanControl
-                        axis="Y"
-                        pan={itemView.scrollY}
-                        speed={itemView.speedY}
-                        onChange={patch}
-                      />
-                      {itemView.scrollY && (
-                        <Check
-                          label="Repeat endlessly on Y (no edges)"
-                          checked={!!itemView.loopY}
-                          onChange={(loopY) => patch({ loopY })}
-                        />
-                      )}
-                      <NumberField
-                        label="Offset X (px)"
-                        value={itemView.offsetX}
-                        onChange={(offsetX) => patch({ offsetX })}
-                      />
-                      <NumberField
-                        label="Offset Y (px)"
-                        value={itemView.offsetY}
-                        onChange={(offsetY) => patch({ offsetY })}
-                      />
-                      <NumberField
-                        label="Room to move (% bigger than the frame)"
-                        value={itemView.room ?? 20}
-                        onChange={(room) => patch({ room: Math.max(0, room) })}
-                      />
-                    </>
-                  )}
+                  <Select
+                    label="Colour when there is no picture (plain square)"
+                    value={String(itemView.emptyColour || 0)}
+                    options={[["0", "Light grey"], ...paletteOptions(site)]}
+                    onChange={(n) => patch({ emptyColour: Number(n) })}
+                  />
                 </>
               )}
               {item.type === "video" && (
@@ -1794,6 +1828,56 @@ export function Editor({
 
               {(item.type === "image" || item.type === "video" || (item.type === "gif" && !item.button)) && (
                 <CornerFields value={item.radius} onChange={(radius) => patch({ radius })} />
+              )}
+              {item.type === "image" && (
+                <details className="group">
+                  <summary>Panning (moves the picture inside its frame)</summary>
+                      <p className="hint">
+                        Pan moves the picture inside its frame, keeping its shape (no tiling). While
+                        panning, Fit is not used.
+                      </p>
+                      <PanControl
+                        axis="X"
+                        pan={itemView.scrollX}
+                        speed={itemView.speedX}
+                        onChange={patch}
+                      />
+                      {itemView.scrollX && (
+                        <Check
+                          label="Repeat endlessly on X (no edges)"
+                          checked={!!itemView.loopX}
+                          onChange={(loopX) => patch({ loopX })}
+                        />
+                      )}
+                      <PanControl
+                        axis="Y"
+                        pan={itemView.scrollY}
+                        speed={itemView.speedY}
+                        onChange={patch}
+                      />
+                      {itemView.scrollY && (
+                        <Check
+                          label="Repeat endlessly on Y (no edges)"
+                          checked={!!itemView.loopY}
+                          onChange={(loopY) => patch({ loopY })}
+                        />
+                      )}
+                      <NumberField
+                        label="Offset X (px)"
+                        value={itemView.offsetX}
+                        onChange={(offsetX) => patch({ offsetX })}
+                      />
+                      <NumberField
+                        label="Offset Y (px)"
+                        value={itemView.offsetY}
+                        onChange={(offsetY) => patch({ offsetY })}
+                      />
+                      <NumberField
+                        label="Room to move (% bigger than the frame)"
+                        value={itemView.room ?? 20}
+                        onChange={(room) => patch({ room: Math.max(0, room) })}
+                      />
+                </details>
               )}
 
               <fieldset className="axis">
