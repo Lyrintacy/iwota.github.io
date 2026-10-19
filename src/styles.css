@@ -446,11 +446,10 @@ body {
   position: relative;
   overflow: hidden;
 }
-.panned-img {
+.panned-inner {
   position: absolute;
   left: 0;
   top: 0;
-  max-width: none;
   display: block;
 }
 .animated-tex {
