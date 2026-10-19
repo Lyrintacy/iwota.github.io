@@ -1590,12 +1590,26 @@ export function Editor({
                         speed={itemView.speedX}
                         onChange={patch}
                       />
+                      {itemView.scrollX && (
+                        <Check
+                          label="Repeat endlessly on X (no edges)"
+                          checked={!!itemView.loopX}
+                          onChange={(loopX) => patch({ loopX })}
+                        />
+                      )}
                       <PanControl
                         axis="Y"
                         pan={itemView.scrollY}
                         speed={itemView.speedY}
                         onChange={patch}
                       />
+                      {itemView.scrollY && (
+                        <Check
+                          label="Repeat endlessly on Y (no edges)"
+                          checked={!!itemView.loopY}
+                          onChange={(loopY) => patch({ loopY })}
+                        />
+                      )}
                       <NumberField
                         label="Offset X (px)"
                         value={itemView.offsetX}

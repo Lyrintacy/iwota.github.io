@@ -89,9 +89,9 @@ function Media({ item }) {
   );
 }
 
-// A picture that keeps its shape and pans inside its frame (no tiling). It is drawn at
-// cover size, made bigger by the room, and moves within that room, stopping at its edges.
-// Negative speed moves the other way.
+// A picture that keeps its shape and pans inside its frame. Each panning axis either
+// stops at the picture's edges (the room), or repeats endlessly (the picture tiles, and
+// the pan wraps). Negative speed moves the other way.
 function PannedImage({ item }) {
   const media = useMedia("image", item.file);
   const aspect = useImageAspect(media.url);
@@ -105,23 +105,36 @@ function PannedImage({ item }) {
     return () => ro.disconnect();
   }, []);
   const room = Math.max(0, Number(item.room ?? 20)) / 100;
+  // The picture's size on screen (one tile when it repeats).
   const W = Math.max(box.w, box.h / aspect) * (1 + room);
   const H = W * aspect;
+  const loopX = !!item.scrollX && !!item.loopX;
+  const loopY = !!item.scrollY && !!item.loopY;
   const rangeX = Math.max(0, (W - box.w) / 2);
   const rangeY = Math.max(0, (H - box.h) / 2);
-  // Centred, then moved by the pan or offset, but never past the room on either side.
-  const move = (offset, pan, speed, range) =>
-    `calc(${-range}px + clamp(${-range}px, ${panPos(offset, pan, speed)}, ${range}px))`;
+  // The inner layer: one picture across the frame, or one extra tile on each side when it repeats.
+  const sizeX = loopX ? box.w + 2 * W : W;
+  const sizeY = loopY ? box.h + 2 * H : H;
+  // Position on one axis. Repeating: start one tile before the frame, then wrap the pan within a tile.
+  // Not repeating: centred, moved by the pan, never past the room.
+  const at = (loop, tile, range, offset, pan, speed) =>
+    loop
+      ? `calc(${-tile}px + ${panShift(offset, pan, speed, `${Math.max(1, tile)}px`)})`
+      : `calc(${-range}px + clamp(${-range}px, ${panPos(offset, pan, speed)}, ${range}px))`;
   return (
     <div ref={ref} className="media animated" style={{ borderRadius: cornerRadius(item.radius) }}>
-      <img
-        className="panned-img"
-        src={media.url || undefined}
-        alt={item.alt || ""}
+      <div
+        className="panned-inner"
+        role="img"
+        aria-label={item.alt || ""}
         style={{
-          width: W,
-          height: H,
-          transform: `translate3d(${move(item.offsetX, item.scrollX, item.speedX, rangeX)}, ${move(item.offsetY, item.scrollY, item.speedY, rangeY)}, 0)`,
+          width: sizeX,
+          height: sizeY,
+          backgroundImage: media.url ? `url("${media.url}")` : undefined,
+          backgroundSize: `${W}px ${H}px`,
+          backgroundRepeat: `${loopX ? "repeat" : "no-repeat"} ${loopY ? "repeat" : "no-repeat"}`,
+          backgroundPosition: "0px 0px",
+          transform: `translate3d(${at(loopX, W, rangeX, item.offsetX, item.scrollX, item.speedX)}, ${at(loopY, H, rangeY, item.offsetY, item.scrollY, item.speedY)}, 0)`,
           willChange: "transform",
         }}
       />
