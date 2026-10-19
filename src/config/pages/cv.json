@@ -11,67 +11,6 @@
   },
   "items": [
     {
-      "id": "image-fmj1v",
-      "type": "image",
-      "name": "OverlayTopBox",
-      "parent": "section-lsi97",
-      "h": {
-        "anchor": "stretch",
-        "offset": 0,
-        "offsetEnd": 0,
-        "unit": "px",
-        "size": 300,
-        "sizeUnit": "px"
-      },
-      "v": {
-        "anchor": "start",
-        "offset": 0,
-        "offsetEnd": 0,
-        "unit": "px",
-        "size": 55,
-        "sizeUnit": "px"
-      },
-      "pivot": [
-        50,
-        50
-      ],
-      "rotate": 0,
-      "shrink": {
-        "on": false,
-        "axis": "x"
-      },
-      "file": "",
-      "alt": "",
-      "fit": "contain",
-      "hoverOnly": false,
-      "thumbnail": "",
-      "button": false,
-      "link": {
-        "kind": "none",
-        "url": "",
-        "section": "",
-        "page": "",
-        "newTab": false
-      },
-      "fx": {
-        "shake": true,
-        "shakeMs": 600,
-        "shakeAmount": 100,
-        "flash": true,
-        "flashMs": 300,
-        "flashColour": 0,
-        "flashStrength": 95,
-        "shine": true,
-        "shineDelayMs": 0,
-        "shineMs": 700,
-        "shineWidth": 70,
-        "shineColour": 4,
-        "shineSlant": 18,
-        "clickFlash": true
-      },
-      "emptyColour": 3
-    },
-    {
       "id": "image-not6a",
       "type": "image",
       "name": "LeftOverlayBorder",
@@ -204,10 +143,203 @@
       "speedY": 0.3
     },
     {
-      "id": "button-6lp24",
+      "id": "image-z6m5s",
+      "type": "image",
+      "name": "OverlayTopBox",
+      "parent": "section-gs0zy",
+      "h": {
+        "anchor": "stretch",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 300,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 55,
+        "sizeUnit": "px"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "on": false,
+        "axis": "x"
+      },
+      "file": "",
+      "alt": "",
+      "fit": "contain",
+      "hoverOnly": false,
+      "thumbnail": "",
+      "button": false,
+      "link": {
+        "kind": "none",
+        "url": "",
+        "section": "",
+        "page": "",
+        "newTab": false
+      },
+      "fx": {
+        "shake": true,
+        "shakeMs": 600,
+        "shakeAmount": 100,
+        "flash": true,
+        "flashMs": 300,
+        "flashColour": 0,
+        "flashStrength": 95,
+        "shine": true,
+        "shineDelayMs": 0,
+        "shineMs": 700,
+        "shineWidth": 70,
+        "shineColour": 4,
+        "shineSlant": 18,
+        "clickFlash": true
+      },
+      "emptyColour": 3
+    },
+    {
+      "id": "image-amwpl",
+      "type": "image",
+      "name": "LeftOverlayBorder",
+      "parent": "section-gs0zy",
+      "h": {
+        "anchor": "start",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 12,
+        "sizeUnit": "%"
+      },
+      "v": {
+        "anchor": "stretch",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 1000,
+        "sizeUnit": "px"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "on": false,
+        "axis": "x"
+      },
+      "file": "ui/BDL.png",
+      "alt": "",
+      "fit": "fill",
+      "hoverOnly": false,
+      "thumbnail": "",
+      "button": false,
+      "link": {
+        "kind": "none",
+        "url": "",
+        "section": "",
+        "page": "",
+        "newTab": false
+      },
+      "fx": {
+        "shake": true,
+        "shakeMs": 600,
+        "shakeAmount": 100,
+        "flash": true,
+        "flashMs": 300,
+        "flashColour": 0,
+        "flashStrength": 95,
+        "shine": true,
+        "shineDelayMs": 0,
+        "shineMs": 700,
+        "shineWidth": 70,
+        "shineColour": 4,
+        "shineSlant": 18,
+        "clickFlash": true
+      },
+      "scrollY": true,
+      "scrollX": false,
+      "room": 0,
+      "speedY": 0.3,
+      "loopY": true
+    },
+    {
+      "id": "image-62d5b",
+      "type": "image",
+      "name": "RightOverlayBorder",
+      "parent": "section-gs0zy",
+      "h": {
+        "anchor": "end",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 12,
+        "sizeUnit": "%"
+      },
+      "v": {
+        "anchor": "stretch",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 1000,
+        "sizeUnit": "px"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "on": false,
+        "axis": "x"
+      },
+      "file": "ui/BDR.png",
+      "alt": "",
+      "fit": "fill",
+      "hoverOnly": false,
+      "thumbnail": "",
+      "button": false,
+      "link": {
+        "kind": "none",
+        "url": "",
+        "section": "",
+        "page": "",
+        "newTab": false
+      },
+      "fx": {
+        "shake": true,
+        "shakeMs": 600,
+        "shakeAmount": 100,
+        "flash": true,
+        "flashMs": 300,
+        "flashColour": 0,
+        "flashStrength": 95,
+        "shine": true,
+        "shineDelayMs": 0,
+        "shineMs": 700,
+        "shineWidth": 70,
+        "shineColour": 4,
+        "shineSlant": 18,
+        "clickFlash": true
+      },
+      "scrollX": false,
+      "loopX": false,
+      "room": 0,
+      "scrollY": true,
+      "loopY": true,
+      "speedX": 0.5,
+      "speedY": 0.3
+    },
+    {
+      "id": "button-bn964",
       "type": "button",
       "name": "Overlay Linkedin",
-      "parent": "section-lsi97",
+      "parent": "section-gs0zy",
       "h": {
         "anchor": "start",
         "offset": 200,
@@ -261,14 +393,14 @@
         "cards": [
           {
             "clickable": false,
-            "waitFlash": true,
+            "waitFlash": false,
             "file": "",
             "scale": 1.5,
             "fit": "both",
             "openMs": 450,
             "closeMs": 360,
             "radius": 6,
-            "background": 0,
+            "background": 3,
             "imageFit": "cover",
             "tilt": true,
             "tiltStrength": 100,
@@ -281,7 +413,7 @@
             "shineMs": 700,
             "slant": 18,
             "flash": true,
-            "flashColour": 3,
+            "flashColour": 6,
             "flashMs": 500
           }
         ]
@@ -289,10 +421,10 @@
       "emptyColour": 1
     },
     {
-      "id": "button-8ccyb",
+      "id": "button-v15yy",
       "type": "button",
       "name": "Overlay Itch.io",
-      "parent": "section-lsi97",
+      "parent": "section-gs0zy",
       "h": {
         "anchor": "start",
         "offset": 275,
@@ -332,9 +464,9 @@
         "shake": true,
         "shakeMs": 600,
         "shakeAmount": 100,
-        "flash": true,
+        "flash": false,
         "flashMs": 300,
-        "flashColour": 0,
+        "flashColour": 6,
         "flashStrength": 95,
         "shine": true,
         "shineDelayMs": 0,
@@ -345,15 +477,15 @@
         "clickFlash": true,
         "cards": [
           {
-            "clickable": false,
-            "waitFlash": true,
+            "clickable": true,
+            "waitFlash": false,
             "file": "",
             "scale": 1.5,
             "fit": "both",
             "openMs": 450,
             "closeMs": 360,
             "radius": 6,
-            "background": 0,
+            "background": 3,
             "imageFit": "cover",
             "tilt": true,
             "tiltStrength": 100,
@@ -366,12 +498,12 @@
             "shineMs": 700,
             "slant": 18,
             "flash": true,
-            "flashColour": 3,
+            "flashColour": 6,
             "flashMs": 500
           }
         ]
       },
-      "emptyColour": 1
+      "emptyColour": 0
     },
     {
       "id": "image-o2rni",
@@ -469,6 +601,11 @@
         "colour": 2,
         "opacity": 80
       }
+    },
+    {
+      "id": "section-gs0zy",
+      "kind": "fixed",
+      "name": ""
     }
   ]
 }

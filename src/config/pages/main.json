@@ -525,7 +525,7 @@
         "shake": true,
         "shakeMs": 600,
         "shakeAmount": 100,
-        "flash": false,
+        "flash": true,
         "flashMs": 300,
         "flashColour": 0,
         "flashStrength": 95,
@@ -539,7 +539,7 @@
         "cards": [
           {
             "clickable": false,
-            "waitFlash": true,
+            "waitFlash": false,
             "file": "",
             "scale": 1.5,
             "fit": "both",
@@ -612,7 +612,7 @@
         "shakeAmount": 100,
         "flash": false,
         "flashMs": 300,
-        "flashColour": 0,
+        "flashColour": 6,
         "flashStrength": 95,
         "shine": true,
         "shineDelayMs": 0,
@@ -623,8 +623,8 @@
         "clickFlash": true,
         "cards": [
           {
-            "clickable": false,
-            "waitFlash": true,
+            "clickable": true,
+            "waitFlash": false,
             "file": "",
             "scale": 1.5,
             "fit": "both",
@@ -649,7 +649,7 @@
           }
         ]
       },
-      "emptyColour": 1
+      "emptyColour": 0
     },
     {
       "id": "button-pre3a",
@@ -719,13 +719,13 @@
             "background": 0,
             "imageFit": "cover",
             "tilt": true,
-            "tiltStrength": 300,
+            "tiltStrength": 400,
             "shake": true,
             "shakeMs": 600,
-            "shakeAmount": 500,
+            "shakeAmount": 600,
             "shine": true,
-            "shineColour": 4,
-            "shineWidth": 70,
+            "shineColour": 5,
+            "shineWidth": 100,
             "shineMs": 700,
             "slant": 18,
             "flash": true,

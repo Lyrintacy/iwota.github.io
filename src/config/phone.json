@@ -469,6 +469,108 @@
           "unit": "px",
           "size": 90,
           "sizeUnit": "%"
+        },
+        "parent": "section-gs0zy"
+      },
+      "image-z6m5s": {
+        "v": {
+          "anchor": "start",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 40,
+          "sizeUnit": "px"
+        },
+        "emptyColour": 3
+      },
+      "image-amwpl": {
+        "offsetX": -30,
+        "h": {
+          "anchor": "start",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 10,
+          "sizeUnit": "%"
+        },
+        "v": {
+          "anchor": "stretch",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 1000,
+          "sizeUnit": "px"
+        }
+      },
+      "image-62d5b": {
+        "offsetX": 35,
+        "offsetY": -30,
+        "shrink": {
+          "on": false,
+          "axis": "x"
+        },
+        "h": {
+          "anchor": "end",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 10,
+          "sizeUnit": "%"
+        },
+        "v": {
+          "anchor": "stretch",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 1000,
+          "sizeUnit": "px"
+        },
+        "fit": "contain",
+        "loopX": true,
+        "scrollX": false
+      },
+      "button-bn964": {
+        "h": {
+          "anchor": "start",
+          "offset": 30,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 40,
+          "sizeUnit": "px"
+        },
+        "v": {
+          "anchor": "start",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 40,
+          "sizeUnit": "px"
+        },
+        "shrink": {
+          "on": false,
+          "axis": "x"
+        }
+      },
+      "button-v15yy": {
+        "h": {
+          "anchor": "start",
+          "offset": 85,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 40,
+          "sizeUnit": "px"
+        },
+        "v": {
+          "anchor": "start",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 40,
+          "sizeUnit": "px"
+        },
+        "shrink": {
+          "on": false,
+          "axis": "x"
         }
       }
     },
