@@ -353,7 +353,7 @@
       "parent": "",
       "h": {
         "anchor": "center",
-        "offset": -600,
+        "offset": -550,
         "offsetEnd": 0,
         "unit": "px",
         "size": 300,
@@ -391,7 +391,7 @@
       "parent": "",
       "h": {
         "anchor": "center",
-        "offset": -525,
+        "offset": -460,
         "offsetEnd": 0,
         "unit": "px",
         "size": 380,
@@ -820,10 +820,10 @@
       "parent": "",
       "h": {
         "anchor": "center",
-        "offset": 220,
+        "offset": 250,
         "offsetEnd": 0,
         "unit": "px",
-        "size": 750,
+        "size": 800,
         "sizeUnit": "px"
       },
       "v": {
