@@ -85,6 +85,67 @@
       }
     },
     {
+      "id": "image-ue025",
+      "type": "image",
+      "name": "OverlayTopBox",
+      "parent": "section-mzin5",
+      "h": {
+        "anchor": "stretch",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 300,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 55,
+        "sizeUnit": "px"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "on": false,
+        "axis": "x"
+      },
+      "file": "",
+      "alt": "",
+      "fit": "contain",
+      "hoverOnly": false,
+      "thumbnail": "",
+      "button": false,
+      "link": {
+        "kind": "none",
+        "url": "",
+        "section": "",
+        "page": "",
+        "newTab": false
+      },
+      "fx": {
+        "shake": true,
+        "shakeMs": 600,
+        "shakeAmount": 100,
+        "flash": true,
+        "flashMs": 300,
+        "flashColour": 0,
+        "flashStrength": 95,
+        "shine": true,
+        "shineDelayMs": 0,
+        "shineMs": 700,
+        "shineWidth": 70,
+        "shineColour": 4,
+        "shineSlant": 18,
+        "clickFlash": true
+      },
+      "emptyColour": 3
+    },
+    {
       "id": "image-cr3wj",
       "type": "image",
       "name": "LeftOverlayBorder",
@@ -231,7 +292,7 @@
       },
       "v": {
         "anchor": "start",
-        "offset": 30,
+        "offset": 60,
         "offsetEnd": 0,
         "unit": "px",
         "size": 0,
@@ -300,7 +361,7 @@
       },
       "v": {
         "anchor": "start",
-        "offset": 30,
+        "offset": 50,
         "offsetEnd": 0,
         "unit": "px",
         "size": 0,
@@ -419,6 +480,260 @@
       },
       "emptyColour": 2,
       "radius": 100
+    },
+    {
+      "id": "button-r58rq",
+      "type": "button",
+      "name": "Overlay Linkedin",
+      "parent": "section-mzin5",
+      "h": {
+        "anchor": "start",
+        "offset": 200,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 60,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 60,
+        "sizeUnit": "px"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "on": true,
+        "axis": "x"
+      },
+      "file": "Me/linkedinicon.png",
+      "alt": "",
+      "fit": "contain",
+      "link": {
+        "kind": "url",
+        "url": "https://www.linkedin.com/in/oskar-wota-6b0b27381/",
+        "section": "",
+        "page": "",
+        "newTab": true
+      },
+      "fx": {
+        "shake": true,
+        "shakeMs": 600,
+        "shakeAmount": 100,
+        "flash": true,
+        "flashMs": 300,
+        "flashColour": 0,
+        "flashStrength": 95,
+        "shine": true,
+        "shineDelayMs": 0,
+        "shineMs": 700,
+        "shineWidth": 70,
+        "shineColour": 4,
+        "shineSlant": 18,
+        "clickFlash": true,
+        "cards": [
+          {
+            "clickable": false,
+            "waitFlash": true,
+            "file": "",
+            "scale": 1.5,
+            "fit": "both",
+            "openMs": 450,
+            "closeMs": 360,
+            "radius": 6,
+            "background": 0,
+            "imageFit": "cover",
+            "tilt": true,
+            "tiltStrength": 100,
+            "shake": true,
+            "shakeMs": 600,
+            "shakeAmount": 100,
+            "shine": true,
+            "shineColour": 4,
+            "shineWidth": 70,
+            "shineMs": 700,
+            "slant": 18,
+            "flash": true,
+            "flashColour": 3,
+            "flashMs": 500
+          }
+        ]
+      },
+      "emptyColour": 1
+    },
+    {
+      "id": "button-vblgs",
+      "type": "button",
+      "name": "Overlay Itch.io",
+      "parent": "section-mzin5",
+      "h": {
+        "anchor": "start",
+        "offset": 275,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 60,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 60,
+        "sizeUnit": "px"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "on": true,
+        "axis": "x"
+      },
+      "file": "Me/itchicon.png",
+      "alt": "",
+      "fit": "contain",
+      "link": {
+        "kind": "url",
+        "url": "https://oskarwota.itch.io",
+        "section": "",
+        "page": "",
+        "newTab": true
+      },
+      "fx": {
+        "shake": true,
+        "shakeMs": 600,
+        "shakeAmount": 100,
+        "flash": true,
+        "flashMs": 300,
+        "flashColour": 0,
+        "flashStrength": 95,
+        "shine": true,
+        "shineDelayMs": 0,
+        "shineMs": 700,
+        "shineWidth": 70,
+        "shineColour": 4,
+        "shineSlant": 18,
+        "clickFlash": true,
+        "cards": [
+          {
+            "clickable": false,
+            "waitFlash": true,
+            "file": "",
+            "scale": 1.5,
+            "fit": "both",
+            "openMs": 450,
+            "closeMs": 360,
+            "radius": 6,
+            "background": 0,
+            "imageFit": "cover",
+            "tilt": true,
+            "tiltStrength": 100,
+            "shake": true,
+            "shakeMs": 600,
+            "shakeAmount": 100,
+            "shine": true,
+            "shineColour": 4,
+            "shineWidth": 70,
+            "shineMs": 700,
+            "slant": 18,
+            "flash": true,
+            "flashColour": 3,
+            "flashMs": 500
+          }
+        ]
+      },
+      "emptyColour": 1
+    },
+    {
+      "id": "button-pre3a",
+      "type": "button",
+      "name": "ProfileSuprise",
+      "parent": "",
+      "h": {
+        "anchor": "start",
+        "offset": 450,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 200,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 125,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 200,
+        "sizeUnit": "px"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "on": false,
+        "axis": "x"
+      },
+      "file": "",
+      "alt": "",
+      "fit": "contain",
+      "link": {
+        "kind": "none",
+        "url": "",
+        "section": "",
+        "page": "",
+        "newTab": false
+      },
+      "fx": {
+        "shake": true,
+        "shakeMs": 600,
+        "shakeAmount": 100,
+        "flash": true,
+        "flashMs": 300,
+        "flashColour": 0,
+        "flashStrength": 95,
+        "shine": true,
+        "shineDelayMs": 0,
+        "shineMs": 700,
+        "shineWidth": 70,
+        "shineColour": 4,
+        "shineSlant": 18,
+        "clickFlash": true,
+        "cards": [
+          {
+            "clickable": false,
+            "waitFlash": true,
+            "file": "Me/PurpleIconPure.png",
+            "scale": 1.5,
+            "fit": "both",
+            "openMs": 300,
+            "closeMs": 200,
+            "radius": 6,
+            "background": 0,
+            "imageFit": "cover",
+            "tilt": true,
+            "tiltStrength": 100,
+            "shake": true,
+            "shakeMs": 600,
+            "shakeAmount": 100,
+            "shine": false,
+            "shineColour": 3,
+            "shineWidth": 100,
+            "shineMs": 700,
+            "slant": 18,
+            "flash": false,
+            "flashColour": 1,
+            "flashMs": 500
+          }
+        ]
+      }
     }
   ],
   "sections": [

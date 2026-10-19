@@ -2,7 +2,8 @@
   "version": 1,
   "tabs": [
     "main",
-    "polar-protocol"
+    "polar-protocol",
+    "cv"
   ],
   "palette": [
     "#1B0E1F",
@@ -17,7 +18,7 @@
     "background": 1,
     "text": 6,
     "secondary": 6,
-    "highlight": 3
+    "highlight": 5
   },
   "text": {
     "body": 16,
