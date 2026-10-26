@@ -240,6 +240,51 @@ function BandBackground({ section, top, selected }) {
   );
 }
 
+// The picture, video or GIF of an item (hover-only and button GIFs are handled apart).
+function MediaBody({ item }) {
+  return (
+    <>
+      {item.type === "gif" && item.hoverOnly && !item.button && <HoverGif item={item} />}
+      {item.type === "video" && item.hoverOnly && <HoverVideo item={item} />}
+      {(item.type === "image" || item.type === "gif" || item.type === "video") &&
+        !(item.hoverOnly || item.button) && <Media item={item} />}
+    </>
+  );
+}
+
+// A caption below, above or over the bottom of a picture. Without a caption the
+// picture is rendered exactly as before.
+function Captioned({ item, children }) {
+  const text = String(item.caption || "").trim();
+  const picture = item.type === "image" || item.type === "gif" || item.type === "video";
+  if (!picture || item.button || !text) return <>{children}</>;
+  const pos = item.captionPosition || "below";
+  const automatic = item.captionColour === "" || item.captionColour == null;
+  const colour = automatic ? (pos === "over" ? "#fff" : undefined) : `var(--color-${item.captionColour})`;
+  const caption = (
+    <div
+      className={`caption caption-${pos}`}
+      style={{ color: colour, "--caption-size": Number(item.captionSize) || 14 }}
+    >
+      {text}
+    </div>
+  );
+  if (pos === "over")
+    return (
+      <>
+        {children}
+        {caption}
+      </>
+    );
+  return (
+    <div className="captioned">
+      {pos === "above" && caption}
+      <div className="captioned-media">{children}</div>
+      {pos === "below" && caption}
+    </div>
+  );
+}
+
 /**
  * Layers, bottom to top: band backgrounds, band frames (items parented to a
  * band, clipped to it), the page items, then screen overlays fixed to the
@@ -270,10 +315,9 @@ export function Canvas({ page, editing, selectedId, onSelect, selectedSectionId 
       {(item.type === "button" || (item.type === "gif" && item.button)) && (
         <ButtonItem item={item} editing={editing} />
       )}
-      {item.type === "gif" && item.hoverOnly && !item.button && <HoverGif item={item} />}
-      {item.type === "video" && item.hoverOnly && <HoverVideo item={item} />}
-      {(item.type === "image" || item.type === "gif" || item.type === "video") &&
-        !(item.hoverOnly || item.button) && <Media item={item} />}
+      <Captioned item={item}>
+        <MediaBody item={item} />
+      </Captioned>
     </div>
   );
   return (
