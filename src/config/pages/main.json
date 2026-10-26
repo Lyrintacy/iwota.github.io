@@ -2,93 +2,297 @@
   "id": "main",
   "title": "Main",
   "canvas": {
-    "height": 2000,
+    "height": 8000,
     "designWidth": 1200,
     "designHeight": 800
   },
   "items": [
     {
-      "id": "text-k8wgd",
-      "type": "text",
-      "name": "",
+      "id": "button-ddjxs",
+      "type": "button",
+      "name": "fvf",
       "parent": "",
-      "h": {
-        "anchor": "start",
-        "offset": 0,
-        "offsetEnd": 0,
-        "unit": "px",
-        "size": 300,
-        "sizeUnit": "px"
-      },
-      "v": {
-        "anchor": "start",
-        "offset": 0,
-        "offsetEnd": 0,
-        "unit": "px",
-        "size": 0,
-        "sizeUnit": "auto"
-      },
-      "pivot": [
-        50,
-        50
-      ],
-      "rotate": 0,
-      "text": "Write something here.",
-      "level": "p",
-      "align": "left",
-      "color": "text",
-      "shrink": {
-        "on": true,
-        "axis": "x",
-        "grow": true
-      }
-    },
-    {
-      "id": "image-ar5jf",
-      "type": "image",
-      "name": "",
-      "parent": "section-tfih3",
-      "h": {
-        "anchor": "start",
-        "offset": 0,
-        "offsetEnd": 0,
-        "unit": "px",
-        "size": 300,
-        "sizeUnit": "px"
-      },
-      "v": {
-        "anchor": "start",
-        "offset": 0,
-        "offsetEnd": 0,
-        "unit": "px",
-        "size": 0,
-        "sizeUnit": "auto"
-      },
-      "pivot": [
-        50,
-        50
-      ],
-      "rotate": 0,
-      "file": "0/IMG_3586",
-      "alt": "",
-      "fit": "contain"
-    },
-    {
-      "id": "text-ldvyg",
-      "type": "text",
-      "name": "",
-      "parent": "section-tfih3",
       "h": {
         "anchor": "center",
         "offset": 0,
         "offsetEnd": 0,
         "unit": "px",
         "size": 300,
-        "sizeUnit": "auto"
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "center",
+        "offset": -25,
+        "offsetEnd": 0,
+        "unit": "%",
+        "size": 300,
+        "sizeUnit": "px"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "on": false,
+        "axis": "x"
+      },
+      "file": "Me/PurpleIconCut.png",
+      "alt": "",
+      "fit": "contain",
+      "link": {
+        "kind": "page",
+        "url": "",
+        "section": "",
+        "page": "polar-protocol",
+        "newTab": false
+      },
+      "fx": {
+        "shake": true,
+        "shakeMs": 600,
+        "shakeAmount": 100,
+        "flash": true,
+        "flashMs": 300,
+        "flashColour": 0,
+        "flashStrength": 95,
+        "shine": true,
+        "shineDelayMs": 0,
+        "shineMs": 700,
+        "shineWidth": 70,
+        "shineColour": 4,
+        "shineSlant": 18,
+        "card": true,
+        "cardScale": 2.5,
+        "cardFit": "both",
+        "cardFile": "",
+        "cardOpenMs": 450,
+        "cardCloseMs": 360,
+        "cardRadius": 6,
+        "waitFlash": true,
+        "cardTilt": true,
+        "cardTiltStrength": 100,
+        "cardShake": true,
+        "cardShakeMs": 600,
+        "cardShakeAmount": 100,
+        "cardShine": true,
+        "cardShineColour": 4,
+        "cardShineWidth": 70,
+        "cardShineMs": 700,
+        "cardFlash": true,
+        "cardFlashColour": 3,
+        "cardFlashMs": 500,
+        "clickFlash": true
+      }
+    },
+    {
+      "id": "image-ue025",
+      "type": "image",
+      "name": "OverlayTopBox",
+      "parent": "section-mzin5",
+      "h": {
+        "anchor": "stretch",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 300,
+        "sizeUnit": "px"
       },
       "v": {
         "anchor": "start",
         "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 55,
+        "sizeUnit": "px"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "on": false,
+        "axis": "x"
+      },
+      "file": "",
+      "alt": "",
+      "fit": "contain",
+      "hoverOnly": false,
+      "thumbnail": "",
+      "button": false,
+      "link": {
+        "kind": "none",
+        "url": "",
+        "section": "",
+        "page": "",
+        "newTab": false
+      },
+      "fx": {
+        "shake": true,
+        "shakeMs": 600,
+        "shakeAmount": 100,
+        "flash": true,
+        "flashMs": 300,
+        "flashColour": 0,
+        "flashStrength": 95,
+        "shine": true,
+        "shineDelayMs": 0,
+        "shineMs": 700,
+        "shineWidth": 70,
+        "shineColour": 4,
+        "shineSlant": 18,
+        "clickFlash": true
+      },
+      "emptyColour": 3
+    },
+    {
+      "id": "image-cr3wj",
+      "type": "image",
+      "name": "LeftOverlayBorder",
+      "parent": "section-mzin5",
+      "h": {
+        "anchor": "start",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 12,
+        "sizeUnit": "%"
+      },
+      "v": {
+        "anchor": "stretch",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 1000,
+        "sizeUnit": "px"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "on": false,
+        "axis": "x"
+      },
+      "file": "ui/BDL.png",
+      "alt": "",
+      "fit": "fill",
+      "hoverOnly": false,
+      "thumbnail": "",
+      "button": false,
+      "link": {
+        "kind": "none",
+        "url": "",
+        "section": "",
+        "page": "",
+        "newTab": false
+      },
+      "fx": {
+        "shake": true,
+        "shakeMs": 600,
+        "shakeAmount": 100,
+        "flash": true,
+        "flashMs": 300,
+        "flashColour": 0,
+        "flashStrength": 95,
+        "shine": true,
+        "shineDelayMs": 0,
+        "shineMs": 700,
+        "shineWidth": 70,
+        "shineColour": 4,
+        "shineSlant": 18,
+        "clickFlash": true
+      },
+      "scrollY": true,
+      "scrollX": false,
+      "room": 0,
+      "speedY": 0.3,
+      "loopY": true
+    },
+    {
+      "id": "image-hd3re",
+      "type": "image",
+      "name": "RightOverlayBorder",
+      "parent": "section-mzin5",
+      "h": {
+        "anchor": "end",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 12,
+        "sizeUnit": "%"
+      },
+      "v": {
+        "anchor": "stretch",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 1000,
+        "sizeUnit": "px"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "on": false,
+        "axis": "x"
+      },
+      "file": "ui/BDR.png",
+      "alt": "",
+      "fit": "fill",
+      "hoverOnly": false,
+      "thumbnail": "",
+      "button": false,
+      "link": {
+        "kind": "none",
+        "url": "",
+        "section": "",
+        "page": "",
+        "newTab": false
+      },
+      "fx": {
+        "shake": true,
+        "shakeMs": 600,
+        "shakeAmount": 100,
+        "flash": true,
+        "flashMs": 300,
+        "flashColour": 0,
+        "flashStrength": 95,
+        "shine": true,
+        "shineDelayMs": 0,
+        "shineMs": 700,
+        "shineWidth": 70,
+        "shineColour": 4,
+        "shineSlant": 18,
+        "clickFlash": true
+      },
+      "scrollX": false,
+      "loopX": false,
+      "room": 0,
+      "scrollY": true,
+      "loopY": true,
+      "speedX": 0.5,
+      "speedY": 0.3
+    },
+    {
+      "id": "image-ie2xv",
+      "type": "image",
+      "name": "Portrait Image",
+      "parent": "",
+      "h": {
+        "anchor": "center",
+        "offset": -350,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 300,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 60,
         "offsetEnd": 0,
         "unit": "px",
         "size": 0,
@@ -99,24 +303,57 @@
         50
       ],
       "rotate": 0,
-      "text": "fjsdo-e-odfiesoisjdijdasijdasidjwidjaei[djas[dijasdsa[dasidsaij\n",
-      "level": "p",
-      "align": "left",
-      "color": "text",
       "shrink": {
-        "on": true,
-        "axis": "x",
-        "grow": true
-      }
+        "on": false,
+        "axis": "x"
+      },
+      "file": "Me/IMG_5176.PNG",
+      "alt": "",
+      "fit": "contain",
+      "hoverOnly": false,
+      "thumbnail": "",
+      "button": false,
+      "link": {
+        "kind": "none",
+        "url": "",
+        "section": "",
+        "page": "",
+        "newTab": false
+      },
+      "fx": {
+        "shake": true,
+        "shakeMs": 600,
+        "shakeAmount": 100,
+        "flash": true,
+        "flashMs": 300,
+        "flashColour": 0,
+        "flashStrength": 95,
+        "shine": true,
+        "shineDelayMs": 0,
+        "shineMs": 700,
+        "shineWidth": 70,
+        "shineColour": 4,
+        "shineSlant": 18,
+        "clickFlash": true
+      },
+      "offsetX": 0,
+      "radius": {
+        "tl": 50,
+        "tr": 50,
+        "br": 50,
+        "bl": 0
+      },
+      "offsetY": 0,
+      "room": 20
     },
     {
-      "id": "text-z67a9",
+      "id": "text-k8wgd",
       "type": "text",
-      "name": "",
-      "parent": "section-mzin5",
+      "name": "Name",
+      "parent": "",
       "h": {
-        "anchor": "start",
-        "offset": 0,
+        "anchor": "center",
+        "offset": -550,
         "offsetEnd": 0,
         "unit": "px",
         "size": 300,
@@ -124,7 +361,7 @@
       },
       "v": {
         "anchor": "start",
-        "offset": 0,
+        "offset": 50,
         "offsetEnd": 0,
         "unit": "px",
         "size": 0,
@@ -136,14 +373,482 @@
       ],
       "rotate": 0,
       "text": "Oskar Wota\n",
-      "level": "p",
+      "level": "h1",
       "align": "left",
-      "color": "text",
+      "color": 1,
+      "shrink": {
+        "axis": "x",
+        "mode": "down",
+        "on": true,
+        "grow": true
+      },
+      "size": 100
+    },
+    {
+      "id": "text-91m65",
+      "type": "text",
+      "name": "Name",
+      "parent": "",
+      "h": {
+        "anchor": "center",
+        "offset": -460,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 380,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 300,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 0,
+        "sizeUnit": "auto"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "text": "Game Designer\n",
+      "level": "h2",
+      "align": "left",
+      "color": 1,
+      "shrink": {
+        "axis": "x",
+        "mode": "down",
+        "on": true,
+        "grow": true
+      }
+    },
+    {
+      "id": "text-tdwz7",
+      "type": "text",
+      "name": "Exp",
+      "parent": "",
+      "h": {
+        "anchor": "center",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 800,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 500,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 0,
+        "sizeUnit": "auto"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "text": "⬇ Hands on Experience and Creative Thinking ⬇\n",
+      "level": "h2",
+      "align": "center",
+      "color": 1,
+      "shrink": {
+        "axis": "x",
+        "mode": "down",
+        "on": true,
+        "grow": true
+      }
+    },
+    {
+      "id": "text-nxpvz",
+      "type": "text",
+      "name": "Section 2 ",
+      "parent": "",
+      "h": {
+        "anchor": "center",
+        "offset": -350,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 500,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 1000,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 100,
+        "sizeUnit": "auto"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
       "shrink": {
         "on": true,
         "axis": "x",
-        "grow": true
+        "grow": true,
+        "mode": "down"
+      },
+      "text": "Fascinated by systems that create possibilities.\nCreating worlds to explore, encounters to discover, and experiences that feel different with every playthrough. I believe the strongest systems combine depth and replayability with a distinct artistic identity, supported by the care and polish that make them intuitive, engaging, and satisfying to play.",
+      "font": "",
+      "level": "p",
+      "align": "center",
+      "color": 5
+    },
+    {
+      "id": "image-t5azo",
+      "type": "image",
+      "name": "",
+      "parent": "",
+      "h": {
+        "anchor": "center",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 300,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 450,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 5,
+        "sizeUnit": "px"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "on": false,
+        "axis": "x"
+      },
+      "file": "",
+      "alt": "",
+      "fit": "contain",
+      "hoverOnly": false,
+      "thumbnail": "",
+      "button": false,
+      "link": {
+        "kind": "none",
+        "url": "",
+        "section": "",
+        "page": "",
+        "newTab": false
+      },
+      "fx": {
+        "shake": true,
+        "shakeMs": 600,
+        "shakeAmount": 100,
+        "flash": true,
+        "flashMs": 300,
+        "flashColour": 0,
+        "flashStrength": 95,
+        "shine": true,
+        "shineDelayMs": 0,
+        "shineMs": 700,
+        "shineWidth": 70,
+        "shineColour": 4,
+        "shineSlant": 18,
+        "clickFlash": true
+      },
+      "emptyColour": 2,
+      "radius": 100
+    },
+    {
+      "id": "button-r58rq",
+      "type": "button",
+      "name": "Overlay Linkedin",
+      "parent": "section-mzin5",
+      "h": {
+        "anchor": "start",
+        "offset": 200,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 60,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 60,
+        "sizeUnit": "px"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "on": true,
+        "axis": "x"
+      },
+      "file": "Me/linkedinicon.png",
+      "alt": "",
+      "fit": "contain",
+      "link": {
+        "kind": "url",
+        "url": "https://www.linkedin.com/in/oskar-wota-6b0b27381/",
+        "section": "",
+        "page": "",
+        "newTab": true
+      },
+      "fx": {
+        "shake": true,
+        "shakeMs": 600,
+        "shakeAmount": 100,
+        "flash": true,
+        "flashMs": 300,
+        "flashColour": 0,
+        "flashStrength": 95,
+        "shine": true,
+        "shineDelayMs": 0,
+        "shineMs": 700,
+        "shineWidth": 70,
+        "shineColour": 4,
+        "shineSlant": 18,
+        "clickFlash": true,
+        "cards": [
+          {
+            "clickable": false,
+            "waitFlash": false,
+            "file": "",
+            "scale": 1.5,
+            "fit": "both",
+            "openMs": 450,
+            "closeMs": 360,
+            "radius": 6,
+            "background": 3,
+            "imageFit": "cover",
+            "tilt": true,
+            "tiltStrength": 100,
+            "shake": true,
+            "shakeMs": 600,
+            "shakeAmount": 100,
+            "shine": true,
+            "shineColour": 4,
+            "shineWidth": 70,
+            "shineMs": 700,
+            "slant": 18,
+            "flash": true,
+            "flashColour": 6,
+            "flashMs": 500
+          }
+        ]
+      },
+      "emptyColour": 2
+    },
+    {
+      "id": "button-vblgs",
+      "type": "button",
+      "name": "Overlay Itch.io",
+      "parent": "section-mzin5",
+      "h": {
+        "anchor": "start",
+        "offset": 275,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 60,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 60,
+        "sizeUnit": "px"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "on": true,
+        "axis": "x"
+      },
+      "file": "Me/itchicon.png",
+      "alt": "",
+      "fit": "contain",
+      "link": {
+        "kind": "url",
+        "url": "https://oskarwota.itch.io",
+        "section": "",
+        "page": "",
+        "newTab": true
+      },
+      "fx": {
+        "shake": true,
+        "shakeMs": 600,
+        "shakeAmount": 100,
+        "flash": false,
+        "flashMs": 300,
+        "flashColour": 6,
+        "flashStrength": 95,
+        "shine": true,
+        "shineDelayMs": 0,
+        "shineMs": 700,
+        "shineWidth": 70,
+        "shineColour": 4,
+        "shineSlant": 18,
+        "clickFlash": true,
+        "cards": [
+          {
+            "clickable": true,
+            "waitFlash": false,
+            "file": "",
+            "scale": 1.5,
+            "fit": "both",
+            "openMs": 450,
+            "closeMs": 360,
+            "radius": 6,
+            "background": 3,
+            "imageFit": "cover",
+            "tilt": true,
+            "tiltStrength": 100,
+            "shake": true,
+            "shakeMs": 600,
+            "shakeAmount": 100,
+            "shine": true,
+            "shineColour": 4,
+            "shineWidth": 70,
+            "shineMs": 700,
+            "slant": 18,
+            "flash": true,
+            "flashColour": 6,
+            "flashMs": 500
+          }
+        ]
+      },
+      "emptyColour": 0
+    },
+    {
+      "id": "button-pre3a",
+      "type": "button",
+      "name": "ProfileSuprise",
+      "parent": "",
+      "h": {
+        "anchor": "center",
+        "offset": -350,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 200,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 125,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 200,
+        "sizeUnit": "px"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "on": false,
+        "axis": "x"
+      },
+      "file": "",
+      "alt": "",
+      "fit": "contain",
+      "link": {
+        "kind": "none",
+        "url": "",
+        "section": "",
+        "page": "",
+        "newTab": false
+      },
+      "fx": {
+        "shake": true,
+        "shakeMs": 600,
+        "shakeAmount": 100,
+        "flash": true,
+        "flashMs": 300,
+        "flashColour": 0,
+        "flashStrength": 95,
+        "shine": true,
+        "shineDelayMs": 0,
+        "shineMs": 700,
+        "shineWidth": 70,
+        "shineColour": 4,
+        "shineSlant": 18,
+        "clickFlash": true,
+        "cards": [
+          {
+            "clickable": false,
+            "waitFlash": true,
+            "file": "Me/PurpleIconPure.png",
+            "scale": 1.5,
+            "fit": "both",
+            "openMs": 300,
+            "closeMs": 200,
+            "radius": 6,
+            "background": 0,
+            "imageFit": "cover",
+            "tilt": true,
+            "tiltStrength": 400,
+            "shake": true,
+            "shakeMs": 600,
+            "shakeAmount": 600,
+            "shine": true,
+            "shineColour": 5,
+            "shineWidth": 100,
+            "shineMs": 700,
+            "slant": 18,
+            "flash": true,
+            "flashColour": 1,
+            "flashMs": 500
+          }
+        ]
       }
+    },
+    {
+      "id": "text-17y6v",
+      "type": "text",
+      "name": "",
+      "parent": "",
+      "h": {
+        "anchor": "center",
+        "offset": 250,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 800,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 100,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 100,
+        "sizeUnit": "auto"
+      },
+      "pivot": [
+        0,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "axis": "x",
+        "mode": "down",
+        "on": true,
+        "grow": true
+      },
+      "text": "An artistic game designer who thinks in mechanics, and designs **gameplay **for the **experience **as a whole.\n\nI’m interested in the ideas, systems, and visual details that make a game unmistakably its own.\n\nFrom designing procedural worlds to shaping the moment-to-moment player experience, I enjoy bringing different parts of game design together to create something cohesive, expressive, and memorable.\n\nRefining how a game looks, feels, and communicates with the player.",
+      "font": "",
+      "level": "p",
+      "align": "left",
+      "color": ""
     }
   ],
   "sections": [
@@ -152,15 +857,18 @@
       "kind": "band",
       "name": "",
       "anchor": "bottom",
-      "start": 100,
-      "height": 600,
+      "start": 0,
+      "height": 800,
       "background": 4,
       "texture": {
         "file": "ui/LeftBorder.png",
         "size": 150,
         "offsetX": 0,
-        "offsetY": 0,
-        "rotate": 45
+        "offsetY": 1,
+        "rotate": 45,
+        "scrollX": true,
+        "scrollY": true,
+        "speedY": 0.5
       },
       "overlay": {
         "colour": 6,
@@ -171,36 +879,30 @@
       "id": "section-mzin5",
       "kind": "fixed",
       "name": ""
-    }
-  ],
-  "mobile": {
-    "breakpoint": 700,
-    "canvas": {
-      "designWidth": 390,
-      "designHeight": 844
     },
-    "items": {
-      "image-ar5jf": {
-        "h": {
-          "anchor": "start",
-          "offset": 0,
-          "offsetEnd": 0,
-          "unit": "px",
-          "size": 100,
-          "sizeUnit": "px"
-        }
+    {
+      "id": "section-ky6g3",
+      "kind": "band",
+      "name": "",
+      "anchor": "top",
+      "start": 1000,
+      "height": 6400,
+      "background": 2,
+      "texture": {
+        "file": "Backgrounds/IMG_4544.png",
+        "size": 1000,
+        "offsetX": 0,
+        "offsetY": 0,
+        "scrollX": true,
+        "speedX": 0.05,
+        "scrollY": true,
+        "speedY": 0.1,
+        "rotate": 0
       },
-      "text-k8wgd": {
-        "h": {
-          "anchor": "end",
-          "offset": 0,
-          "offsetEnd": 0,
-          "unit": "px",
-          "size": 11,
-          "sizeUnit": "px"
-        }
+      "overlay": {
+        "colour": 3,
+        "opacity": 90
       }
-    },
-    "sections": {}
-  }
+    }
+  ]
 }
