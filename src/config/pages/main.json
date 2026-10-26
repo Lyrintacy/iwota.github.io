@@ -375,7 +375,7 @@
       "text": "Oskar Wota\n",
       "level": "h1",
       "align": "left",
-      "color": 3,
+      "color": 1,
       "shrink": {
         "axis": "x",
         "mode": "down",
@@ -413,7 +413,7 @@
       "text": "Game Designer\n",
       "level": "h2",
       "align": "left",
-      "color": 3,
+      "color": 1,
       "shrink": {
         "axis": "x",
         "mode": "down",
@@ -450,7 +450,7 @@
       "text": "⬇ Hands on Experience and Creative Thinking ⬇\n",
       "level": "h2",
       "align": "center",
-      "color": 3,
+      "color": 1,
       "shrink": {
         "axis": "x",
         "mode": "down",
@@ -495,7 +495,7 @@
       "font": "",
       "level": "p",
       "align": "center",
-      "color": ""
+      "color": 5
     },
     {
       "id": "image-t5azo",
@@ -642,7 +642,7 @@
           }
         ]
       },
-      "emptyColour": 1
+      "emptyColour": 2
     },
     {
       "id": "button-vblgs",
@@ -936,7 +936,7 @@
         "rotate": 0
       },
       "overlay": {
-        "colour": 1,
+        "colour": 3,
         "opacity": 90
       }
     }

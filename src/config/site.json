@@ -6,20 +6,20 @@
     "cv"
   ],
   "palette": [
-    "#1B0E1F",
-    "#5F2C49",
-    "#AE0B31",
-    "#5c00be",
-    "#FFB300",
+    "#ebf7cc",
+    "#f6b0d8",
+    "#6257df",
+    "#67186b",
+    "#03300a",
     "#ffffff",
     "#b1ff3d",
     "#ff47a0"
   ],
   "roles": {
-    "background": 1,
-    "text": 6,
-    "secondary": 6,
-    "highlight": 5
+    "background": 4,
+    "text": 1,
+    "secondary": 5,
+    "highlight": 2
   },
   "text": {
     "body": 16,
@@ -77,9 +77,9 @@
   "ui": {
     "tabs": {
       "font": "font-3",
-      "text": 7,
-      "background": 2,
-      "active": 3,
+      "text": 3,
+      "background": 1,
+      "active": 2,
       "maxTemporary": 1,
       "slide": true,
       "slidePhone": true
@@ -90,8 +90,8 @@
       "background": 0
     },
     "toggle": {
-      "text": 7,
-      "background": 2,
+      "text": 2,
+      "background": 5,
       "hidePhone": false,
       "font": "font-3"
     },
@@ -115,14 +115,14 @@
       "name": "Body text",
       "tag": "p",
       "size": 18,
-      "colour": 6,
+      "colour": 1,
       "font": "font"
     },
     "h1": {
       "name": "Heading 1",
       "tag": "h1",
       "size": 56,
-      "colour": 7,
+      "colour": 3,
       "font": "font-3"
     },
     "secondary-text": {
