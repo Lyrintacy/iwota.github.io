@@ -1923,6 +1923,38 @@ export function Editor({
               {(item.type === "image" || item.type === "video" || (item.type === "gif" && !item.button)) && (
                 <CornerFields value={item.radius} onChange={(radius) => patch({ radius })} />
               )}
+              {(item.type === "image" || item.type === "video" || (item.type === "gif" && !item.button)) && (
+                <Group title="Caption">
+                  <Field label="Caption (optional, shown with the picture)">
+                    <textarea
+                      rows={2}
+                      value={itemView.caption || ""}
+                      onChange={(e) => patch({ caption: e.target.value })}
+                    />
+                  </Field>
+                  <Select
+                    label="Caption position"
+                    value={itemView.captionPosition || "below"}
+                    options={[
+                      ["below", "Below the picture"],
+                      ["above", "Above the picture"],
+                      ["over", "Over the bottom of the picture"],
+                    ]}
+                    onChange={(captionPosition) => patch({ captionPosition })}
+                  />
+                  <Select
+                    label="Caption colour"
+                    value={String(itemView.captionColour ?? "")}
+                    options={[["", "Automatic (text colour; white over the picture)"], ...paletteOptions(site)]}
+                    onChange={(n) => patch({ captionColour: n === "" ? "" : Number(n) })}
+                  />
+                  <NumberField
+                    label="Caption size (px)"
+                    value={itemView.captionSize ?? 14}
+                    onChange={(captionSize) => patch({ captionSize })}
+                  />
+                </Group>
+              )}
               {item.type === "image" && (
                 <details className="group">
                   <summary>Panning (moves the picture inside its frame)</summary>

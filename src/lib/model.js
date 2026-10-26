@@ -452,6 +452,8 @@ export function newItem(type, id, parent = "") {
       fx: { ...DEFAULT_FX },
     });
   }
+  if (type === "image" || type === "gif" || type === "video")
+    Object.assign(item, { caption: "", captionPosition: "below", captionColour: "", captionSize: 14 });
   return item;
 }
 
