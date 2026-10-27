@@ -432,7 +432,8 @@ function CardView({ c, base, buttonRef, cardEls, closing, clickFlash, waitMs, on
     const t = setTimeout(() => setStarted(true), waitMs);
     return () => clearTimeout(t);
   }, []);
-  const media = useMedia("image", c.file || "");
+  // A card picture can be a still or an animated GIF (an <img> plays a GIF by itself).
+  const media = useMedia("picture", c.file || "");
   const picture = media.url || base;
   const mask = picture ? { WebkitMaskImage: urlCss(picture), maskImage: urlCss(picture) } : {};
   const [clicks, setClicks] = useState(0);

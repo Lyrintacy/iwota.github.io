@@ -7,6 +7,8 @@ export const CANDIDATES = {
   image: ["png", "PNG", "jpeg", "JPEG", "jpg", "JPG"],
   gif: ["gif", "GIF"],
   video: ["mp4", "MP4", "webm", "WEBM"],
+  // A picture that may be a still or an animated GIF (card pictures).
+  picture: ["png", "PNG", "jpeg", "JPEG", "jpg", "JPG", "gif", "GIF"],
 };
 export const hasExt = (file = "") => /\.[a-z0-9]+$/i.test(file.split("/").pop());
 const isUrl = (file) => /^https?:\/\//i.test(file);

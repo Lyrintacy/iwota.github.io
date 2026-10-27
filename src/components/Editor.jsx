@@ -604,6 +604,7 @@ function TextEditor({ item, onChange, setStatus, fonts = [], styles = [], palett
 // suggestions. Without an extension, the first existing file of the type is used.
 const KINDS = {
   image: /\.(png|jpe?g|gif)$/i,
+  picture: /\.(png|jpe?g|gif)$/i,
   gif: /\.gif$/i,
   video: /\.(mp4|webm)$/i,
 };
@@ -812,9 +813,9 @@ function CardsFields({ fx = {}, palette, onChange }) {
             onChange={(fit) => patch(i, { fit })}
           />
           <FilePath
-            label="Card picture (optional, else the button image)"
+            label="Card picture or GIF (optional, else the button image)"
             value={c.file || ""}
-            type="image"
+            type="picture"
             placeholder="0/card"
             onChange={(file) => patch(i, { file })}
           />
