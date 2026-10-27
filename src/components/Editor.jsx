@@ -56,6 +56,56 @@ function download(name, text) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
+// Moves the entry at `from` to position `to` of a list (a new array).
+function moveIdx(list, from, to) {
+  const next = [...list];
+  const [moved] = next.splice(from, 1);
+  next.splice(to, 0, moved);
+  return next;
+}
+
+// Drag and drop for a list that has an order. Drag the grip of a row onto another row to
+// move it there. Call it at the top of a component: it returns a function from a row's
+// index to the props for its grip (`handle`) and for the row itself (`row`).
+function useReorder(onMove, enabled = true) {
+  // A ref, not state: the drop must see the row that was dragged at once.
+  const from = useRef(null);
+  const [active, setActive] = useState(null);
+  return (index) => ({
+    dragging: active === index,
+    handle: enabled
+      ? {
+          draggable: true,
+          title: "Drag to reorder",
+          onDragStart: (e) => {
+            from.current = index;
+            setActive(index);
+            e.dataTransfer.effectAllowed = "move";
+            e.dataTransfer.setData("text/plain", String(index));
+          },
+          onDragEnd: () => {
+            from.current = null;
+            setActive(null);
+          },
+        }
+      : {},
+    row: enabled
+      ? {
+          onDragOver: (e) => {
+            if (from.current !== null) e.preventDefault();
+          },
+          onDrop: (e) => {
+            e.preventDefault();
+            const start = from.current;
+            from.current = null;
+            setActive(null);
+            if (start !== null && start !== index) onMove(start, index);
+          },
+        }
+      : {},
+  });
+}
+
 function Field({ label, children }) {
   return (
     <label className="field">
@@ -554,6 +604,7 @@ function TextEditor({ item, onChange, setStatus, fonts = [], styles = [], palett
 // suggestions. Without an extension, the first existing file of the type is used.
 const KINDS = {
   image: /\.(png|jpe?g|gif)$/i,
+  picture: /\.(png|jpe?g|gif)$/i,
   gif: /\.gif$/i,
   video: /\.(mp4|webm)$/i,
 };
@@ -710,6 +761,7 @@ function CardsFields({ fx = {}, palette, onChange }) {
       .map((k) => [k, undefined]),
   );
   const save = (next) => onChange({ ...legacy, cards: next });
+  const cardRow = useReorder((from, to) => save(moveIdx(cards, from, to)));
   const patch = (i, p) => save(cards.map((c, k) => (k === i ? { ...c, ...p } : c)));
   const num = (i, key) => (v) => patch(i, { [key]: Math.max(0, v) });
   const move = (i, d) => {
@@ -725,8 +777,15 @@ function CardsFields({ fx = {}, palette, onChange }) {
     <div className="cards-list">
       {cards.length === 0 && <p className="hint">No cards: hovering the button opens nothing.</p>}
       {cards.map((c, i) => (
-        <details className="group card-edit" key={i}>
+        <details
+          className={`group card-edit ${cardRow(i).dragging ? "dragging" : ""}`}
+          key={i}
+          {...cardRow(i).row}
+        >
           <summary>
+            <span className="grip" {...cardRow(i).handle}>
+              ⋮⋮
+            </span>
             Card {i + 1}
             {c.clickable ? " (clickable)" : ""}
           </summary>
@@ -754,9 +813,9 @@ function CardsFields({ fx = {}, palette, onChange }) {
             onChange={(fit) => patch(i, { fit })}
           />
           <FilePath
-            label="Card picture (optional, else the button image)"
+            label="Card picture or GIF (optional, else the button image)"
             value={c.file || ""}
-            type="image"
+            type="picture"
             placeholder="0/card"
             onChange={(file) => patch(i, { file })}
           />
@@ -1274,18 +1333,11 @@ export function Editor({
     });
   };
 
-  // Sections can be reordered by dragging; the content sections stack in this order.
-  const [dragId, setDragId] = useState(null);
-  const moveSectionTo = (fromId, toId) =>
-    setPage((p) => {
-      const list = [...(p.sections || [])];
-      const from = list.findIndex((x) => x.id === fromId);
-      const to = list.findIndex((x) => x.id === toId);
-      if (from < 0 || to < 0 || from === to) return p;
-      const [moved] = list.splice(from, 1);
-      list.splice(to, 0, moved);
-      return { ...p, sections: list };
-    });
+  // Drag and drop reorders lists (sections and items here; cards and fonts below).
+  const moveIn = (key, from, to) =>
+    setPage((p) => ({ ...p, [key]: moveIdx(p[key] || [], from, to) }));
+  const sectionRow = useReorder((from, to) => moveIn("sections", from, to), !phone);
+  const itemRow = useReorder((from, to) => moveIn("items", from, to), !phone);
 
   const addSection = (kind) => {
     const bottom = Math.max(
@@ -1372,6 +1424,9 @@ export function Editor({
   const setRole = (role, n) =>
     setSite((s) => ({ ...s, roles: { ...s.roles, [role]: n } }));
   const sizes = { ...DEFAULT_TEXT, ...(site.text || {}) };
+  const fontRow = useReorder((from, to) =>
+    setSite((s) => ({ ...s, fonts: moveIdx(s.fonts, from, to) })),
+  );
   const setFont = (i, values) =>
     setSite((s) => ({
       ...s,
@@ -1640,19 +1695,12 @@ export function Editor({
             {sections.map((x, n) => (
               <li
                 key={x.id}
-                draggable={!phone && isContent(x)}
-                className={dragId === x.id ? "dragging" : ""}
-                onDragStart={() => setDragId(x.id)}
-                onDragOver={(e) => {
-                  if (dragId) e.preventDefault();
-                }}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  if (dragId) moveSectionTo(dragId, x.id);
-                  setDragId(null);
-                }}
-                onDragEnd={() => setDragId(null)}
+                {...sectionRow(n).row}
+                className={sectionRow(n).dragging ? "dragging" : undefined}
               >
+                <span className="grip" {...sectionRow(n).handle}>
+                  ⋮⋮
+                </span>
                 <button
                   className={x.id === selectedSectionId ? "on" : ""}
                   onClick={() => toggleSection(x.id)}
@@ -1847,7 +1895,14 @@ export function Editor({
           <h4>Items</h4>
           <ul className="items">
             {page.items.map((it, n) => (
-              <li key={it.id}>
+              <li
+                key={it.id}
+                {...itemRow(n).row}
+                className={itemRow(n).dragging ? "dragging" : undefined}
+              >
+                <span className="grip" {...itemRow(n).handle}>
+                  ⋮⋮
+                </span>
                 <button
                   className={it.id === selectedId ? "on" : ""}
                   onClick={() => toggleItem(it.id)}
@@ -2534,7 +2589,14 @@ export function Editor({
             to the site font.
           </p>
           {site.fonts.map((f, i) => (
-            <div className="font-row" key={f.id}>
+            <div
+              className={`font-row ${fontRow(i).dragging ? "dragging" : ""}`}
+              key={f.id}
+              {...fontRow(i).row}
+            >
+              <span className="grip" {...fontRow(i).handle}>
+                ⋮⋮
+              </span>
               <input
                 value={f.name}
                 aria-label={`Font ${i + 1} name`}

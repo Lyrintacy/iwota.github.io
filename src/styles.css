@@ -1059,3 +1059,19 @@ details.group > .group-body {
   pointer-events: auto;
   cursor: pointer;
 }
+
+/* Drag and drop for ordered lists: the grip starts a drag, the row is the drop target */
+.grip {
+  display: inline-block;
+  cursor: grab;
+  user-select: none;
+  padding: 0 4px;
+  opacity: 0.55;
+  line-height: 1;
+}
+.grip:active {
+  cursor: grabbing;
+}
+.dragging {
+  opacity: 0.5;
+}
