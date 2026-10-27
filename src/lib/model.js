@@ -578,7 +578,11 @@ export function bandTop(section, pageH) {
  */
 export function contentLayout(sections) {
   const tops = {};
+  // The stack starts below the lowest top section (top sections keep their place).
   let cursor = 0;
+  for (const s of sections)
+    if (isBand(s) && !isContent(s) && s.anchor !== "bottom")
+      cursor = Math.max(cursor, (Number(s.start) || 0) + (Number(s.height) || 0));
   for (const s of sections)
     if (isContent(s)) {
       const top = cursor + (Number(s.start) || 0);
@@ -596,9 +600,13 @@ export function sectionTop(section, pageH, tops) {
 
 /** The page grows to fit bands and content that extend below the canvas height. */
 export function pageHeight(page) {
-  let h = Math.max(page.canvas.height, contentLayout(page.sections || []).end);
-  for (const s of page.sections || [])
-    if (isBand(s) && !isContent(s)) h = Math.max(h, s.start + s.height);
+  const end = contentLayout(page.sections || []).end;
+  let h = Math.max(page.canvas.height, end);
+  for (const s of page.sections || []) {
+    if (!isBand(s) || isContent(s)) continue;
+    // A section stuck to the bottom sits below the content, so the page grows to fit both.
+    h = Math.max(h, s.anchor === "bottom" ? end + s.start + s.height : s.start + s.height);
+  }
   return h;
 }
 

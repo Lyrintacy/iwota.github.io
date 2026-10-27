@@ -1339,16 +1339,24 @@ export function Editor({
   const sectionRow = useReorder((from, to) => moveIn("sections", from, to), !phone);
   const itemRow = useReorder((from, to) => moveIn("items", from, to), !phone);
 
-  const addSection = (kind) => {
+  const [newPlace, setNewPlace] = useState("top"); // where the next section goes
+  // where: "top" | "bottom" | "content" | "fixed" (a screen overlay).
+  const addSection = (where) => {
     const bottom = Math.max(
       0,
-      ...sections.filter((x) => isBand(x) && !isContent(x)).map((x) => x.start + x.height),
+      ...sections
+        .filter((x) => isBand(x) && !isContent(x) && x.anchor !== "bottom")
+        .map((x) => x.start + x.height),
     );
-    const created = newSection(
-      kind,
-      uid("section"),
-      kind === "band" ? bottom : 0,
-    );
+    const id = uid("section");
+    const created =
+      where === "content"
+        ? newSection("content", id, 0)
+        : where === "fixed"
+          ? newSection("fixed", id)
+          : where === "bottom"
+            ? { ...newSection("band", id, 0), anchor: "bottom" }
+            : newSection("band", id, bottom);
     setPage((p) => ({ ...p, sections: [...(p.sections || []), created] }));
     setSelectedSectionId(created.id);
   };
@@ -1645,11 +1653,18 @@ export function Editor({
                 + {TYPE_LABEL[t]}
               </button>
             ))}
-            <button disabled={phone} onClick={() => addSection("band")}>
+            <select
+              aria-label="Where the new section goes"
+              value={newPlace}
+              disabled={phone}
+              onChange={(e) => setNewPlace(e.target.value)}
+            >
+              <option value="top">Stuck to the top</option>
+              <option value="bottom">Stuck to the bottom</option>
+              <option value="content">Content (stacks in order)</option>
+            </select>
+            <button disabled={phone} onClick={() => addSection(newPlace)}>
               + Section
-            </button>
-            <button disabled={phone} onClick={() => addSection("content")}>
-              + Content section
             </button>
             <button disabled={phone} onClick={() => addSection("fixed")}>
               + Screen overlay
@@ -1769,6 +1784,24 @@ export function Editor({
                 </button>
               </div>
 
+              {!phone && isBand(section) && (
+                <Select
+                  label="Placement"
+                  value={isContent(section) ? "content" : sectionView.anchor || "top"}
+                  options={[
+                    ["top", "Stuck to the top"],
+                    ["bottom", "Stuck to the bottom"],
+                    ["content", "Content (stacks in order, after the top sections)"],
+                  ]}
+                  onChange={(v) =>
+                    patchSection(
+                      v === "content"
+                        ? { kind: "content", start: 0 }
+                        : { kind: "band", anchor: v, start: 0 },
+                    )
+                  }
+                />
+              )}
               {isContent(section) ? (
                 <>
                   <NumberField
@@ -1784,15 +1817,6 @@ export function Editor({
                 </>
               ) : isBand(section) ? (
                 <>
-                  <Select
-                    label="Align to"
-                    value={sectionView.anchor || "top"}
-                    options={[
-                      ["top", "Top of the page"],
-                      ["bottom", "Bottom of the page"],
-                    ]}
-                    onChange={(anchor) => patchSection({ anchor })}
-                  />
                   <div className="axis-grid">
                     <NumberField
                       label={
