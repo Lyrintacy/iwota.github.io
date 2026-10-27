@@ -116,8 +116,9 @@ export function HoverVideo({ item }) {
 
 // How big the card is: the button times cardScale, kept on screen as asked.
 // fit "x" limits the width, "y" the height, "both" both (the card keeps its shape).
-function cardSize(r, scale, fit, pageW, vh) {
-  const ratio = r.height / r.width;
+function cardSize(r, scale, fit, pageW, vh, heightPct = 0) {
+  // heightPct: the card's height as a percentage of its width (0 = the button's own shape).
+  const ratio = heightPct > 0 ? heightPct / 100 : r.height / r.width;
   let w = r.width * scale;
   if ((fit === "x" || fit === "both") && w > pageW * 0.9) w = pageW * 0.9;
   let h = w * ratio;
@@ -341,8 +342,16 @@ export function ButtonItem({ item, editing }) {
     </div>
   );
 
+  // Round corners: the button, its flash and shine are clipped to them.
+  const buttonRadius = cornerRadius(item.radius);
   const inner = (
-    <div ref={ref} className="fx-root" onPointerDown={onPointerDown} onClick={onTap}>
+    <div
+      ref={ref}
+      className="fx-root"
+      style={buttonRadius ? { borderRadius: buttonRadius, overflow: "hidden" } : undefined}
+      onPointerDown={onPointerDown}
+      onClick={onTap}
+    >
       {body}
     </div>
   );
@@ -445,7 +454,7 @@ function CardView({ c, base, buttonRef, cardEls, closing, clickFlash, waitMs, on
     const r = buttonRef.current?.getBoundingClientRect();
     if (!el || !r) return;
     const pageW = buttonRef.current.closest(".canvas")?.clientWidth || window.innerWidth;
-    const { w, h } = cardSize(r, c.scale, c.fit, pageW, window.innerHeight);
+    const { w, h } = cardSize(r, c.scale, c.fit, pageW, window.innerHeight, c.heightPct);
     el.style.left = `${r.left + r.width / 2 - w / 2}px`;
     el.style.top = `${r.top + r.height / 2 - h / 2}px`;
     el.style.width = `${w}px`;

@@ -801,6 +801,11 @@ function CardsFields({ fx = {}, palette, onChange }) {
             onChange={(clickable) => patch(i, { clickable })}
           />
           <NumberField label="Card size (times the button)" value={c.scale} onChange={(v) => patch(i, { scale: Math.max(1, v) })} />
+          <NumberField
+            label="Card shape: height as % of width (0 = same as the button)"
+            value={c.heightPct || 0}
+            onChange={(v) => patch(i, { heightPct: Math.max(0, v) })}
+          />
           <Select
             label="Keep the card on screen by"
             value={c.fit || "both"}
@@ -2201,7 +2206,7 @@ export function Editor({
                 </>
               )}
 
-              {(item.type === "image" || item.type === "video" || (item.type === "gif" && !item.button)) && (
+              {(item.type === "image" || item.type === "video" || item.type === "button" || item.type === "gif") && (
                 <CornerFields value={item.radius} onChange={(radius) => patch({ radius })} />
               )}
               {(item.type === "image" || item.type === "video" || (item.type === "gif" && !item.button)) && (
