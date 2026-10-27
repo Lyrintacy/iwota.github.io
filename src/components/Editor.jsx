@@ -1802,25 +1802,15 @@ export function Editor({
                   }
                 />
               )}
-              {isContent(section) ? (
-                <>
-                  <NumberField
-                    label="Gap after the section above (px)"
-                    value={sectionView.start}
-                    onChange={(start) => patchSection({ start: Math.max(0, start) })}
-                  />
-                  <NumberField
-                    label="Height (px)"
-                    value={sectionView.height}
-                    onChange={(height) => patchSection({ height: Math.max(0, height) })}
-                  />
-                </>
-              ) : isBand(section) ? (
+              {/* Content sections have the same look as the others: background, texture, overlay. */}
+              {isBand(section) ? (
                 <>
                   <div className="axis-grid">
                     <NumberField
                       label={
-                        sectionView.anchor === "bottom"
+                        isContent(section)
+                          ? "Gap after the section above (px)"
+                          : sectionView.anchor === "bottom"
                           ? "Distance from bottom (px)"
                           : "Start height from top (px)"
                       }
