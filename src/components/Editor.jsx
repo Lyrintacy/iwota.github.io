@@ -1,6 +1,6 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import images from "virtual:images";
-import { ANCHORS, COLORS, DEFAULT_DESIGN, DEFAULT_UI, DEFAULT_LINK, DEFAULT_MOBILE, DEFAULT_SPEED, DEFAULT_TEXT, ROLES, SIZE_UNITS, TYPES, UNITS, formatAt, isBand, newItem, newSection, pageSlug, removeColour, toggleFormat, uid, DEFAULT_CARD, cardsOf, textStyles, TEXT_TAGS, styleOf, BUILTIN_TEXT_STYLES } from "../lib/model.js";
+import { ANCHORS, COLORS, DEFAULT_DESIGN, DEFAULT_UI, DEFAULT_LINK, DEFAULT_MOBILE, DEFAULT_SPEED, DEFAULT_TEXT, ROLES, SIZE_UNITS, TYPES, UNITS, formatAt, isBand, isContent, newItem, newSection, pageSlug, removeColour, toggleFormat, uid, DEFAULT_CARD, cardsOf, textStyles, TEXT_TAGS, styleOf, BUILTIN_TEXT_STYLES } from "../lib/model.js";
 import { hasExt, useMedia } from "../lib/media.js";
 import { fontFamily } from "../lib/model.js";
 
@@ -129,12 +129,14 @@ function PanControl({ axis, pan, speed, onChange }) {
 }
 
 // Copies a component, or a whole screen overlay with its components, from another tab into
-// this one. Copies get their own ids and keep their phone changes. A band's frame is not on
-// this tab, so a copy from a band goes on the page.
+// this one. Copies get their own ids. With "Include phone changes" (on by default) they keep
+// their phone changes. A copy stays linked to its original: "Update from the original" brings
+// it up to date. A band's frame is not on this tab, so a copy from a band goes on the page.
 function CopyFromTab({ pagesApi, page, setPage, setSelectedId, setSelectedSectionId, disabled }) {
   const others = pagesApi.tabs.filter((id) => id !== pagesApi.active && pagesApi.pages[id]);
   const [tabId, setTabId] = useState("");
   const [choice, setChoice] = useState("");
+  const [withPhone, setWithPhone] = useState(true);
   const src = tabId ? pagesApi.pages[tabId] : null;
   const overlays = (src?.sections || []).filter((s) => !isBand(s));
   const overlayIds = new Set(overlays.map((s) => s.id));
@@ -143,10 +145,10 @@ function CopyFromTab({ pagesApi, page, setPage, setSelectedId, setSelectedSectio
     const it = items.find((i) => i.id === itemId);
     if (!it) return;
     const newId = uid(it.type);
-    const made = { ...structuredClone(it), id: newId };
+    const made = { ...structuredClone(it), id: newId, copyOf: { tab: tabId, id: itemId, phone: withPhone } };
     const here = (page.sections || []).map((s) => s.id);
     if (made.parent && !here.includes(made.parent)) made.parent = "";
-    const phoneCopy = src.mobile?.items?.[itemId];
+    const phoneCopy = withPhone ? src.mobile?.items?.[itemId] : undefined;
     setPage((p) => ({
       ...p,
       items: [...p.items, made],
@@ -166,14 +168,24 @@ function CopyFromTab({ pagesApi, page, setPage, setSelectedId, setSelectedSectio
     const kids = (src.items || []).filter((i) => i.parent === sec.id);
     const ids = {};
     kids.forEach((k) => (ids[k.id] = uid(k.type)));
-    const newSec = { ...structuredClone(sec), id: newSecId };
-    const newItems = kids.map((k) => ({ ...structuredClone(k), id: ids[k.id], parent: newSecId }));
+    const newSec = {
+      ...structuredClone(sec),
+      id: newSecId,
+      copyOf: { tab: tabId, id: sec.id, phone: withPhone },
+    };
+    const newItems = kids.map((k) => ({
+      ...structuredClone(k),
+      id: ids[k.id],
+      parent: newSecId,
+      copyOf: { tab: tabId, id: k.id, phone: withPhone },
+    }));
     const phoneItems = {};
-    kids.forEach((k) => {
-      const o = src.mobile?.items?.[k.id];
-      if (o) phoneItems[ids[k.id]] = structuredClone(o);
-    });
-    const phoneSec = src.mobile?.sections?.[sec.id];
+    if (withPhone)
+      kids.forEach((k) => {
+        const o = src.mobile?.items?.[k.id];
+        if (o) phoneItems[ids[k.id]] = structuredClone(o);
+      });
+    const phoneSec = withPhone ? src.mobile?.sections?.[sec.id] : undefined;
     setPage((p) => ({
       ...p,
       sections: [...(p.sections || []), newSec],
@@ -217,11 +229,16 @@ function CopyFromTab({ pagesApi, page, setPage, setSelectedId, setSelectedSectio
           ["", tabId ? "Choose a component or overlay" : "Choose a tab first"],
           ...overlays.map((s) => [
             `overlay:${s.id}`,
-            `Screen overlay (with its components) · ${s.id}`,
+            `Screen overlay (with all its components) · ${s.id}`,
           ]),
           ...items.map((it) => [`item:${it.id}`, `${TYPE_LABEL[it.type] || it.type} · ${it.id}`]),
         ]}
         onChange={setChoice}
+      />
+      <Check
+        label="Include phone changes"
+        checked={withPhone}
+        onChange={setWithPhone}
       />
       <button disabled={disabled || !choice} onClick={copy}>
         Copy into this tab
@@ -231,6 +248,55 @@ function CopyFromTab({ pagesApi, page, setPage, setSelectedId, setSelectedSectio
         tabs are not copied. Not available in phone mode.
       </p>
     </Group>
+  );
+}
+
+// Shows that an element was copied from another tab, with a way to bring it up to date.
+function CopyNote({ copyOf, title, available, disabled, onRefresh }) {
+  if (!copyOf) return null;
+  return (
+    <div className="override-note">
+      <p>
+        Copied from <strong>{title || "another tab"}</strong>
+        {copyOf.phone ? " (with phone changes)" : ""}. Changes to the original are not applied
+        until you update.
+      </p>
+      <button disabled={disabled || !available} onClick={onRefresh}>
+        Update from the original
+      </button>
+      {!available && <p className="hint">The original tab is no longer open.</p>}
+    </div>
+  );
+}
+
+// Names for the fields a phone can change, for the list of overwritten fields.
+const FIELD_NAMES = {
+  h: "horizontal position", v: "vertical position", rotate: "rotation", shrink: "auto size",
+  text: "text", size: "size", color: "colour", font: "font", align: "alignment", level: "level",
+  file: "file", fit: "fit", radius: "round corners", caption: "caption",
+  captionPosition: "caption position", captionColour: "caption colour", captionSize: "caption size",
+  link: "link", fx: "hover and button effects", name: "name", parent: "parent",
+  hoverOnly: "hover only", thumbnail: "thumbnail", button: "button", emptyColour: "empty colour",
+  scrollX: "pan X", scrollY: "pan Y", speedX: "pan speed X", speedY: "pan speed Y",
+  background: "background", texture: "texture", overlay: "overlay", start: "start",
+  height: "height", anchor: "anchor", poster: "poster", controls: "controls", loop: "loop",
+  autoplay: "autoplay", alt: "description", offsetX: "offset X", offsetY: "offset Y",
+};
+
+// The fields a phone overrides on this element, with a reset for all of them (in Phone mode).
+function OverrideNote({ overrides, canReset, onReset }) {
+  const keys = Object.keys(overrides || {});
+  if (!keys.length) return null;
+  return (
+    <div className="override-note">
+      <p>
+        <strong>Phone changes:</strong> {keys.map((k) => FIELD_NAMES[k] || k).join(", ")}.
+      </p>
+      <button className="danger" disabled={!canReset} onClick={onReset}>
+        Reset all phone changes here
+      </button>
+      {!canReset && <p className="hint">Switch to Phone mode to reset them.</p>}
+    </div>
   );
 }
 
@@ -1132,10 +1198,99 @@ export function Editor({
     setSelectedId(null);
   };
 
+  // Phone overrides: the fields changed on a phone, and a way to drop them all.
+  const resetOverrides = (kind, id) => {
+    if (!window.confirm("Reset all phone changes for this? The desktop version stays as it is.")) return;
+    setPage((p) => {
+      const m = p.mobile || {};
+      const { [id]: _gone, ...rest } = m[kind] || {};
+      return { ...p, mobile: { ...m, [kind]: rest } };
+    });
+  };
+
+  // Copies made from another tab stay linked to their original.
+  const copySource = (copyOf) => (copyOf ? pagesApi.pages[copyOf.tab] : undefined);
+  const updateItemCopy = (item) => {
+    const from = copySource(item.copyOf);
+    const srcItem = from?.items.find((i) => i.id === item.copyOf.id);
+    if (!srcItem) return;
+    const srcPhone = from.mobile?.items?.[srcItem.id];
+    setPage((p) => {
+      const m = p.mobile || {};
+      const phoneItems = { ...(m.items || {}) };
+      if (item.copyOf.phone) {
+        if (srcPhone) phoneItems[item.id] = structuredClone(srcPhone);
+        else delete phoneItems[item.id];
+      }
+      return {
+        ...p,
+        items: p.items.map((i) =>
+          i.id === item.id
+            ? { ...structuredClone(srcItem), id: i.id, parent: i.parent, copyOf: i.copyOf }
+            : i,
+        ),
+        mobile: item.copyOf.phone ? { ...m, items: phoneItems } : m,
+      };
+    });
+  };
+  const updateOverlayCopy = (sec) => {
+    const from = copySource(sec.copyOf);
+    const srcSec = from?.sections?.find((s) => s.id === sec.copyOf.id);
+    if (!srcSec) return;
+    const kids = from.items.filter((i) => i.parent === srcSec.id);
+    const phone = !!sec.copyOf.phone;
+    setPage((p) => {
+      const m = p.mobile || {};
+      const linked = new Map(
+        p.items.filter((i) => i.parent === sec.id && i.copyOf).map((i) => [i.copyOf.id, i]),
+      );
+      const newKids = kids.map((k) => ({
+        ...structuredClone(k),
+        id: linked.get(k.id)?.id ?? uid(k.type),
+        parent: sec.id,
+        copyOf: { tab: sec.copyOf.tab, id: k.id, phone },
+      }));
+      const phoneItems = { ...(m.items || {}) };
+      const phoneSecs = { ...(m.sections || {}) };
+      if (phone) {
+        newKids.forEach((k) => {
+          const o = from.mobile?.items?.[k.copyOf.id];
+          if (o) phoneItems[k.id] = structuredClone(o);
+          else delete phoneItems[k.id];
+        });
+        const ps = from.mobile?.sections?.[srcSec.id];
+        if (ps) phoneSecs[sec.id] = structuredClone(ps);
+        else delete phoneSecs[sec.id];
+      }
+      return {
+        ...p,
+        sections: (p.sections || []).map((s) =>
+          s.id === sec.id ? { ...structuredClone(srcSec), id: sec.id, copyOf: sec.copyOf } : s,
+        ),
+        // Items the user added to the copy stay; linked ones are refreshed.
+        items: [...p.items.filter((i) => !(i.parent === sec.id && i.copyOf)), ...newKids],
+        mobile: phone ? { ...m, items: phoneItems, sections: phoneSecs } : m,
+      };
+    });
+  };
+
+  // Sections can be reordered by dragging; the content sections stack in this order.
+  const [dragId, setDragId] = useState(null);
+  const moveSectionTo = (fromId, toId) =>
+    setPage((p) => {
+      const list = [...(p.sections || [])];
+      const from = list.findIndex((x) => x.id === fromId);
+      const to = list.findIndex((x) => x.id === toId);
+      if (from < 0 || to < 0 || from === to) return p;
+      const [moved] = list.splice(from, 1);
+      list.splice(to, 0, moved);
+      return { ...p, sections: list };
+    });
+
   const addSection = (kind) => {
     const bottom = Math.max(
       0,
-      ...sections.filter(isBand).map((x) => x.start + x.height),
+      ...sections.filter((x) => isBand(x) && !isContent(x)).map((x) => x.start + x.height),
     );
     const created = newSection(
       kind,
@@ -1157,7 +1312,7 @@ export function Editor({
     const copy = {
       ...structuredClone(section),
       id: uid("section"),
-      start: isBand(section) ? section.start + section.height : 0,
+      start: isContent(section) ? 0 : isBand(section) ? section.start + section.height : 0,
     };
     setPage((p) => {
       const list = [...(p.sections || [])];
@@ -1438,6 +1593,9 @@ export function Editor({
             <button disabled={phone} onClick={() => addSection("band")}>
               + Section
             </button>
+            <button disabled={phone} onClick={() => addSection("content")}>
+              + Content section
+            </button>
             <button disabled={phone} onClick={() => addSection("fixed")}>
               + Screen overlay
             </button>
@@ -1480,14 +1638,30 @@ export function Editor({
           <h4>Sections</h4>
           <ul className="items">
             {sections.map((x, n) => (
-              <li key={x.id}>
+              <li
+                key={x.id}
+                draggable={!phone && isContent(x)}
+                className={dragId === x.id ? "dragging" : ""}
+                onDragStart={() => setDragId(x.id)}
+                onDragOver={(e) => {
+                  if (dragId) e.preventDefault();
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  if (dragId) moveSectionTo(dragId, x.id);
+                  setDragId(null);
+                }}
+                onDragEnd={() => setDragId(null)}
+              >
                 <button
                   className={x.id === selectedSectionId ? "on" : ""}
                   onClick={() => toggleSection(x.id)}
                 >
                   {n + 1}. {x.name || "Section"}{" "}
                   <small>
-                    {isBand(x)
+                    {isContent(x)
+                      ? `content · ${x.height}px tall`
+                      : isBand(x)
                       ? `${x.anchor === "bottom" ? "bottom" : "top"} · ${x.start}px · ${x.height}px`
                       : "screen overlay"}
                   </small>
@@ -1498,6 +1672,18 @@ export function Editor({
 
           {section && sectionView && (
             <div className="details" key={section.id}>
+              <CopyNote
+                copyOf={section.copyOf}
+                title={copySource(section.copyOf)?.title || section.copyOf?.tab}
+                available={!!copySource(section.copyOf)}
+                disabled={phone}
+                onRefresh={() => updateOverlayCopy(section)}
+              />
+              <OverrideNote
+                overrides={page.mobile?.sections?.[section.id]}
+                canReset={phone}
+                onReset={() => resetOverrides("sections", section.id)}
+              />
               <div className="row between">
                 <strong>{section.name || "Section"}</strong>
                 <button onClick={() => setSelectedSectionId(null)}>
@@ -1535,7 +1721,20 @@ export function Editor({
                 </button>
               </div>
 
-              {isBand(section) ? (
+              {isContent(section) ? (
+                <>
+                  <NumberField
+                    label="Gap after the section above (px)"
+                    value={sectionView.start}
+                    onChange={(start) => patchSection({ start: Math.max(0, start) })}
+                  />
+                  <NumberField
+                    label="Height (px)"
+                    value={sectionView.height}
+                    onChange={(height) => patchSection({ height: Math.max(0, height) })}
+                  />
+                </>
+              ) : isBand(section) ? (
                 <>
                   <Select
                     label="Align to"
@@ -1657,6 +1856,7 @@ export function Editor({
                   <small>
                     {it.type}
                     {it.parent ? " · in section" : ""}
+                    {Object.keys(page.mobile?.items?.[it.id] || {}).length ? " · phone changes" : ""}
                   </small>
                 </button>
               </li>
@@ -1670,6 +1870,18 @@ export function Editor({
 
           {item && itemView && (
             <div className="details" key={item.id}>
+              <CopyNote
+                copyOf={item.copyOf}
+                title={copySource(item.copyOf)?.title || item.copyOf?.tab}
+                available={!!copySource(item.copyOf)}
+                disabled={phone}
+                onRefresh={() => updateItemCopy(item)}
+              />
+              <OverrideNote
+                overrides={page.mobile?.items?.[item.id]}
+                canReset={phone}
+                onReset={() => resetOverrides("items", item.id)}
+              />
               <div className="row between">
                 <strong>{item.name || TYPE_LABEL[item.type]}</strong>
                 <button onClick={() => setSelectedId(null)}>Close ×</button>

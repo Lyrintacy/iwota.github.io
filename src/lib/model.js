@@ -516,7 +516,7 @@ export function newSection(kind, id, start = 0) {
   if (kind === "fixed") return { id, kind: "fixed", name: "" };
   return {
     id,
-    kind: "band",
+    kind: kind === "content" ? "content" : "band",
     name: "",
     anchor: "top",
     start,
@@ -537,7 +537,9 @@ export function newSection(kind, id, start = 0) {
   };
 }
 
-export const isBand = (section) => (section.kind || "band") === "band";
+export const isBand = (section) => ["band", "content"].includes(section.kind || "band");
+/** A content section: stacks after the one before it (see contentLayout). */
+export const isContent = (section) => section.kind === "content";
 
 /**
  * CSS background-position on one axis. A panning axis moves with the scroll
@@ -569,15 +571,34 @@ export function bandTop(section, pageH) {
     : section.start;
 }
 
-/** The page grows to fit bands that extend below the canvas height. */
+/**
+ * Content sections stack in list order: each starts where the one before it ends
+ * (plus its own gap, `start`) and is `height` tall. Returns each one's top and the
+ * bottom of the stack.
+ */
+export function contentLayout(sections) {
+  const tops = {};
+  let cursor = 0;
+  for (const s of sections)
+    if (isContent(s)) {
+      const top = cursor + (Number(s.start) || 0);
+      tops[s.id] = top;
+      cursor = top + (Number(s.height) || 0);
+    }
+  return { tops, end: cursor };
+}
+
+/** Top of any band or content section, in page coordinates. */
+export function sectionTop(section, pageH, tops) {
+  if (isContent(section)) return tops[section.id] ?? 0;
+  return bandTop(section, pageH);
+}
+
+/** The page grows to fit bands and content that extend below the canvas height. */
 export function pageHeight(page) {
-  let h = page.canvas.height;
+  let h = Math.max(page.canvas.height, contentLayout(page.sections || []).end);
   for (const s of page.sections || [])
-    if (isBand(s))
-      h = Math.max(
-        h,
-        s.anchor === "bottom" ? s.start + s.height : s.start + s.height,
-      );
+    if (isBand(s) && !isContent(s)) h = Math.max(h, s.start + s.height);
   return h;
 }
 
@@ -684,7 +705,7 @@ export function validatePage(page, site = null) {
     if (!s.id || sectionIds.has(s.id))
       errors.push(`${where}: missing or duplicate id`);
     sectionIds.add(s.id);
-    if (!["band", "fixed", undefined].includes(s.kind))
+    if (!["band", "content", "fixed", undefined].includes(s.kind))
       errors.push(`${where}: unknown kind`);
     if (isBand(s)) {
       if (!(s.start >= 0)) errors.push(`${where}: start must be 0 or more`);

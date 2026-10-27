@@ -33,7 +33,7 @@ export function HintWidget({ hint, count, el, style }) {
   const left = hint.side === "left";
   // In the body, so nothing on the page can cover it.
   return createPortal(
-    <div ref={box} className="hint-widget" style={style} role="status" aria-live="polite">
+    <div ref={box} className="hint-widget" style={style} role="status" aria-live="polite" title="Press to act (same as the button)" onClick={(e) => { e.stopPropagation(); el?.click(); }}>
       {img.url ? (
         <img src={img.url} alt="" />
       ) : hint.message ? (
