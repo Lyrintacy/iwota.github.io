@@ -1038,3 +1038,24 @@ details.group > .group-body {
   background: rgba(0, 0, 0, 0.45);
   color: #fff;
 }
+
+/* Phone changes and copies, shown in the workshop */
+.override-note {
+  margin: 6px 0;
+  padding: 6px 8px;
+  border: 1px dashed #c08a00;
+  border-radius: 6px;
+  background: #fff8e1;
+  font-size: 13px;
+}
+.override-note p {
+  margin: 0 0 6px;
+}
+.editor li.dragging {
+  opacity: 0.5;
+}
+/* The hint badge can be pressed: it acts as the waiting button */
+.hint-widget {
+  pointer-events: auto;
+  cursor: pointer;
+}

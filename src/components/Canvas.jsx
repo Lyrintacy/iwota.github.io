@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { BUILTIN_TEXT_STYLES, bandTop, cornerRadius, inlineTokens, isBand, itemStyle, pageHeight, panPos, panShift, styleOf, unitFor } from "../lib/model.js";
+import { BUILTIN_TEXT_STYLES, bandTop, contentLayout, cornerRadius, sectionTop, inlineTokens, isBand, itemStyle, pageHeight, panPos, panShift, styleOf, unitFor } from "../lib/model.js";
 import { useMedia } from "../lib/media.js";
 
 // Height / width of a picture (1 until it loads). A texture needs it for its tile's height.
@@ -292,6 +292,7 @@ function Captioned({ item, children }) {
  */
 export function Canvas({ page, editing, selectedId, onSelect, selectedSectionId }) {
   const P = pageHeight(page);
+  const layout = contentLayout(page.sections || []);
   const sections = page.sections || [];
   const bands = sections.filter(isBand);
   const fixed = sections.filter((s) => !isBand(s));
@@ -327,7 +328,7 @@ export function Canvas({ page, editing, selectedId, onSelect, selectedSectionId 
           <BandBackground
             key={s.id}
             section={s}
-            top={bandTop(s, P)}
+            top={sectionTop(s, P, layout.tops)}
             selected={editing && selectedSectionId === s.id}
           />
         ))}
@@ -335,7 +336,7 @@ export function Canvas({ page, editing, selectedId, onSelect, selectedSectionId 
           <div
             key={`${s.id}-frame`}
             className="frame band-frame"
-            style={{ top: bandTop(s, P), height: s.height }}
+            style={{ top: sectionTop(s, P, layout.tops), height: s.height }}
           >
             {itemsIn(s.id).map(renderItem)}
           </div>
