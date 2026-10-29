@@ -1084,9 +1084,9 @@ details.group > .group-body {
   height: 100%;
 }
 
-/* Card pictures keep hard pixels when the card is enlarged: no smoothing. */
-.fx-card img,
-.fx-card video {
+/* Unlimited cards are drawn small and enlarged: their pictures keep hard pixels (cheap, lower quality). */
+.fx-card-unlimited img,
+.fx-card-unlimited video {
   image-rendering: pixelated;
 }
 

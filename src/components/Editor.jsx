@@ -2148,6 +2148,13 @@ export function Editor({
                     ]}
                     onChange={(fit) => patch({ fit })}
                   />
+                  {itemView.h?.anchor === "stretch" && (
+                    <Check
+                      label="Tile sideways when pinned left and right (keeps its height, instead of stretching)"
+                      checked={!!itemView.tileX}
+                      onChange={(tileX) => patch({ tileX })}
+                    />
+                  )}
                   <Select
                     label="Colour when there is no picture (plain square)"
                     value={String(itemView.emptyColour || 0)}

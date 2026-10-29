@@ -1,3 +1,5 @@
+import WEBP_FILES_LIST from "../config/images-webp.json";
+const WEBP_FILES = new Set(WEBP_FILES_LIST);
 // Pure helpers: constraints -> CSS, text markup, toggling, media paths,
 // sections, phone overrides, palette edits and validation.
 
@@ -423,6 +425,8 @@ export function mediaUrl(item) {
   file = file.replace(/^images\//i, "");
   if (!/\.[a-z0-9]+$/i.test(file.split("/").pop()))
     file += `.${DEFAULT_EXT[item.type] || "png"}`;
+  // A picture with a WebP copy (scripts/optimise-images.py) is served as that copy.
+  if (WEBP_FILES.has(file)) file = file.replace(/\.[^./]+$/, ".webp");
   return `images/${file}`;
 }
 
