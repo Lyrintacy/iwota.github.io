@@ -1,6 +1,6 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import images from "virtual:images";
-import { ANCHORS, COLORS, DEFAULT_DESIGN, DEFAULT_UI, DEFAULT_LINK, DEFAULT_MOBILE, DEFAULT_SPEED, DEFAULT_TEXT, ROLES, SIZE_UNITS, TYPES, UNITS, formatAt, isBand, isContent, newItem, newSection, pageSlug, removeColour, toggleFormat, wrapBox, unwrapBox, uid, DEFAULT_CARD, cardsOf, textStyles, TEXT_TAGS, styleOf, BUILTIN_TEXT_STYLES } from "../lib/model.js";
+import { ANCHORS, COLORS, DEFAULT_DESIGN, DEFAULT_UI, DEFAULT_LINK, DEFAULT_MOBILE, DEFAULT_SPEED, DEFAULT_TEXT, ROLES, SIZE_UNITS, TYPES, UNITS, formatAt, isBand, isContent, newItem, newSection, pageSlug, removeColour, toggleFormat, wrapBox, unwrapBox, parseAspect, uid, DEFAULT_CARD, cardsOf, textStyles, TEXT_TAGS, styleOf, BUILTIN_TEXT_STYLES } from "../lib/model.js";
 import { hasExt, useMedia } from "../lib/media.js";
 import { fontFamily } from "../lib/model.js";
 
@@ -493,6 +493,49 @@ const FORMATS = [
   ["h", "Highlight", (f) => f.colour === "highlight"],
 ];
 
+// A row of colour squares: the chosen one is outlined. Options are [number, label, hex].
+function SwatchRow({ label, value, options, onChange }) {
+  return (
+    <div className="swatch-row">
+      <span className="swatch-label">{label}</span>
+      {options.map(([v, l, hex]) => (
+        <button
+          key={v}
+          type="button"
+          title={l}
+          aria-label={l}
+          aria-pressed={Number(v) === value}
+          className={`swatch-pick ${Number(v) === value ? "on" : ""}`}
+          style={{ background: hex }}
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => onChange(Number(v))}
+        />
+      ))}
+    </div>
+  );
+}
+
+// A width:height aspect ratio for a card ("1:1", "1:2", "9:11"). Empty = the button's shape.
+function AspectField({ value, onChange }) {
+  const [text, setText] = useState(value);
+  useEffect(() => setText(value), [value]);
+  const valid = !text.trim() || parseAspect(text) !== null;
+  return (
+    <Field label="Aspect ratio, width:height (e.g. 1:1, 1:2, 9:11; empty = the button's shape)">
+      <input
+        type="text"
+        value={text}
+        placeholder="1:1"
+        onChange={(e) => {
+          setText(e.target.value);
+          if (!e.target.value.trim() || parseAspect(e.target.value) !== null) onChange(e.target.value.trim());
+        }}
+      />
+      {!valid && <span className="hint warn">Use two numbers with a colon, like 9:11.</span>}
+    </Field>
+  );
+}
+
 function TextEditor({ item, onChange, setStatus, fonts = [], styles = [], palette = [] }) {
   const ref = useRef(null);
   const [sel, setSel] = useState({ s: 0, e: 0 });
@@ -564,26 +607,17 @@ function TextEditor({ item, onChange, setStatus, fonts = [], styles = [], palett
         </button>
       </div>
       <div className="toolbar box-tools">
-        <label>
-          Box{" "}
-          <select value={boxBg} onChange={(e) => setBoxBg(Number(e.target.value))}>
-            {palette.map(([v, l]) => (
-              <option key={v} value={v}>
-                {l}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          Box text{" "}
-          <select value={boxFg} onChange={(e) => setBoxFg(Number(e.target.value))}>
-            {palette.map(([v, l]) => (
-              <option key={v} value={v}>
-                {l}
-              </option>
-            ))}
-          </select>
-        </label>
+        <SwatchRow label="Box colour" value={boxBg} options={palette} onChange={setBoxBg} />
+        <SwatchRow label="Text colour" value={boxFg} options={palette} onChange={setBoxFg} />
+        <span
+          className="box-sample"
+          style={{
+            background: palette.find(([v]) => Number(v) === boxBg)?.[2],
+            color: palette.find(([v]) => Number(v) === boxFg)?.[2],
+          }}
+        >
+          Sample
+        </span>
         <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={applyBox}>
           Put selection in a box
         </button>
@@ -858,12 +892,13 @@ function CardsFields({ fx = {}, palette, onChange }) {
             onChange={(clickable) => patch(i, { clickable })}
           />
           <NumberField label="Card size (times the button)" value={c.scale} onChange={(v) => patch(i, { scale: Math.max(1, v) })} />
-          <p className="hint">No upper limit on the size. A card is only held to the screen by "Keep the card on screen by" below; set that to "Not at all" to let it grow past the screen.</p>
-          <NumberField
-            label="Card shape: height as % of width (0 = same as the button)"
-            value={c.heightPct || 0}
-            onChange={(v) => patch(i, { heightPct: Math.max(0, v) })}
+          <Check
+            label="Unlimited: the card can grow past any size and is not kept on the screen (the size number multiplies it)"
+            checked={!!c.unlimited}
+            onChange={(unlimited) => patch(i, { unlimited })}
           />
+          <AspectField value={c.aspect || ""} onChange={(aspect) => patch(i, { aspect })} />
+          {!c.unlimited && (
           <Select
             label="Keep the card on screen by"
             value={c.fit || "both"}
@@ -875,6 +910,7 @@ function CardsFields({ fx = {}, palette, onChange }) {
             ]}
             onChange={(fit) => patch(i, { fit })}
           />
+          )}
           <FilePath
             label="Card picture, GIF or video (optional, else the button image). A video needs its extension: .mp4 or .webm"
             value={c.file || ""}
