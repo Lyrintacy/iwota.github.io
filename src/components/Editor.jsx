@@ -1,6 +1,6 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import images from "virtual:images";
-import { ANCHORS, COLORS, DEFAULT_DESIGN, DEFAULT_UI, DEFAULT_LINK, DEFAULT_MOBILE, DEFAULT_SPEED, DEFAULT_TEXT, ROLES, SIZE_UNITS, TYPES, UNITS, formatAt, isBand, isContent, newItem, newSection, pageSlug, removeColour, toggleFormat, uid, DEFAULT_CARD, cardsOf, textStyles, TEXT_TAGS, styleOf, BUILTIN_TEXT_STYLES } from "../lib/model.js";
+import { ANCHORS, COLORS, DEFAULT_DESIGN, DEFAULT_UI, DEFAULT_LINK, DEFAULT_MOBILE, DEFAULT_SPEED, DEFAULT_TEXT, ROLES, SIZE_UNITS, TYPES, UNITS, formatAt, isBand, isContent, newItem, newSection, pageSlug, removeColour, toggleFormat, wrapBox, unwrapBox, uid, DEFAULT_CARD, cardsOf, textStyles, TEXT_TAGS, styleOf, BUILTIN_TEXT_STYLES } from "../lib/model.js";
 import { hasExt, useMedia } from "../lib/media.js";
 import { fontFamily } from "../lib/model.js";
 
@@ -513,6 +513,34 @@ function TextEditor({ item, onChange, setStatus, fonts = [], styles = [], palett
     requestAnimationFrame(() => el.setSelectionRange(r.s, r.e));
   };
 
+  // Boxes: the selection gets a box in palette colour `boxBg`, its text in `boxFg`.
+  const [boxBg, setBoxBg] = useState(2);
+  const [boxFg, setBoxFg] = useState(1);
+  const applyBox = () => {
+    const el = ref.current;
+    const r = wrapBox(item.text, el.selectionStart, el.selectionEnd, boxBg, boxFg);
+    if (!r) {
+      setStatus("Select some text first. A box cannot go inside a colour or another box.");
+      return;
+    }
+    setStatus("");
+    onChange({ text: r.text });
+    setSel({ s: r.s, e: r.e });
+    requestAnimationFrame(() => el.setSelectionRange(r.s, r.e));
+  };
+  const removeBox = () => {
+    const el = ref.current;
+    const r = unwrapBox(item.text, el.selectionStart, el.selectionEnd);
+    if (!r) {
+      setStatus("Put the caret inside a box first.");
+      return;
+    }
+    setStatus("");
+    onChange({ text: r.text });
+    setSel({ s: r.s, e: r.e });
+    requestAnimationFrame(() => el.setSelectionRange(r.s, r.e));
+  };
+
   return (
     <>
       <div className="toolbar">
@@ -535,6 +563,35 @@ function TextEditor({ item, onChange, setStatus, fonts = [], styles = [], palett
           Clear colour
         </button>
       </div>
+      <div className="toolbar box-tools">
+        <label>
+          Box{" "}
+          <select value={boxBg} onChange={(e) => setBoxBg(Number(e.target.value))}>
+            {palette.map(([v, l]) => (
+              <option key={v} value={v}>
+                {l}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Box text{" "}
+          <select value={boxFg} onChange={(e) => setBoxFg(Number(e.target.value))}>
+            {palette.map(([v, l]) => (
+              <option key={v} value={v}>
+                {l}
+              </option>
+            ))}
+          </select>
+        </label>
+        <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={applyBox}>
+          Put selection in a box
+        </button>
+        <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={removeBox}>
+          Remove box
+        </button>
+      </div>
+      <p className="hint">Each box moves and changes shape on its own. Boxes can't nest inside colours or other boxes.</p>
       <Field label="Text (select words, then press a format button)">
         <textarea
           ref={ref}
@@ -604,7 +661,7 @@ function TextEditor({ item, onChange, setStatus, fonts = [], styles = [], palett
 // suggestions. Without an extension, the first existing file of the type is used.
 const KINDS = {
   image: /\.(png|jpe?g|gif)$/i,
-  picture: /\.(png|jpe?g|gif)$/i,
+  picture: /\.(png|jpe?g|gif|mp4|webm)$/i,
   gif: /\.gif$/i,
   video: /\.(mp4|webm)$/i,
 };
@@ -801,6 +858,7 @@ function CardsFields({ fx = {}, palette, onChange }) {
             onChange={(clickable) => patch(i, { clickable })}
           />
           <NumberField label="Card size (times the button)" value={c.scale} onChange={(v) => patch(i, { scale: Math.max(1, v) })} />
+          <p className="hint">No upper limit on the size. A card is only held to the screen by "Keep the card on screen by" below; set that to "Not at all" to let it grow past the screen.</p>
           <NumberField
             label="Card shape: height as % of width (0 = same as the button)"
             value={c.heightPct || 0}
@@ -818,7 +876,7 @@ function CardsFields({ fx = {}, palette, onChange }) {
             onChange={(fit) => patch(i, { fit })}
           />
           <FilePath
-            label="Card picture or GIF (optional, else the button image)"
+            label="Card picture, GIF or video (optional, else the button image). A video needs its extension: .mp4 or .webm"
             value={c.file || ""}
             type="picture"
             placeholder="0/card"
@@ -1764,6 +1822,13 @@ export function Editor({
                   onChange={(e) => patchSection({ name: e.target.value })}
                 />
               </Field>
+              {phone && (
+                <Check
+                  label="Hide this section on phones (its components too)"
+                  checked={!!sectionView.hidden}
+                  onChange={(hidden) => patchSection({ hidden })}
+                />
+              )}
               <div className="row">
                 <button
                   disabled={phone || sIdx === 0}
@@ -1997,6 +2062,13 @@ export function Editor({
                 </button>
               </div>
 
+              {phone && (
+                <Check
+                  label="Hide on phones (not rendered at all there)"
+                  checked={!!itemView.hidden}
+                  onChange={(hidden) => patch({ hidden })}
+                />
+              )}
               {item.type === "text" && (
                 <TextEditor
                   item={itemView}

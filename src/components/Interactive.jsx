@@ -443,7 +443,10 @@ function CardView({ c, base, buttonRef, cardEls, closing, clickFlash, waitMs, on
   }, []);
   // A card picture can be a still or an animated GIF (an <img> plays a GIF by itself).
   const media = useMedia("picture", c.file || "");
-  const picture = media.url || base;
+  // A card picture can also be a video (MP4 or WebM): it plays muted and loops. Its
+  // shine and flash are shaped by the button's picture, since a video cannot mask.
+  const videoFile = /\.(mp4|webm)$/i.test(c.file || "");
+  const picture = videoFile ? base : media.url || base;
   const mask = picture ? { WebkitMaskImage: urlCss(picture), maskImage: urlCss(picture) } : {};
   const [clicks, setClicks] = useState(0);
 
@@ -515,7 +518,18 @@ function CardView({ c, base, buttonRef, cardEls, closing, clickFlash, waitMs, on
       onPointerDown={onDown}
       onClick={handleClick}
     >
-      <img src={picture || undefined} alt="" style={{ objectFit: c.imageFit || "cover" }} />
+      {videoFile && media.url ? (
+        <video
+          src={media.url}
+          muted
+          loop
+          autoPlay
+          playsInline
+          style={{ objectFit: c.imageFit || "cover" }}
+        />
+      ) : (
+        <img src={picture || undefined} alt="" style={{ objectFit: c.imageFit || "cover" }} />
+      )}
       {/* The band and flash follow the picture's shape, so a transparent PNG is respected */}
       {(c.shine || c.flash) && !closing && picture && (
         <div className="fx-mask" style={mask}>

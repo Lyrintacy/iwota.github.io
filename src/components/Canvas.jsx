@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { BUILTIN_TEXT_STYLES, bandTop, contentLayout, cornerRadius, sectionTop, inlineTokens, isBand, itemStyle, pageHeight, panPos, panShift, styleOf, unitFor } from "../lib/model.js";
 import { useMedia } from "../lib/media.js";
+import { boxCss, hashString } from "../lib/boxes.js";
 
 // Height / width of a picture (1 until it loads). A texture needs it for its tile's height.
 function useImageAspect(url) {
@@ -27,37 +28,78 @@ const colourOf = (v) => (typeof v === "number" || /^\d+$/.test(String(v)) ? `var
 // The text styles in use on this tab (set by App).
 export const TextStylesContext = createContext(BUILTIN_TEXT_STYLES);
 
+// A run of text inside a box: its own colours, and a background that moves on its own.
+function BoxRun({ itemId, n, bg, fg, seed, children }) {
+  const name = `box-${itemId.replace(/[^a-zA-Z0-9]/g, "")}-${n}`;
+  return (
+    <span className={`tbox ${name}`} style={{ color: `var(--color-${fg})`, "--box-bg": `var(--color-${bg})`, "--box-seed": seed }}>
+      {children}
+    </span>
+  );
+}
+
 function Text({ item }) {
   const style = styleOf(useContext(TextStylesContext), item.level);
   const Tag = style.tag || "p";
-  return (
-    <Tag
-      className={`text-body level-${Tag}`}
+  const tokens = inlineTokens(item.text);
+  const plain = (t, i) => (
+    <span
+      key={i}
       style={{
-        textAlign: item.align || "left",
-        color: colourOf(item.color || style.colour),
-        // The item's own font, else its style's font, else the site font.
-        fontFamily: item.font
-          ? `var(--font-${item.font})`
-          : style.font
-            ? `var(--font-${style.font})`
-            : undefined,
-        fontSize: `calc(${item.size || style.size} * var(--u, 1px))`,
+        color: t.color ? `var(--c-${t.color})` : undefined,
+        fontWeight: t.bold ? 700 : undefined,
+        fontStyle: t.italic ? "italic" : undefined,
       }}
     >
-      {inlineTokens(item.text).map((t, i) => (
-        <span
-          key={i}
-          style={{
-            color: t.color ? `var(--c-${t.color})` : undefined,
-            fontWeight: t.bold ? 700 : undefined,
-            fontStyle: t.italic ? "italic" : undefined,
-          }}
-        >
-          {t.text}
-        </span>
-      ))}
-    </Tag>
+      {t.text}
+    </span>
+  );
+  // Consecutive tokens of one box share one BoxRun.
+  const parts = [];
+  const boxes = [];
+  tokens.forEach((t, i) => {
+    if (!t.box) return parts.push(plain(t, i));
+    const last = parts[parts.length - 1];
+    if (last && last.box === t.box.n) {
+      last.items.push(plain(t, i));
+      last.text += t.text;
+      return;
+    }
+    const group = { box: t.box.n, items: [plain(t, i)], text: t.text, meta: t.box, key: i };
+    boxes.push(group);
+    parts.push(group);
+  });
+  // Each box's seed: from its text and its place in this item, so its motion is stable.
+  const seedOf = (g) => hashString(`${item.id}|${g.meta.n}|${g.text}`);
+  const css = boxes.map((g) => boxCss(`box-${item.id.replace(/[^a-zA-Z0-9]/g, "")}-${g.meta.n}`, seedOf(g))).join("\n");
+  return (
+    <>
+      {boxes.length > 0 && <style>{css}</style>}
+      <Tag
+        className={`text-body level-${Tag}`}
+        style={{
+          textAlign: item.align || "left",
+          color: colourOf(item.color || style.colour),
+          // The item's own font, else its style's font, else the site font.
+          fontFamily: item.font
+            ? `var(--font-${item.font})`
+            : style.font
+              ? `var(--font-${style.font})`
+              : undefined,
+          fontSize: `calc(${item.size || style.size} * var(--u, 1px))`,
+        }}
+      >
+        {parts.map((p) =>
+          p.items ? (
+            <BoxRun key={p.key} itemId={item.id} n={p.meta.n} bg={p.meta.bg} fg={p.meta.fg} seed={seedOf(p)}>
+              {p.items}
+            </BoxRun>
+          ) : (
+            p
+          ),
+        )}
+      </Tag>
+    </>
   );
 }
 
@@ -206,7 +248,7 @@ function BandBackground({ section, top, selected }) {
   return (
     <div
       id={`section-${section.id}`}
-      className={`section ${selected ? "selected" : ""}`}
+      className={`section ${selected ? "selected" : ""} ${section._hiddenOnPhone ? "phone-hidden" : ""}`}
       style={{
         top,
         height: section.height,
@@ -300,7 +342,8 @@ export function Canvas({ page, editing, selectedId, onSelect, selectedSectionId 
   const renderItem = (item) => (
     <div
       key={item.id}
-      className={`item item-${item.type} ${selectedId === item.id ? "selected" : ""}`}
+      data-item={item.id}
+      className={`item item-${item.type} ${selectedId === item.id ? "selected" : ""} ${item._hiddenOnPhone ? "phone-hidden" : ""}`}
       style={{ ...itemStyle(item), "--u": unitFor(item, page.canvas) }}
       onClick={
         editing

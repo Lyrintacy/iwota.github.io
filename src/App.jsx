@@ -22,6 +22,7 @@ import { HintWidget } from "./components/HintWidget.jsx";
 import { ErrorBoundary } from "./components/ErrorBoundary.jsx";
 import { Editor } from "./components/Editor.jsx";
 import { setPanSmoothing, startScrollEffects } from "./lib/scroll.js";
+import { preloadShared } from "./lib/assets.js";
 
 // Every tab is a JSON file in src/config/pages (named after its id). The main
 // tab is main.json. site.json holds the defaults, the tab order and the fonts.
@@ -224,7 +225,9 @@ export default function App() {
 
   const phoneViewport = usePhoneViewport(page.mobile?.breakpoint || 700);
   const previewing = editing && phone;
-  const view = previewing || phoneViewport ? applyPhone(page) : page;
+  const view = previewing || phoneViewport ? applyPhone(page, { keepHidden: previewing }) : page;
+  // Pictures used more than once are loaded in the background, after the page has started.
+  useEffect(() => preloadShared(view), [activeTab, previewing, phoneViewport]);
 
   // After a tab switch: the old copy slides out and the new page slides in, from the
   // side of the tab it replaces. Web Animations, so React does not re-render.

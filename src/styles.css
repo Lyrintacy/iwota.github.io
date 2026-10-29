@@ -1075,3 +1075,34 @@ details.group > .group-body {
 .dragging {
   opacity: 0.5;
 }
+
+/* A video picture on a card fills it, like the picture. */
+.fx-card video {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Text boxes ({box<bg>-<fg>:...}): a rectangle with uneven edges that moves on its own
+   (the keyframes come from lib/boxes.js). The background is a layer behind the text,
+   so the text itself is never clipped. */
+.tbox {
+  position: relative;
+  display: inline-block;
+  isolation: isolate;
+  padding: 0.12em 0.4em;
+  margin: 0 0.1em;
+}
+.tbox::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--box-bg, transparent);
+}
+
+/* Shown in the phone editor, not on a phone: a component hidden on phones. */
+.phone-hidden {
+  opacity: 0.35;
+  outline: 1px dashed currentColor;
+}

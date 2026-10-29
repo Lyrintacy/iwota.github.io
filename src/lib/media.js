@@ -35,11 +35,23 @@ function loads(url, type) {
   });
 }
 
-export async function findExtension(file, type) {
-  for (const ext of CANDIDATES[type] || []) {
-    if (await loads(mediaUrl({ type, file: `${file}.${ext}` }), type)) return ext;
+// One probe per file and type: every button or card that names the same file shares it.
+// A finished probe stays (found or not) so the next use does not ask the server again.
+const probes = new Map();
+export function findExtension(file, type) {
+  const key = `${type}:${file}`;
+  if (!probes.has(key)) {
+    probes.set(
+      key,
+      (async () => {
+        for (const ext of CANDIDATES[type] || []) {
+          if (await loads(mediaUrl({ type, file: `${file}.${ext}` }), type)) return ext;
+        }
+        return null;
+      })(),
+    );
   }
-  return null;
+  return probes.get(key);
 }
 
 /**
