@@ -105,8 +105,8 @@
       "image": "",
       "message": "",
       "distance": 40,
-      "background": 7,
-      "text": 2,
+      "background": 1,
+      "text": 3,
       "font": "font-4"
     }
   },

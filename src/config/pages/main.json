@@ -201,6 +201,77 @@
       "speedY": 0.3
     },
     {
+      "id": "image-lpm0b",
+      "type": "image",
+      "name": "TransitionBlock",
+      "parent": "section-ky6g3",
+      "h": {
+        "anchor": "stretch",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 300,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "end",
+        "offset": -100,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 300,
+        "sizeUnit": "px"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "on": true,
+        "axis": "both"
+      },
+      "file": "Backgrounds/TransitionBlock1.PNG",
+      "alt": "",
+      "fit": "contain",
+      "hoverOnly": false,
+      "thumbnail": "",
+      "button": false,
+      "link": {
+        "kind": "none",
+        "url": "",
+        "section": "",
+        "page": "",
+        "newTab": false
+      },
+      "fx": {
+        "shake": true,
+        "shakeMs": 600,
+        "shakeAmount": 100,
+        "flash": true,
+        "flashMs": 300,
+        "flashColour": 0,
+        "flashStrength": 95,
+        "shine": true,
+        "shineDelayMs": 0,
+        "shineMs": 700,
+        "shineWidth": 70,
+        "shineColour": 4,
+        "shineSlant": 18,
+        "clickFlash": true
+      },
+      "caption": "",
+      "captionPosition": "below",
+      "captionColour": "",
+      "captionSize": 14,
+      "scrollX": false,
+      "loopX": false,
+      "scrollY": false,
+      "room": 0,
+      "loopY": false,
+      "speedX": 0,
+      "tileX": true
+    },
+    {
       "id": "image-ie2xv",
       "type": "image",
       "name": "Portrait Image",
@@ -930,7 +1001,7 @@
             "scale": 1,
             "fit": "both",
             "unlimited": false,
-            "aspect": "",
+            "aspect": "1:1",
             "openMs": 450,
             "closeMs": 360,
             "radius": 0,

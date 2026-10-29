@@ -401,7 +401,7 @@
               "file": "ui/Button/ButtonCardOverlay1.PNG",
               "scale": 2.2,
               "fit": "both",
-              "unlimited": true,
+              "unlimited": false,
               "aspect": "",
               "openMs": 450,
               "closeMs": 360,
@@ -583,11 +583,22 @@
           "size": 250,
           "sizeUnit": "px"
         }
+      },
+      "image-lpm0b": {
+        "v": {
+          "anchor": "end",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 100,
+          "sizeUnit": "px"
+        }
       }
     },
     "sections": {
       "section-ky6g3": {
-        "start": 1250
+        "start": 1250,
+        "height": 400
       }
     }
   },
