@@ -178,8 +178,10 @@ export function ButtonItem({ item, editing }) {
   const cardEls = useRef(new Set()); // the elements of the open cards
   const cardShown = useRef(false); // the cards count as part of the hover area while open
   const hovered = useHoverRegion(ref, () => {
-    if (!cardShown.current || cardEls.current.size === 0) return undefined;
-    return unionRect([...cardEls.current].map((el) => el.getBoundingClientRect()));
+    // Unlimited cards are left out: they can cover the page, and must not keep the button hovered.
+    const sized = [...cardEls.current].filter((el) => el.dataset.unlimited !== "true");
+    if (!cardShown.current || sized.length === 0) return undefined;
+    return unionRect(sized.map((el) => el.getBoundingClientRect()));
   });
   const [pinned, setPinned] = useState(false); // touch: tapped on
   const touch = useRef(false); // the last pointer was a finger or pen
@@ -472,6 +474,7 @@ function CardView({ c, base, buttonRef, cardEls, closing, clickFlash, waitMs, on
     const el = ref.current;
     if (!el) return;
     cardEls.current.add(el);
+    el.dataset.unlimited = c.unlimited ? "true" : "false";
     place();
     window.addEventListener("scroll", place, { passive: true });
     window.addEventListener("resize", place);
