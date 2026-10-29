@@ -1,5 +1,5 @@
 import { findExtension, hasExt } from "./media.js";
-import { cardsOf, mediaUrl } from "./model.js";
+import { mediaUrl } from "./model.js";
 
 // Pictures used by more than one item (a button and its card, the same image on
 // several buttons) are loaded once and decoded in the background, after the page
@@ -19,9 +19,7 @@ function namesOf(page) {
     add(it.file, it.type === "video" ? null : type, it.id);
     add(it.thumbnail, "image", it.id);
     add(it.poster, "image", it.id);
-    if (it.type === "button" || it.type === "gif") {
-      for (const c of cardsOf(it.fx || {})) add(c.file, "picture", it.id);
-    }
+    // Card pictures are not loaded here: each one loads the first time its card opens.
   }
   for (const s of page.sections || []) {
     if (s.texture?.file) add(s.texture.file, "image", s.id);
