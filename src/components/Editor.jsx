@@ -858,6 +858,7 @@ function CardsFields({ fx = {}, palette, onChange }) {
             onChange={(clickable) => patch(i, { clickable })}
           />
           <NumberField label="Card size (times the button)" value={c.scale} onChange={(v) => patch(i, { scale: Math.max(1, v) })} />
+          <p className="hint">No upper limit on the size. A card is only held to the screen by "Keep the card on screen by" below; set that to "Not at all" to let it grow past the screen.</p>
           <NumberField
             label="Card shape: height as % of width (0 = same as the button)"
             value={c.heightPct || 0}
