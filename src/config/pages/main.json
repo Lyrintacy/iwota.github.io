@@ -780,9 +780,9 @@
       "parent": "section-ogrcp",
       "h": {
         "anchor": "center",
-        "offset": -450,
+        "offset": -22,
         "offsetEnd": 0,
-        "unit": "px",
+        "unit": "%",
         "size": 390,
         "sizeUnit": "px"
       },
@@ -846,9 +846,9 @@
       "parent": "section-ogrcp",
       "h": {
         "anchor": "center",
-        "offset": -450,
+        "offset": -22,
         "offsetEnd": 0,
-        "unit": "px",
+        "unit": "%",
         "size": 370,
         "sizeUnit": "px"
       },
