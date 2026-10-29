@@ -1342,7 +1342,12 @@ export function Editor({
     setPage((p) => {
       const list = [...p.items];
       list.splice(iIdx + 1, 0, copy);
-      return { ...p, items: list };
+      // The copy keeps the original's phone overrides (its own copy of them).
+      const phoneOver = p.mobile?.items?.[item.id];
+      const mobile = phoneOver
+        ? { ...DEFAULT_MOBILE, ...p.mobile, items: { ...(p.mobile?.items || {}), [copy.id]: structuredClone(phoneOver) } }
+        : p.mobile;
+      return { ...p, items: list, ...(mobile ? { mobile } : {}) };
     });
     setSelectedId(copy.id);
   };
@@ -2626,6 +2631,11 @@ export function Editor({
             label="Two presses on PC (mouse)"
             checked={ui.buttons.pc}
             onChange={(pc) => setUi("buttons", { pc })}
+          />
+          <Check
+            label="On phones, a button goes into hover when it rises above the middle of the screen (the next tap clicks it)"
+            checked={!!ui.buttons.phone}
+            onChange={(phone) => setUi("buttons", { phone })}
           />
           </Group>
           <Group title="Hint for a second press (round badge under the button)">

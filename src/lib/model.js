@@ -145,7 +145,9 @@ export const DEFAULT_UI = {
   // The Workshop button in the corner: colours (palette numbers, 0 = default) and hidden on phones.
   toggle: { text: 0, background: 0, hidePhone: false, font: "" },
   // Two presses: the first press on a button opens its card, the second clicks it. Per pointer type.
-  buttons: { touch: false, pc: false },
+  // phone: on phones, a button goes into hover when it rises above the middle of the screen;
+  // the next tap then clicks it.
+  buttons: { touch: false, pc: false, phone: false },
   // A round hint shown while a card waits for its second press. Image, else message, else an arrow.
   // distance: px below the centre of the waiting button. background/text: palette numbers (0 = default).
   hint: { on: false, side: "right", image: "", message: "", distance: 12, background: 0, text: 0, font: "" },
