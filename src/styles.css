@@ -1106,3 +1106,34 @@ details.group > .group-body {
   opacity: 0.35;
   outline: 1px dashed currentColor;
 }
+
+/* Colour squares for text boxes: each square is the colour; the chosen one is outlined. */
+.swatch-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  margin: 4px 0;
+}
+.swatch-label {
+  width: 100%;
+  font-size: 12px;
+}
+.swatch-pick {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 3px;
+  cursor: pointer;
+}
+.swatch-pick.on {
+  border-color: #fff;
+  box-shadow: 0 0 0 1px #000;
+}
+.box-sample {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-weight: 700;
+}

@@ -32,6 +32,8 @@ export const DEFAULT_CARD = {
   file: "", // picture; empty = the button's picture
   scale: 2.5, // size, times the button
   fit: "both", // keep on screen: none | x | y | both
+  unlimited: false, // grow without limit and ignore the screen (the size multiplies freely)
+  aspect: "", // width:height, e.g. "1:1", "1:2", "9:11"; empty = the button's shape
   openMs: 450,
   closeMs: 360,
   radius: 6,
@@ -66,6 +68,15 @@ export function cardsOf(fx = {}) {
   }
   return [{ ...DEFAULT_CARD, waitFlash, ...old }];
 }
+/** "9:11" -> height / width (11 / 9). Returns null when it is not a valid ratio. */
+export function parseAspect(text) {
+  const m = /^\s*(\d+(?:\.\d+)?)\s*[:/x×]\s*(\d+(?:\.\d+)?)\s*$/i.exec(String(text ?? ""));
+  if (!m) return null;
+  const w = Number(m[1]),
+    h = Number(m[2]);
+  return w > 0 && h > 0 ? h / w : null;
+}
+
 export const DEFAULT_LINK = { kind: "none", url: "", section: "", page: "", newTab: false };
 export const DEFAULT_SPEED = 0.5;
 // The size each layout was designed at. Shrinking items scale down below it.

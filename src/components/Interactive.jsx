@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useLayoutEffect, useRef, u
 import { createPortal } from "react-dom";
 import { useMedia } from "../lib/media.js";
 import { onPointer, refreshHover, useHoverRegion } from "../lib/hover.js";
-import { DEFAULT_CARD, DEFAULT_FX, DEFAULT_LINK, cardsOf, cornerRadius } from "../lib/model.js";
+import { DEFAULT_CARD, DEFAULT_FX, DEFAULT_LINK, cardsOf, cornerRadius, parseAspect } from "../lib/model.js";
 import { NavContext, pageHref } from "../lib/nav.js";
 
 const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
@@ -116,9 +116,12 @@ export function HoverVideo({ item }) {
 
 // How big the card is: the button times cardScale, kept on screen as asked.
 // fit "x" limits the width, "y" the height, "both" both (the card keeps its shape).
-function cardSize(r, scale, fit, pageW, vh, heightPct = 0) {
-  // heightPct: the card's height as a percentage of its width (0 = the button's own shape).
-  const ratio = heightPct > 0 ? heightPct / 100 : r.height / r.width;
+function cardSize(r, c, pageW, vh) {
+  // The shape: the card's aspect (width:height), else an older height percentage, else the button's own.
+  const ratio = parseAspect(c.aspect) ?? (c.heightPct > 0 ? c.heightPct / 100 : r.height / r.width);
+  // Unlimited: the screen does not hold the card, and its size is just the multiplier.
+  const fit = c.unlimited ? "none" : c.fit;
+  const scale = c.scale;
   let w = r.width * scale;
   if ((fit === "x" || fit === "both") && w > pageW * 0.9) w = pageW * 0.9;
   let h = w * ratio;
@@ -457,7 +460,7 @@ function CardView({ c, base, buttonRef, cardEls, closing, clickFlash, waitMs, on
     const r = buttonRef.current?.getBoundingClientRect();
     if (!el || !r) return;
     const pageW = buttonRef.current.closest(".canvas")?.clientWidth || window.innerWidth;
-    const { w, h } = cardSize(r, c.scale, c.fit, pageW, window.innerHeight, c.heightPct);
+    const { w, h } = cardSize(r, c, pageW, window.innerHeight);
     el.style.left = `${r.left + r.width / 2 - w / 2}px`;
     el.style.top = `${r.top + r.height / 2 - h / 2}px`;
     el.style.width = `${w}px`;
