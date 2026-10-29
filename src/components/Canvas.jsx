@@ -132,6 +132,22 @@ function Media({ item }) {
         style={{ borderRadius: cornerRadius(item.radius) }}
       />
     );
+  // Pinned to the left and right: tiled sideways at its own height, instead of stretched.
+  if (item.tileX && item.h?.anchor === "stretch" && main.url && (item.type === "image" || item.type === "gif"))
+    return (
+      <div
+        className="media tiled-x"
+        role="img"
+        aria-label={item.alt || ""}
+        style={{
+          backgroundImage: `url("${main.url}")`,
+          backgroundRepeat: "repeat-x",
+          backgroundSize: "auto 100%",
+          backgroundPosition: "left center",
+          borderRadius: cornerRadius(item.radius),
+        }}
+      />
+    );
   return (
     <img
       className="media"

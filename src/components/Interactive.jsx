@@ -492,13 +492,23 @@ function CardView({ c, base, buttonRef, cardEls, closing, clickFlash, waitMs, on
     const { w, h } = cardSize(r, c, pageW, window.innerHeight);
     // Laid out at the button's width (and the card's shape), then scaled to its size with
     // the scale property. A big or unlimited card costs no more to lay out than a small one.
-    const k = w / r.width;
-    const baseH = h / k;
-    el.style.left = `${r.left + r.width / 2 - r.width / 2}px`;
-    el.style.top = `${r.top + r.height / 2 - baseH / 2}px`;
-    el.style.width = `${r.width}px`;
-    el.style.height = `${baseH}px`;
-    el.style.setProperty("--k1", String(k));
+    if (c.unlimited) {
+      // Unlimited cards: laid out small and scaled up (lower quality, but cheap however big).
+      const k = w / r.width;
+      const baseH = h / k;
+      el.style.left = `${r.left + r.width / 2 - r.width / 2}px`;
+      el.style.top = `${r.top + r.height / 2 - baseH / 2}px`;
+      el.style.width = `${r.width}px`;
+      el.style.height = `${baseH}px`;
+      el.style.setProperty("--k1", String(k));
+    } else {
+      // Sized cards: drawn at their real size, so the pictures stay sharp.
+      el.style.left = `${r.left + r.width / 2 - w / 2}px`;
+      el.style.top = `${r.top + r.height / 2 - h / 2}px`;
+      el.style.width = `${w}px`;
+      el.style.height = `${h}px`;
+      el.style.setProperty("--k1", "1");
+    }
     refreshHover();
   };
   useLayoutEffect(() => {
@@ -542,7 +552,7 @@ function CardView({ c, base, buttonRef, cardEls, closing, clickFlash, waitMs, on
   return (
     <div
       ref={ref}
-      className={`fx-card ${closing ? "is-closing" : ""} ${c.shake && !closing ? "fx-card-shake" : ""}`}
+      className={`fx-card ${closing ? "is-closing" : ""} ${c.shake && !closing ? "fx-card-shake" : ""} ${c.unlimited ? "fx-card-unlimited" : ""}`}
       style={{
         pointerEvents: c.clickable ? "auto" : "none",
         cursor: c.clickable ? "pointer" : undefined,
