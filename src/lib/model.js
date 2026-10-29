@@ -163,34 +163,79 @@ export function uid(prefix) {
 // --- Text markup --------------------------------------------------------------
 /**
  * Markup: **bold**, *italic*, ***bold italic***,
- * {s:secondary}, {h:highlight}, {n:normal}. Colour spans may contain emphasis.
+ * {s:secondary}, {h:highlight}, {n:normal}.
+ * {box2-5:text} is a box: palette 2 behind palette 5 text. Each box moves on its own
+ * (see lib/boxes.js). Colour spans and boxes may contain emphasis.
  */
 export function inlineTokens(text = "") {
   const out = [];
-  const pushStyled = (chunk, color) => {
+  const pushStyled = (chunk, color, box) => {
     const re = /\*\*\*(.+?)\*\*\*|\*\*(.+?)\*\*|\*(.+?)\*/g;
     let i = 0,
       m;
+    const extra = box ? { box } : {};
     while ((m = re.exec(chunk))) {
-      if (m.index > i) out.push({ text: chunk.slice(i, m.index), color });
+      if (m.index > i) out.push({ text: chunk.slice(i, m.index), color, ...extra });
       if (m[1] !== undefined)
-        out.push({ text: m[1], color, bold: true, italic: true });
-      else if (m[2] !== undefined) out.push({ text: m[2], color, bold: true });
-      else out.push({ text: m[3], color, italic: true });
+        out.push({ text: m[1], color, bold: true, italic: true, ...extra });
+      else if (m[2] !== undefined) out.push({ text: m[2], color, bold: true, ...extra });
+      else out.push({ text: m[3], color, italic: true, ...extra });
       i = re.lastIndex;
     }
-    if (i < chunk.length) out.push({ text: chunk.slice(i), color });
+    if (i < chunk.length) out.push({ text: chunk.slice(i), color, ...extra });
   };
-  const colour = /\{(n|s|h):([^{}]*)\}/g;
+  const span = /\{(?:(n|s|h)|box(\d+)-(\d+)):([^{}]*)\}/g;
   let last = 0,
-    m;
-  while ((m = colour.exec(text))) {
+    m,
+    boxNo = 0;
+  while ((m = span.exec(text))) {
     if (m.index > last) pushStyled(text.slice(last, m.index), null);
-    pushStyled(m[2], COLOR_CODE[m[1]]);
-    last = colour.lastIndex;
+    if (m[1]) pushStyled(m[4], COLOR_CODE[m[1]]);
+    else {
+      // n: the box's number in this text, so its motion and seed are its own.
+      pushStyled(m[4], null, { n: boxNo++, bg: Number(m[2]), fg: Number(m[3]) });
+    }
+    last = span.lastIndex;
   }
   if (last < text.length) pushStyled(text.slice(last), null);
   return out;
+}
+
+/**
+ * Wraps the selection in a box of palette colours bg (behind) and fg (text).
+ * Returns null when nothing is selected or the selection is inside a colour span or box.
+ */
+export function wrapBox(text = "", s, e, bg, fg) {
+  if (s === e) return null;
+  const spans = /\{(?:n|s|h|box\d+-\d+):[^{}]*\}/g;
+  let m;
+  while ((m = spans.exec(text))) {
+    const start = m.index,
+      end = start + m[0].length;
+    // A box cannot go inside or across a colour span or another box (no nesting).
+    if (s < end && e > start) return null;
+  }
+  if (/[{}]/.test(text.slice(s, e))) return null;
+  const open = `{box${bg}-${fg}:`;
+  const sel = text.slice(s, e);
+  const out = text.slice(0, s) + open + sel + "}" + text.slice(e);
+  return { text: out, s: s + open.length, e: s + open.length + sel.length };
+}
+
+/** Removes the box around the caret or selection (the text stays). */
+export function unwrapBox(text = "", s, e) {
+  const re = /\{box\d+-\d+:([^{}]*)\}/g;
+  let m;
+  while ((m = re.exec(text))) {
+    const start = m.index,
+      end = start + m[0].length;
+    if (s >= start && e <= end) {
+      const inner = m[1];
+      const out = text.slice(0, start) + inner + text.slice(end);
+      return { text: out, s: start, e: start + inner.length };
+    }
+  }
+  return null;
 }
 
 // --- Toggling formats on a selection -------------------------------------------
@@ -611,18 +656,30 @@ export function pageHeight(page) {
 }
 
 /** Phone overrides: merged over the base page on phones and in Phone mode. */
-export function applyPhone(page) {
+export function applyPhone(page, { keepHidden = false } = {}) {
   const m = page.mobile;
   if (!m) return page;
+  // "Hide on phone" (a phone override): the component and anything inside a hidden
+  // section is left out, so it is not rendered at all. The phone editor keeps them,
+  // marked with _hiddenOnPhone, so they can be edited and shown again.
+  const hiddenSection = (id) => !!m.sections?.[id]?.hidden;
+  const sections = (page.sections || []).map((s) =>
+    m.sections?.[s.id] ? { ...s, ...m.sections[s.id], ...(m.sections[s.id].hidden ? { _hiddenOnPhone: true } : {}) } : s,
+  );
+  const items = page.items
+    .map((i) => {
+      const o = m.items?.[i.id];
+      const hidden = !!o?.hidden || (!!i.parent && hiddenSection(i.parent));
+      if (hidden && !keepHidden) return null;
+      const merged = o ? { ...i, ...o } : { ...i };
+      return hidden ? { ...merged, _hiddenOnPhone: true } : merged;
+    })
+    .filter(Boolean);
   return {
     ...page,
     canvas: { ...page.canvas, ...(m.canvas || {}) },
-    items: page.items.map((i) =>
-      m.items?.[i.id] ? { ...i, ...m.items[i.id] } : i,
-    ),
-    sections: (page.sections || []).map((s) =>
-      m.sections?.[s.id] ? { ...s, ...m.sections[s.id] } : s,
-    ),
+    items,
+    sections: keepHidden ? sections : sections.filter((s) => !s._hiddenOnPhone),
   };
 }
 
