@@ -133,7 +133,9 @@ function cardSize(r, c, pageW, vh) {
 }
 
 // Site-wide two-press setting: { touch, pc }. Set by App from General settings.
-export const ButtonRulesContext = createContext({ touch: false, pc: false });
+export const ButtonRulesContext = createContext({ touch: false, pc: false, phone: false });
+// True on a phone (the phone viewport, or the phone preview while editing). Set by App.
+export const PhoneContext = createContext(false);
 // Buttons that wait for a second press register here, so the hint can show. Set by App.
 export const WaitContext = createContext({ add() {}, remove() {} }); // add(key, element)
 
@@ -184,9 +186,11 @@ export function ButtonItem({ item, editing }) {
     return unionRect(sized.map((el) => el.getBoundingClientRect()));
   });
   const [pinned, setPinned] = useState(false); // touch: tapped on
+  const phoneNow = useContext(PhoneContext);
+  const [autoHover, setAutoHover] = useState(false); // phone setting: risen above the screen middle
   const touch = useRef(false); // the last pointer was a finger or pen
-  const active = hovered || pinned;
   const rules = useContext(ButtonRulesContext);
+  const active = hovered || pinned || autoHover;
   const waiting = useContext(WaitContext);
   const waitKey = useRef({}).current; // this button's entry in the waiting list
   const opening = useRef(false); // this press opened the card: its link must not follow
@@ -239,6 +243,27 @@ export function ButtonItem({ item, editing }) {
     if (cards.length && !(twoPressNow() && !pinned)) setCard("open");
   }, [active]);
 
+  // Phone setting: the button goes into hover while its centre is above the screen middle.
+  const autoOn = !!rules.phone && phoneNow && !editing;
+  useEffect(() => {
+    if (!autoOn) {
+      setAutoHover(false);
+      return;
+    }
+    const measure = () => {
+      const r = ref.current?.getBoundingClientRect();
+      if (!r) return;
+      setAutoHover(r.top + r.height / 2 < window.innerHeight / 2);
+    };
+    measure();
+    window.addEventListener("scroll", measure, { passive: true });
+    window.addEventListener("resize", measure);
+    return () => {
+      window.removeEventListener("scroll", measure);
+      window.removeEventListener("resize", measure);
+    };
+  }, [autoOn]);
+
   // Touch: the tap-on stays until another tap elsewhere, a scroll, or a second tap.
   useEffect(() => {
     if (!pinned) return;
@@ -290,6 +315,8 @@ export function ButtonItem({ item, editing }) {
     // A link button follows its link at once. Without a link, a tap acts as hover:
     // the first tap starts it, the next one ends it.
     if (!touch.current || hasLink || twoPressNow()) return;
+    // Hovered by the phone setting: this tap is the click, so it does not switch the hover off.
+    if (autoOn && autoHover) return;
     e.preventDefault();
     setPinned((p) => !p);
   };
@@ -463,11 +490,15 @@ function CardView({ c, base, buttonRef, cardEls, closing, clickFlash, waitMs, on
     if (!el || !r) return;
     const pageW = buttonRef.current.closest(".canvas")?.clientWidth || window.innerWidth;
     const { w, h } = cardSize(r, c, pageW, window.innerHeight);
-    el.style.left = `${r.left + r.width / 2 - w / 2}px`;
-    el.style.top = `${r.top + r.height / 2 - h / 2}px`;
-    el.style.width = `${w}px`;
-    el.style.height = `${h}px`;
-    el.style.setProperty("--k0", String(Math.min(1, r.width / w)));
+    // Laid out at the button's width (and the card's shape), then scaled to its size with
+    // the scale property. A big or unlimited card costs no more to lay out than a small one.
+    const k = w / r.width;
+    const baseH = h / k;
+    el.style.left = `${r.left + r.width / 2 - r.width / 2}px`;
+    el.style.top = `${r.top + r.height / 2 - baseH / 2}px`;
+    el.style.width = `${r.width}px`;
+    el.style.height = `${baseH}px`;
+    el.style.setProperty("--k1", String(k));
     refreshHover();
   };
   useLayoutEffect(() => {
@@ -486,8 +517,9 @@ function CardView({ c, base, buttonRef, cardEls, closing, clickFlash, waitMs, on
   }, [started]);
 
   // The card tilts toward the cursor's position inside the button.
+  const phoneNow = useContext(PhoneContext);
   useEffect(() => {
-    if (!c.tilt) return;
+    if (!c.tilt || phoneNow) return; // on a phone the card does not follow the cursor
     const k = Math.max(0, c.tiltStrength) / 100;
     return onPointer((e) => {
       const r = buttonRef.current?.getBoundingClientRect();
@@ -498,7 +530,7 @@ function CardView({ c, base, buttonRef, cardEls, closing, clickFlash, waitMs, on
       el.style.setProperty("--rx", `${(-ny * 10 * k).toFixed(2)}deg`);
       el.style.setProperty("--ry", `${(nx * 12 * k).toFixed(2)}deg`);
     });
-  }, [c.tilt, c.tiltStrength]);
+  }, [c.tilt, c.tiltStrength, phoneNow]);
 
   const handleClick = () => {
     if (!c.clickable) return;
@@ -519,7 +551,7 @@ function CardView({ c, base, buttonRef, cardEls, closing, clickFlash, waitMs, on
         "--shake-k": String(c.shakeAmount / 100),
         "--open-ms": `${c.openMs}ms`,
         "--close-ms": `${c.closeMs}ms`,
-        "--radius": `${c.radius}px`,
+        "--radius": `${c.radius}px`, // the corners are drawn at the scaled size, so this is divided by --k1 in the CSS
       }}
       onPointerDown={onDown}
       onClick={handleClick}

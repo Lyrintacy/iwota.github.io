@@ -17,7 +17,7 @@ import {
 } from "./lib/model.js";
 import { NavContext, pageHref } from "./lib/nav.js";
 import { Canvas, TextStylesContext } from "./components/Canvas.jsx";
-import { ButtonRulesContext, WaitContext } from "./components/Interactive.jsx";
+import { ButtonRulesContext, PhoneContext, WaitContext } from "./components/Interactive.jsx";
 import { HintWidget } from "./components/HintWidget.jsx";
 import { ErrorBoundary } from "./components/ErrorBoundary.jsx";
 import { Editor } from "./components/Editor.jsx";
@@ -240,6 +240,9 @@ export default function App() {
     // The frozen old page stays where it was; the new page slides in on top of it.
     const done = () => {
       p.frozen.remove();
+      // The animation holds its transform (fill: both). Left in place, that transform makes
+      // this page the containing block for fixed overlays, so they scroll with it. Cancel it.
+      anim?.cancel();
       if (enter) {
         enter.style.position = "";
         enter.style.zIndex = "";
@@ -555,6 +558,7 @@ export default function App() {
     <NavContext.Provider value={go}>
       <TextStylesContext.Provider value={textStyles(general)}>
       <ButtonRulesContext.Provider value={ui.buttons}>
+      <PhoneContext.Provider value={phoneViewport || previewing}>
       <WaitContext.Provider value={waitApi}>
       <div
         className={`site dock-${dock} ${editing ? "editing" : ""} ${previewing ? "phone-preview" : ""} ${screenW ? "screen-preview" : ""} ${ui.toggle.hidePhone ? "hide-toggle-phone" : ""}`}
@@ -616,6 +620,7 @@ export default function App() {
         )}
       </div>
       </WaitContext.Provider>
+      </PhoneContext.Provider>
       </ButtonRulesContext.Provider>
       </TextStylesContext.Provider>
     </NavContext.Provider>
