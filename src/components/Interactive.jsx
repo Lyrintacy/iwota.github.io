@@ -564,6 +564,11 @@ function CardView({ c, base, buttonRef, cardEls, closing, clickFlash, waitMs, on
           autoPlay
           playsInline
           style={{ objectFit: c.imageFit || "cover" }}
+          // Each time the card appears it starts at a random point in the video.
+          onLoadedMetadata={(e) => {
+            const v = e.currentTarget;
+            if (Number.isFinite(v.duration) && v.duration > 0) v.currentTime = Math.random() * v.duration * 0.95;
+          }}
         />
       ) : (
         <img src={picture || undefined} alt="" style={{ objectFit: c.imageFit || "cover" }} />

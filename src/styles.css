@@ -1084,6 +1084,12 @@ details.group > .group-body {
   height: 100%;
 }
 
+/* Card pictures keep hard pixels when the card is enlarged: no smoothing. */
+.fx-card img,
+.fx-card video {
+  image-rendering: pixelated;
+}
+
 /* Text boxes ({box<bg>-<fg>:...}): a rectangle with uneven edges that moves on its own
    (the keyframes come from lib/boxes.js). The background is a layer behind the text,
    so the text itself is never clipped. */
