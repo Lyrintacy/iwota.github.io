@@ -1290,8 +1290,9 @@ export function Editor({
         },
       };
     });
+  // A component added on phones only is edited directly; the others get phone overrides.
   const writeItem = (id, values) =>
-    phone
+    phone && !page.items.find((i) => i.id === id)?.phoneOnly
       ? writeOverride("items", id, values)
       : setPage((p) => ({
           ...p,
@@ -1323,9 +1324,10 @@ export function Editor({
   const patchOverlay = (values) =>
     patchSection({ overlay: { ...sectionView.overlay, ...values } });
 
-  // Structure (adding, moving, deleting) always happens on the base page.
+  // Structure: sections and the order stay on the base page. A component added in phone mode
+  // is phone-only; deleting a base component in phone mode hides it on phones.
   const add = (type) => {
-    const created = newItem(type, uid(type));
+    const created = { ...newItem(type, uid(type)), ...(phone ? { phoneOnly: true } : {}) };
     setPage((p) => ({ ...p, items: [...p.items, created] }));
     setSelectedId(created.id);
   };
@@ -1338,7 +1340,17 @@ export function Editor({
       return { ...p, items: list };
     });
   const duplicateItem = () => {
-    const copy = { ...structuredClone(item), id: uid(item.type) };
+    const copy = { ...structuredClone(item), id: uid(item.type), ...(phone ? { phoneOnly: true } : {}) };
+    if (phone) {
+      // A copy made on a phone is phone-only, with no overrides of its own.
+      setPage((p) => {
+        const list = [...p.items];
+        list.splice(iIdx + 1, 0, copy);
+        return { ...p, items: list };
+      });
+      setSelectedId(copy.id);
+      return;
+    }
     setPage((p) => {
       const list = [...p.items];
       list.splice(iIdx + 1, 0, copy);
@@ -1352,6 +1364,11 @@ export function Editor({
     setSelectedId(copy.id);
   };
   const removeItem = () => {
+    if (phone && !item.phoneOnly) {
+      if (!window.confirm(`Hide "${item.name || TYPE_LABEL[item.type]}" on phones? It stays on the desktop.`)) return;
+      writeOverride("items", selectedId, { hidden: true });
+      return;
+    }
     if (!window.confirm(`Delete "${item.name || TYPE_LABEL[item.type]}"?`))
       return;
     setPage((p) => ({
@@ -1747,13 +1764,14 @@ export function Editor({
           {phone && (
             <p className="banner">
               Phone mode: changes apply only on phones (screens{" "}
-              {mobile.breakpoint}px wide or less). Adding, moving and deleting
-              are locked here.
+              {mobile.breakpoint}px wide or less). Components you add here are
+              only on phones, and deleting one hides it on phones. Sections and
+              the order of components stay locked here.
             </p>
           )}
           <div className="add-bar">
             {TYPES.map((t) => (
-              <button key={t} disabled={phone} onClick={() => add(t)}>
+              <button key={t} onClick={() => add(t)}>
                 + {TYPE_LABEL[t]}
               </button>
             ))}
@@ -2019,7 +2037,7 @@ export function Editor({
 
           <h4>Items</h4>
           <ul className="items">
-            {page.items.map((it, n) => (
+            {page.items.map((it, n) => (!phone && it.phoneOnly ? null : (
               <li
                 key={it.id}
                 {...itemRow(n).row}
@@ -2037,10 +2055,11 @@ export function Editor({
                     {it.type}
                     {it.parent ? " · in section" : ""}
                     {Object.keys(page.mobile?.items?.[it.id] || {}).length ? " · phone changes" : ""}
+                    {it.phoneOnly ? " · phone only" : ""}
                   </small>
                 </button>
               </li>
-            ))}
+            )))}
           </ul>
           {!item && (
             <p className="hint">
@@ -2091,15 +2110,11 @@ export function Editor({
                 >
                   ↓ Down
                 </button>
-                <button disabled={phone} onClick={duplicateItem}>
+                <button onClick={duplicateItem}>
                   Duplicate
                 </button>
-                <button
-                  className="danger"
-                  disabled={phone}
-                  onClick={removeItem}
-                >
-                  Delete
+                <button className="danger" onClick={removeItem}>
+                  {phone && !item.phoneOnly ? "Hide on phones" : "Delete"}
                 </button>
               </div>
 
