@@ -672,6 +672,17 @@ export function pageHeight(page) {
   return h;
 }
 
+/**
+ * Components in their order: the ids in `order` first (in that order), then the rest in
+ * their own order. The phone order (mobile.itemOrder) is this list.
+ */
+export function orderedItems(items = [], order = []) {
+  if (!order?.length) return items;
+  const rank = new Map(order.map((id, i) => [id, i]));
+  const known = items.filter((i) => rank.has(i.id)).sort((a, b) => rank.get(a.id) - rank.get(b.id));
+  return [...known, ...items.filter((i) => !rank.has(i.id))];
+}
+
 /** Phone overrides: merged over the base page on phones and in Phone mode. */
 export function applyPhone(page, { keepHidden = false } = {}) {
   const m = page.mobile;
@@ -683,7 +694,7 @@ export function applyPhone(page, { keepHidden = false } = {}) {
   const sections = (page.sections || []).map((s) =>
     m.sections?.[s.id] ? { ...s, ...m.sections[s.id], ...(m.sections[s.id].hidden ? { _hiddenOnPhone: true } : {}) } : s,
   );
-  const items = page.items
+  const items = orderedItems(page.items, m.itemOrder)
     .map((i) => {
       const o = m.items?.[i.id];
       const hidden = !!o?.hidden || (!!i.parent && hiddenSection(i.parent));
