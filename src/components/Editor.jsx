@@ -2,7 +2,7 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import images from "virtual:images";
 import { ANCHORS, COLORS, DEFAULT_DESIGN, DEFAULT_UI, DEFAULT_LINK, DEFAULT_MOBILE, DEFAULT_SPEED, DEFAULT_TEXT, ROLES, SIZE_UNITS, TYPES, UNITS, formatAt, isBand, isContent, newItem, newSection, pageSlug, removeColour, toggleFormat, wrapBox, unwrapBox, parseAspect, uid, DEFAULT_CARD, cardsOf, textStyles, TEXT_TAGS, styleOf, BUILTIN_TEXT_STYLES } from "../lib/model.js";
 import { hasExt, useMedia } from "../lib/media.js";
-import { fontFamily } from "../lib/model.js";
+import { fontFamily, orderedItems } from "../lib/model.js";
 
 const TYPE_LABEL = {
   button: "Button",
@@ -1277,6 +1277,9 @@ export function Editor({
   const item = iIdx >= 0 ? page.items[iIdx] : null;
   const itemView = item ? view.items.find((i) => i.id === item.id) : null;
   const mobile = { ...DEFAULT_MOBILE, ...(page.mobile || {}) };
+  // The component list: the desktop order, or the phone order in phone mode.
+  const listItems = phone ? orderedItems(page.items, page.mobile?.itemOrder) : page.items;
+  const listIdx = listItems.findIndex((i) => i.id === selectedId);
 
   // Edits go to the base page, or to the phone overrides in Phone mode.
   const writeOverride = (kind, id, values) =>
@@ -1331,14 +1334,30 @@ export function Editor({
     setPage((p) => ({ ...p, items: [...p.items, created] }));
     setSelectedId(created.id);
   };
-  const moveItem = (delta) =>
-    setPage((p) => {
+  // The phone order: the list of component ids, written when a phone changes the order.
+  const writePhoneOrder = (change) =>
+    setPage((p) => ({
+      ...p,
+      mobile: {
+        ...DEFAULT_MOBILE,
+        ...(p.mobile || {}),
+        itemOrder: change(orderedItems(p.items, p.mobile?.itemOrder).map((i) => i.id)),
+      },
+    }));
+  const moveItem = (delta) => {
+    if (phone)
+      return writePhoneOrder((ids) => {
+        const to = listIdx + delta;
+        return to < 0 || to >= ids.length ? ids : moveIdx(ids, listIdx, to);
+      });
+    return setPage((p) => {
       const list = [...p.items];
       const to = iIdx + delta;
       if (to < 0 || to >= list.length) return p;
       [list[iIdx], list[to]] = [list[to], list[iIdx]];
       return { ...p, items: list };
     });
+  };
   const duplicateItem = () => {
     const copy = { ...structuredClone(item), id: uid(item.type), ...(phone ? { phoneOnly: true } : {}) };
     if (phone) {
@@ -1346,7 +1365,9 @@ export function Editor({
       setPage((p) => {
         const list = [...p.items];
         list.splice(iIdx + 1, 0, copy);
-        return { ...p, items: list };
+        const ids = orderedItems(p.items, p.mobile?.itemOrder).map((i) => i.id);
+        ids.splice(ids.indexOf(item.id) + 1, 0, copy.id);
+        return { ...p, items: list, mobile: { ...DEFAULT_MOBILE, ...(p.mobile || {}), itemOrder: ids } };
       });
       setSelectedId(copy.id);
       return;
@@ -1458,7 +1479,10 @@ export function Editor({
   const moveIn = (key, from, to) =>
     setPage((p) => ({ ...p, [key]: moveIdx(p[key] || [], from, to) }));
   const sectionRow = useReorder((from, to) => moveIn("sections", from, to), !phone);
-  const itemRow = useReorder((from, to) => moveIn("items", from, to), !phone);
+  const itemRow = useReorder(
+    (from, to) => (phone ? writePhoneOrder((ids) => moveIdx(ids, from, to)) : moveIn("items", from, to)),
+    true,
+  );
 
   const [newPlace, setNewPlace] = useState("top"); // where the next section goes
   // where: "top" | "bottom" | "content" | "fixed" (a screen overlay).
@@ -1766,7 +1790,8 @@ export function Editor({
               Phone mode: changes apply only on phones (screens{" "}
               {mobile.breakpoint}px wide or less). Components you add here are
               only on phones, and deleting one hides it on phones. Sections and
-              the order of components stay locked here.
+              the order of sections stays locked here. Order components with the arrows or by dragging;
+              it applies only on phones.
             </p>
           )}
           <div className="add-bar">
@@ -2037,7 +2062,7 @@ export function Editor({
 
           <h4>Items</h4>
           <ul className="items">
-            {page.items.map((it, n) => (!phone && it.phoneOnly ? null : (
+            {listItems.map((it, n) => (!phone && it.phoneOnly ? null : (
               <li
                 key={it.id}
                 {...itemRow(n).row}
@@ -2099,13 +2124,13 @@ export function Editor({
               />
               <div className="row">
                 <button
-                  disabled={phone || iIdx === 0}
+                  disabled={listIdx <= 0}
                   onClick={() => moveItem(-1)}
                 >
                   ↑ Up
                 </button>
                 <button
-                  disabled={phone || iIdx === page.items.length - 1}
+                  disabled={listIdx < 0 || listIdx === listItems.length - 1}
                   onClick={() => moveItem(1)}
                 >
                   ↓ Down
