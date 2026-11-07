@@ -225,7 +225,9 @@ export default function App() {
 
   const phoneViewport = usePhoneViewport(page.mobile?.breakpoint || 700);
   const previewing = editing && phone;
-  const view = previewing || phoneViewport ? applyPhone(page, { keepHidden: previewing }) : page;
+  // Components made for phones only are left out of the desktop view.
+  const desktop = page.items.some((i) => i.phoneOnly) ? { ...page, items: page.items.filter((i) => !i.phoneOnly) } : page;
+  const view = previewing || phoneViewport ? applyPhone(page, { keepHidden: previewing }) : desktop;
   // Pictures used more than once are loaded in the background, after the page has started.
   useEffect(() => preloadShared(view), [activeTab, previewing, phoneViewport]);
 
