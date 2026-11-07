@@ -96,11 +96,12 @@
       "font": "font-3"
     },
     "buttons": {
-      "touch": true,
-      "pc": false
+      "touch": false,
+      "pc": false,
+      "phone": true
     },
     "hint": {
-      "on": true,
+      "on": false,
       "side": "right",
       "image": "",
       "message": "",
