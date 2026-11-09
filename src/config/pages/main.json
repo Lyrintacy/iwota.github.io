@@ -1282,7 +1282,7 @@
       },
       "v": {
         "anchor": "start",
-        "offset": 390,
+        "offset": 450,
         "offsetEnd": 0,
         "unit": "px",
         "size": 0,
@@ -1304,7 +1304,7 @@
       "level": "h1",
       "align": "left",
       "color": 1,
-      "size": 25,
+      "size": 30,
       "phoneOnly": true
     },
     {
@@ -1386,7 +1386,7 @@
       },
       "v": {
         "anchor": "start",
-        "offset": 520,
+        "offset": 570,
         "offsetEnd": 0,
         "unit": "px",
         "size": 50,
@@ -1474,7 +1474,7 @@
       },
       "v": {
         "anchor": "start",
-        "offset": 520,
+        "offset": 570,
         "offsetEnd": 0,
         "unit": "px",
         "size": 50,
@@ -1613,71 +1613,6 @@
       "phoneOnly": true
     },
     {
-      "id": "image-2858h",
-      "type": "image",
-      "name": "",
-      "parent": "section-ogrcp",
-      "h": {
-        "anchor": "center",
-        "offset": 0,
-        "offsetEnd": 0,
-        "unit": "px",
-        "size": 400,
-        "sizeUnit": "px"
-      },
-      "v": {
-        "anchor": "start",
-        "offset": 0,
-        "offsetEnd": 0,
-        "unit": "px",
-        "size": 0,
-        "sizeUnit": "auto"
-      },
-      "pivot": [
-        50,
-        50
-      ],
-      "rotate": 0,
-      "shrink": {
-        "on": false,
-        "axis": "x"
-      },
-      "file": "ui/Group 4.png",
-      "alt": "",
-      "fit": "contain",
-      "hoverOnly": false,
-      "thumbnail": "",
-      "button": false,
-      "link": {
-        "kind": "none",
-        "url": "",
-        "section": "",
-        "page": "",
-        "newTab": false
-      },
-      "fx": {
-        "shake": true,
-        "shakeMs": 600,
-        "shakeAmount": 100,
-        "flash": true,
-        "flashMs": 300,
-        "flashColour": 0,
-        "flashStrength": 95,
-        "shine": true,
-        "shineDelayMs": 0,
-        "shineMs": 700,
-        "shineWidth": 70,
-        "shineColour": 4,
-        "shineSlant": 18,
-        "clickFlash": true
-      },
-      "caption": "",
-      "captionPosition": "below",
-      "captionColour": "",
-      "captionSize": 14,
-      "phoneOnly": true
-    },
-    {
       "id": "button-5rtev",
       "type": "button",
       "name": "",
@@ -1745,7 +1680,7 @@
         "offset": 0,
         "offsetEnd": 0,
         "unit": "px",
-        "size": 400,
+        "size": 360,
         "sizeUnit": "px"
       },
       "v": {
@@ -1774,7 +1709,8 @@
       "captionPosition": "below",
       "captionColour": "",
       "captionSize": 14,
-      "phoneOnly": true
+      "phoneOnly": true,
+      "radius": 25
     },
     {
       "id": "image-zfawo",

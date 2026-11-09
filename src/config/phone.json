@@ -309,13 +309,13 @@
         },
         "v": {
           "anchor": "start",
-          "offset": 450,
+          "offset": 500,
           "offsetEnd": 0,
           "unit": "px",
           "size": 0,
           "sizeUnit": "auto"
         },
-        "text": "{box1-3:Team of 12} {box2-4:Unity} {box4-1: 3 weeks}\n\n\n\n\n\n\n\n\n\nTop-down Arcade Dungeon shooter, Inspired by Snow Bros 1990, recontextualising its mechanics. {box5-2:3rd place } in Future Games Group Project 2025.\n",
+        "text": "{box1-3:Team of 12} {box2-4:Unity} {box4-1: 3 weeks}\n\n\n\n\n\n\n\n\nTop-down Arcade Dungeon shooter, Inspired by Snow Bros 1990, recontextualising its mechanics. {box5-2:3rd place } in Future Games Group Project 2025.\n",
         "size": 21,
         "align": "left"
       },
