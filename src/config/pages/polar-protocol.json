@@ -1,7 +1,7 @@
 {
   "id": "polar-protocol",
   "title": "Polar Protocol",
-  "useDefaults": true,
+  "useDefaults": false,
   "showInBar": true,
   "keepWhenOpened": false,
   "canvas": {
@@ -149,5 +149,81 @@
       "kind": "fixed",
       "name": ""
     }
-  ]
+  ],
+  "settings": {
+    "palette": [
+      "#edede8",
+      "#c5f9fc",
+      "#5320c0",
+      "#4f0331",
+      "#000001",
+      "#ffffff",
+      "#b1ff3d",
+      "#ff47a0",
+      "#808080"
+    ],
+    "roles": {
+      "background": 4,
+      "text": 1,
+      "secondary": 2,
+      "highlight": 3
+    },
+    "text": {
+      "body": 16,
+      "h1": 56,
+      "h2": 36,
+      "h3": 24
+    },
+    "fonts": [
+      {
+        "id": "serif",
+        "name": "Serif",
+        "family": "Georgia, \"Times New Roman\", serif",
+        "file": ""
+      },
+      {
+        "id": "rounded",
+        "name": "Rounded",
+        "family": "\"Trebuchet MS\", Verdana, sans-serif",
+        "file": ""
+      },
+      {
+        "id": "mono",
+        "name": "Monospace",
+        "family": "ui-monospace, Menlo, Consolas, monospace",
+        "file": ""
+      },
+      {
+        "id": "font",
+        "name": "Sans",
+        "family": "Comic Sans MS",
+        "file": ""
+      },
+      {
+        "id": "font-2",
+        "name": "Kids",
+        "family": "KidsplaypersonaluseBold-YzjBy",
+        "file": ""
+      },
+      {
+        "id": "font-3",
+        "name": "Papyrus",
+        "family": "papyrus",
+        "file": ""
+      },
+      {
+        "id": "font-4",
+        "name": "Mario",
+        "family": "SuperMabroz-j93xO",
+        "file": ""
+      }
+    ],
+    "textStyles": [
+      {
+        "id": "secondary-text",
+        "name": "Secondary Text",
+        "tag": "p"
+      }
+    ]
+  }
 }
