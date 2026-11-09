@@ -92,7 +92,7 @@
     "toggle": {
       "text": 2,
       "background": 5,
-      "hidePhone": false,
+      "hidePhone": true,
       "font": "font-3"
     },
     "buttons": {
