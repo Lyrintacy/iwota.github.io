@@ -263,7 +263,7 @@
       "text-tdwz7": {
         "v": {
           "anchor": "start",
-          "offset": 1300,
+          "offset": 1100,
           "offsetEnd": 0,
           "unit": "px",
           "size": 0,
@@ -282,7 +282,7 @@
       "text-17y6v": {
         "v": {
           "anchor": "start",
-          "offset": 550,
+          "offset": 500,
           "offsetEnd": 0,
           "unit": "px",
           "size": 100,
@@ -619,8 +619,19 @@
     },
     "sections": {
       "section-ky6g3": {
-        "start": 1250,
-        "height": 400
+        "start": 0,
+        "height": 1300,
+        "texture": {
+          "file": "ui/Button/ButtonCardOverlay4.PNG",
+          "size": 300,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scrollX": false,
+          "speedX": 0.05,
+          "scrollY": true,
+          "speedY": -0.5,
+          "rotate": 0
+        }
       },
       "section-ogrcp": {
         "height": 950

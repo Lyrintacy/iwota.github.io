@@ -1787,14 +1787,14 @@
       "height": 900,
       "background": 4,
       "texture": {
-        "file": "Backgrounds/paper2.JPEG",
-        "size": 5000,
+        "file": "ui/Button/ButtonCardOverlay4.PNG",
+        "size": 800,
         "offsetX": 0,
         "offsetY": 0,
         "scrollX": false,
         "speedX": 0.05,
-        "scrollY": false,
-        "speedY": 0.1,
+        "scrollY": true,
+        "speedY": -0.5,
         "rotate": 0
       },
       "overlay": {
