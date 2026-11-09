@@ -98,7 +98,7 @@
     "buttons": {
       "touch": false,
       "pc": false,
-      "phone": true
+      "phone": false
     },
     "hint": {
       "on": false,

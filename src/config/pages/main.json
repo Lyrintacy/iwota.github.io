@@ -974,7 +974,7 @@
             "fit": "both",
             "unlimited": true,
             "aspect": "",
-            "openMs": 2000,
+            "openMs": 4000,
             "closeMs": 360,
             "radius": 6,
             "background": 0,
@@ -1058,7 +1058,7 @@
             "fit": "both",
             "unlimited": false,
             "aspect": "",
-            "openMs": 450,
+            "openMs": 1000,
             "closeMs": 360,
             "radius": 0,
             "background": 0,
@@ -1109,12 +1109,12 @@
           {
             "clickable": true,
             "waitFlash": false,
-            "file": "PolarProtocol/Trailer - The Polar Protocol (online-video-cutter.com) (1).mp4",
+            "file": "PolarProtocol/TrailerThe Polar Protocol.mp4",
             "scale": 1.6,
             "fit": "x",
             "unlimited": false,
             "aspect": "9:6",
-            "openMs": 200,
+            "openMs": 800,
             "closeMs": 360,
             "radius": 1,
             "background": 3,
@@ -1261,11 +1261,51 @@
         "axis": "x",
         "grow": true
       },
-      "text": "{box3-1:Team of 12} {box4-1:Unity} 3 weeks 3rd place \nWrite something {box2-1:heresdmfsdk} fmeodm  mkreor  {box1-2:eokfr  }eowkr p rokr ",
+      "text": "{box1-3:Team of 12} {box2-4:Unity} {box4-1: 3 weeks}\nTop-down Arcade Dungeon shooter, Inspired by Snow Bros 1990, recontextualising its mechanics. {box5-2:3rd place } in Future Games Group Project 2025.\n",
       "font": "",
       "level": "p",
       "align": "left",
-      "color": ""
+      "color": 1
+    },
+    {
+      "id": "text-nse43",
+      "type": "text",
+      "name": "Polar Protocol Text",
+      "parent": "section-ogrcp",
+      "h": {
+        "anchor": "start",
+        "offset": 10,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 500,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 390,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 0,
+        "sizeUnit": "auto"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "axis": "x",
+        "mode": "both",
+        "on": true,
+        "grow": true
+      },
+      "text": "**The Polar Protocol**",
+      "font": "",
+      "level": "h1",
+      "align": "left",
+      "color": 1,
+      "size": 25,
+      "phoneOnly": true
     },
     {
       "id": "image-nmfhv",
@@ -1330,6 +1370,165 @@
       "captionPosition": "below",
       "captionColour": "",
       "captionSize": 14
+    },
+    {
+      "id": "video-piwsm",
+      "type": "video",
+      "name": "",
+      "parent": "section-ogrcp",
+      "h": {
+        "anchor": "center",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 400,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 0,
+        "sizeUnit": "auto"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "on": false,
+        "axis": "x"
+      },
+      "file": "PolarProtocol/TrailerThePolarProtocolPhone.mp4",
+      "poster": "",
+      "controls": false,
+      "loop": true,
+      "autoplay": true,
+      "caption": "",
+      "captionPosition": "below",
+      "captionColour": "",
+      "captionSize": 14,
+      "phoneOnly": true
+    },
+    {
+      "id": "button-m6bss",
+      "type": "button",
+      "name": "PolarProtocol Skip phone button",
+      "parent": "section-ogrcp",
+      "h": {
+        "anchor": "start",
+        "offset": 20,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 50,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 490,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 50,
+        "sizeUnit": "px"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "on": false,
+        "axis": "x"
+      },
+      "file": "Me/itchicon.png",
+      "alt": "",
+      "fit": "contain",
+      "link": {
+        "kind": "section",
+        "url": "",
+        "section": "section-tfih3",
+        "page": "",
+        "newTab": false
+      },
+      "fx": {
+        "shake": true,
+        "shakeMs": 600,
+        "shakeAmount": 100,
+        "flash": true,
+        "flashMs": 300,
+        "flashColour": 0,
+        "flashStrength": 95,
+        "shine": true,
+        "shineDelayMs": 0,
+        "shineMs": 700,
+        "shineWidth": 70,
+        "shineColour": 4,
+        "shineSlant": 18,
+        "clickFlash": true
+      },
+      "phoneOnly": true,
+      "emptyColour": 0
+    },
+    {
+      "id": "button-ldpe7",
+      "type": "button",
+      "name": "PolarProtocol Proceed phone button",
+      "parent": "section-ogrcp",
+      "h": {
+        "anchor": "end",
+        "offset": 20,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 50,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 490,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 50,
+        "sizeUnit": "px"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "on": false,
+        "axis": "x"
+      },
+      "file": "Me/itchicon.png",
+      "alt": "",
+      "fit": "contain",
+      "link": {
+        "kind": "page",
+        "url": "",
+        "section": "section-tfih3",
+        "page": "polar-protocol",
+        "newTab": false
+      },
+      "fx": {
+        "shake": true,
+        "shakeMs": 600,
+        "shakeAmount": 100,
+        "flash": true,
+        "flashMs": 300,
+        "flashColour": 0,
+        "flashStrength": 95,
+        "shine": true,
+        "shineDelayMs": 0,
+        "shineMs": 700,
+        "shineWidth": 70,
+        "shineColour": 4,
+        "shineSlant": 18,
+        "clickFlash": true
+      },
+      "phoneOnly": true,
+      "emptyColour": 0
     }
   ],
   "sections": [

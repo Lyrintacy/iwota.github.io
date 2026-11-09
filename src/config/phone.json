@@ -300,8 +300,8 @@
       },
       "text-svcsd": {
         "h": {
-          "anchor": "center",
-          "offset": 0,
+          "anchor": "start",
+          "offset": 10,
           "offsetEnd": 0,
           "unit": "px",
           "size": 325,
@@ -309,12 +309,14 @@
         },
         "v": {
           "anchor": "start",
-          "offset": 400,
+          "offset": 430,
           "offsetEnd": 0,
           "unit": "px",
           "size": 0,
           "sizeUnit": "auto"
-        }
+        },
+        "text": "{box1-3:Team of 12} {box2-4:Unity} {box4-1: 3 weeks}\n\n\n\n\nTop-down Arcade Dungeon shooter, Inspired by Snow Bros 1990, recontextualising its mechanics. {box5-2:3rd place } in Future Games Group Project 2025.\n",
+        "size": 21
       },
       "gif-yr861": {
         "h": {
@@ -336,8 +338,8 @@
       },
       "button-53fgc": {
         "h": {
-          "anchor": "center",
-          "offset": 0,
+          "anchor": "start",
+          "offset": 500,
           "offsetEnd": 0,
           "unit": "px",
           "size": 300,
@@ -564,7 +566,8 @@
               "heightPct": 100
             }
           ]
-        }
+        },
+        "hidden": true
       },
       "image-2cthe": {
         "h": {
@@ -593,14 +596,60 @@
           "size": 100,
           "sizeUnit": "px"
         }
+      },
+      "text-y4w9n": {
+        "h": {
+          "anchor": "center",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 325,
+          "sizeUnit": "px"
+        },
+        "v": {
+          "anchor": "start",
+          "offset": 400,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 0,
+          "sizeUnit": "auto"
+        }
       }
     },
     "sections": {
       "section-ky6g3": {
         "start": 1250,
         "height": 400
+      },
+      "section-ogrcp": {
+        "height": 950
       }
-    }
+    },
+    "itemOrder": [
+      "image-ue025",
+      "image-cr3wj",
+      "image-hd3re",
+      "image-lpm0b",
+      "image-ie2xv",
+      "text-k8wgd",
+      "text-91m65",
+      "text-tdwz7",
+      "text-nxpvz",
+      "image-t5azo",
+      "button-r58rq",
+      "button-vblgs",
+      "button-pre3a",
+      "text-17y6v",
+      "image-2cthe",
+      "button-53fgc",
+      "gif-yr861",
+      "video-piwsm",
+      "text-svcsd",
+      "text-nse43",
+      "image-nmfhv",
+      "button-m6bss",
+      "button-ldpe7"
+    ]
   },
   "polar-protocol": {
     "breakpoint": 700,
