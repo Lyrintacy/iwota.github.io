@@ -1786,12 +1786,12 @@
         "offset": 0,
         "offsetEnd": 0,
         "unit": "px",
-        "size": 300,
+        "size": 35,
         "sizeUnit": "px"
       },
       "v": {
         "anchor": "start",
-        "offset": 200,
+        "offset": 625,
         "offsetEnd": 0,
         "unit": "px",
         "size": 0,
@@ -1806,7 +1806,7 @@
         "on": false,
         "axis": "x"
       },
-      "file": "group 15",
+      "file": "ui/Group 15.png",
       "alt": "",
       "fit": "contain",
       "hoverOnly": false,
