@@ -8,83 +8,6 @@
   },
   "items": [
     {
-      "id": "button-ddjxs",
-      "type": "button",
-      "name": "fvf",
-      "parent": "",
-      "h": {
-        "anchor": "center",
-        "offset": 0,
-        "offsetEnd": 0,
-        "unit": "px",
-        "size": 300,
-        "sizeUnit": "px"
-      },
-      "v": {
-        "anchor": "center",
-        "offset": -25,
-        "offsetEnd": 0,
-        "unit": "%",
-        "size": 300,
-        "sizeUnit": "px"
-      },
-      "pivot": [
-        50,
-        50
-      ],
-      "rotate": 0,
-      "shrink": {
-        "on": false,
-        "axis": "x"
-      },
-      "file": "Me/PurpleIconCut.png",
-      "alt": "",
-      "fit": "contain",
-      "link": {
-        "kind": "page",
-        "url": "",
-        "section": "",
-        "page": "polar-protocol",
-        "newTab": false
-      },
-      "fx": {
-        "shake": true,
-        "shakeMs": 600,
-        "shakeAmount": 100,
-        "flash": true,
-        "flashMs": 300,
-        "flashColour": 0,
-        "flashStrength": 95,
-        "shine": true,
-        "shineDelayMs": 0,
-        "shineMs": 700,
-        "shineWidth": 70,
-        "shineColour": 4,
-        "shineSlant": 18,
-        "card": true,
-        "cardScale": 2.5,
-        "cardFit": "both",
-        "cardFile": "",
-        "cardOpenMs": 450,
-        "cardCloseMs": 360,
-        "cardRadius": 6,
-        "waitFlash": true,
-        "cardTilt": true,
-        "cardTiltStrength": 100,
-        "cardShake": true,
-        "cardShakeMs": 600,
-        "cardShakeAmount": 100,
-        "cardShine": true,
-        "cardShineColour": 4,
-        "cardShineWidth": 70,
-        "cardShineMs": 700,
-        "cardFlash": true,
-        "cardFlashColour": 3,
-        "cardFlashMs": 500,
-        "clickFlash": true
-      }
-    },
-    {
       "id": "image-ue025",
       "type": "image",
       "name": "OverlayTopBox",
@@ -175,7 +98,7 @@
         "on": false,
         "axis": "x"
       },
-      "file": "ui/BDL.png",
+      "file": "ui/BDL4.png",
       "alt": "",
       "fit": "fill",
       "hoverOnly": false,
@@ -207,7 +130,7 @@
       "scrollY": true,
       "scrollX": false,
       "room": 0,
-      "speedY": 0.3,
+      "speedY": -0.3,
       "loopY": true
     },
     {
@@ -240,7 +163,7 @@
         "on": false,
         "axis": "x"
       },
-      "file": "ui/BDR.png",
+      "file": "ui/BDR5.png",
       "alt": "",
       "fit": "fill",
       "hoverOnly": false,
@@ -278,13 +201,84 @@
       "speedY": 0.3
     },
     {
+      "id": "image-lpm0b",
+      "type": "image",
+      "name": "TransitionBlock",
+      "parent": "section-ky6g3",
+      "h": {
+        "anchor": "stretch",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 300,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "end",
+        "offset": -100,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 300,
+        "sizeUnit": "px"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "on": true,
+        "axis": "both"
+      },
+      "file": "Backgrounds/TransitionBlock1.PNG",
+      "alt": "",
+      "fit": "contain",
+      "hoverOnly": false,
+      "thumbnail": "",
+      "button": false,
+      "link": {
+        "kind": "none",
+        "url": "",
+        "section": "",
+        "page": "",
+        "newTab": false
+      },
+      "fx": {
+        "shake": true,
+        "shakeMs": 600,
+        "shakeAmount": 100,
+        "flash": true,
+        "flashMs": 300,
+        "flashColour": 0,
+        "flashStrength": 95,
+        "shine": true,
+        "shineDelayMs": 0,
+        "shineMs": 700,
+        "shineWidth": 70,
+        "shineColour": 4,
+        "shineSlant": 18,
+        "clickFlash": true
+      },
+      "caption": "",
+      "captionPosition": "below",
+      "captionColour": "",
+      "captionSize": 14,
+      "scrollX": false,
+      "loopX": false,
+      "scrollY": false,
+      "room": 0,
+      "loopY": false,
+      "speedX": 0,
+      "tileX": true
+    },
+    {
       "id": "image-ie2xv",
       "type": "image",
       "name": "Portrait Image",
       "parent": "",
       "h": {
         "anchor": "center",
-        "offset": -350,
+        "offset": -450,
         "offsetEnd": 0,
         "unit": "px",
         "size": 300,
@@ -292,7 +286,7 @@
       },
       "v": {
         "anchor": "start",
-        "offset": 60,
+        "offset": 150,
         "offsetEnd": 0,
         "unit": "px",
         "size": 0,
@@ -353,7 +347,7 @@
       "parent": "",
       "h": {
         "anchor": "center",
-        "offset": -550,
+        "offset": -560,
         "offsetEnd": 0,
         "unit": "px",
         "size": 300,
@@ -361,7 +355,7 @@
       },
       "v": {
         "anchor": "start",
-        "offset": 50,
+        "offset": 115,
         "offsetEnd": 0,
         "unit": "px",
         "size": 0,
@@ -371,7 +365,7 @@
         50,
         50
       ],
-      "rotate": 0,
+      "rotate": 2,
       "text": "Oskar Wota\n",
       "level": "h1",
       "align": "left",
@@ -391,7 +385,7 @@
       "parent": "",
       "h": {
         "anchor": "center",
-        "offset": -460,
+        "offset": -500,
         "offsetEnd": 0,
         "unit": "px",
         "size": 380,
@@ -399,7 +393,7 @@
       },
       "v": {
         "anchor": "start",
-        "offset": 300,
+        "offset": 375,
         "offsetEnd": 0,
         "unit": "px",
         "size": 0,
@@ -409,7 +403,7 @@
         50,
         50
       ],
-      "rotate": 0,
+      "rotate": -5,
       "text": "Game Designer\n",
       "level": "h2",
       "align": "left",
@@ -436,7 +430,7 @@
       },
       "v": {
         "anchor": "start",
-        "offset": 500,
+        "offset": 800,
         "offsetEnd": 0,
         "unit": "px",
         "size": 0,
@@ -448,7 +442,7 @@
       ],
       "rotate": 0,
       "text": "⬇ Hands on Experience and Creative Thinking ⬇\n",
-      "level": "h2",
+      "level": "h1",
       "align": "center",
       "color": 1,
       "shrink": {
@@ -456,45 +450,8 @@
         "mode": "down",
         "on": true,
         "grow": true
-      }
-    },
-    {
-      "id": "text-nxpvz",
-      "type": "text",
-      "name": "Section 2 ",
-      "parent": "",
-      "h": {
-        "anchor": "center",
-        "offset": -350,
-        "offsetEnd": 0,
-        "unit": "px",
-        "size": 500,
-        "sizeUnit": "px"
       },
-      "v": {
-        "anchor": "start",
-        "offset": 1000,
-        "offsetEnd": 0,
-        "unit": "px",
-        "size": 100,
-        "sizeUnit": "auto"
-      },
-      "pivot": [
-        50,
-        50
-      ],
-      "rotate": 0,
-      "shrink": {
-        "on": true,
-        "axis": "x",
-        "grow": true,
-        "mode": "down"
-      },
-      "text": "Fascinated by systems that create possibilities.\nCreating worlds to explore, encounters to discover, and experiences that feel different with every playthrough. I believe the strongest systems combine depth and replayability with a distinct artistic identity, supported by the care and polish that make them intuitive, engaging, and satisfying to play.",
-      "font": "",
-      "level": "p",
-      "align": "center",
-      "color": 5
+      "size": 56
     },
     {
       "id": "image-t5azo",
@@ -503,7 +460,7 @@
       "parent": "",
       "h": {
         "anchor": "center",
-        "offset": 0,
+        "offset": 25,
         "offsetEnd": 0,
         "unit": "px",
         "size": 300,
@@ -511,7 +468,7 @@
       },
       "v": {
         "anchor": "start",
-        "offset": 450,
+        "offset": 750,
         "offsetEnd": 0,
         "unit": "px",
         "size": 5,
@@ -564,7 +521,7 @@
       "name": "Overlay Linkedin",
       "parent": "section-mzin5",
       "h": {
-        "anchor": "start",
+        "anchor": "end",
         "offset": 200,
         "offsetEnd": 0,
         "unit": "px",
@@ -649,7 +606,7 @@
       "name": "Overlay Itch.io",
       "parent": "section-mzin5",
       "h": {
-        "anchor": "start",
+        "anchor": "end",
         "offset": 275,
         "offsetEnd": 0,
         "unit": "px",
@@ -735,7 +692,7 @@
       "parent": "",
       "h": {
         "anchor": "center",
-        "offset": -350,
+        "offset": -440,
         "offsetEnd": 0,
         "unit": "px",
         "size": 200,
@@ -743,7 +700,7 @@
       },
       "v": {
         "anchor": "start",
-        "offset": 125,
+        "offset": 225,
         "offsetEnd": 0,
         "unit": "px",
         "size": 200,
@@ -827,7 +784,7 @@
       },
       "v": {
         "anchor": "start",
-        "offset": 100,
+        "offset": 125,
         "offsetEnd": 0,
         "unit": "px",
         "size": 100,
@@ -844,18 +801,984 @@
         "on": true,
         "grow": true
       },
-      "text": "An artistic game designer who thinks in mechanics, and designs **gameplay **for the **experience **as a whole.\n\nI’m interested in the ideas, systems, and visual details that make a game unmistakably its own.\n\nFrom designing procedural worlds to shaping the moment-to-moment player experience, I enjoy bringing different parts of game design together to create something cohesive, expressive, and memorable.\n\nRefining how a game looks, feels, and communicates with the player.",
+      "text": "I’m interested in the ideas, systems, and\nshaping the moment-to-moment player experience, I enjoy bringing different parts of game design together to create something cohesive, expressive, and memorable.\n\nRefining how a game looks, feels, and communicates with the player, to create intuitive, engaging, and satisfying gameplay.\n\n\nFascinated by systems that create possibilities.\n\nCreating worlds to explore, encounters to discover, and experiences that feel different with every playthrough. I believe the strongest systems combine depth with a distinct artistic identity and details that make a game unmistakably its own. ",
       "font": "",
       "level": "p",
       "align": "left",
-      "color": ""
+      "color": "",
+      "size": 20
+    },
+    {
+      "id": "image-2cthe",
+      "type": "image",
+      "name": "PollarProtocol ButtonBackground",
+      "parent": "section-ogrcp",
+      "h": {
+        "anchor": "center",
+        "offset": -22,
+        "offsetEnd": 0,
+        "unit": "%",
+        "size": 390,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 89,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 320,
+        "sizeUnit": "px"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "on": false,
+        "axis": "x"
+      },
+      "file": "",
+      "alt": "",
+      "fit": "contain",
+      "hoverOnly": false,
+      "thumbnail": "",
+      "button": false,
+      "link": {
+        "kind": "none",
+        "url": "",
+        "section": "",
+        "page": "",
+        "newTab": false
+      },
+      "fx": {
+        "shake": true,
+        "shakeMs": 600,
+        "shakeAmount": 100,
+        "flash": true,
+        "flashMs": 300,
+        "flashColour": 0,
+        "flashStrength": 95,
+        "shine": true,
+        "shineDelayMs": 0,
+        "shineMs": 700,
+        "shineWidth": 70,
+        "shineColour": 4,
+        "shineSlant": 18,
+        "clickFlash": true
+      },
+      "caption": "",
+      "captionPosition": "below",
+      "captionColour": "",
+      "captionSize": 14,
+      "emptyColour": 2,
+      "radius": 50
+    },
+    {
+      "id": "button-53fgc",
+      "type": "button",
+      "name": "PollarProtocolButton",
+      "parent": "section-ogrcp",
+      "h": {
+        "anchor": "center",
+        "offset": -22,
+        "offsetEnd": 0,
+        "unit": "%",
+        "size": 370,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 100,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 295,
+        "sizeUnit": "px"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "on": false,
+        "axis": "x"
+      },
+      "file": "PolarProtocol/PollarProtocolThumbnail.png",
+      "alt": "",
+      "fit": "contain",
+      "link": {
+        "kind": "page",
+        "url": "",
+        "section": "",
+        "page": "polar-protocol",
+        "newTab": false
+      },
+      "fx": {
+        "shake": true,
+        "shakeMs": 300,
+        "shakeAmount": 100,
+        "flash": true,
+        "flashMs": 300,
+        "flashColour": 0,
+        "flashStrength": 95,
+        "shine": true,
+        "shineDelayMs": 0,
+        "shineMs": 700,
+        "shineWidth": 70,
+        "shineColour": 4,
+        "shineSlant": 18,
+        "clickFlash": true,
+        "cards": [
+          {
+            "clickable": false,
+            "waitFlash": false,
+            "file": "ui/Button/ButtonCardOverlay03.PNG",
+            "scale": 18,
+            "fit": "both",
+            "unlimited": true,
+            "aspect": "",
+            "openMs": 4000,
+            "closeMs": 360,
+            "radius": 6,
+            "background": 0,
+            "imageFit": "cover",
+            "tilt": false,
+            "tiltStrength": 100,
+            "shake": false,
+            "shakeMs": 600,
+            "shakeAmount": 100,
+            "shine": false,
+            "shineColour": 4,
+            "shineWidth": 70,
+            "shineMs": 700,
+            "slant": 18,
+            "flash": false,
+            "flashColour": 3,
+            "flashMs": 500,
+            "heightPct": 0
+          },
+          {
+            "clickable": false,
+            "waitFlash": true,
+            "file": "ui/Button/ButtonCardOverlay1.PNG",
+            "scale": 1,
+            "fit": "both",
+            "unlimited": false,
+            "aspect": "1:1",
+            "openMs": 450,
+            "closeMs": 360,
+            "radius": 0,
+            "background": 0,
+            "imageFit": "cover",
+            "tilt": false,
+            "tiltStrength": 50,
+            "shake": true,
+            "shakeMs": 600,
+            "shakeAmount": 100,
+            "shine": false,
+            "shineColour": 3,
+            "shineWidth": 70,
+            "shineMs": 700,
+            "slant": 18,
+            "flash": false,
+            "flashColour": 3,
+            "flashMs": 500,
+            "heightPct": 100
+          },
+          {
+            "clickable": false,
+            "waitFlash": true,
+            "file": "ui/Button/ButtonCardOverlay3.PNG",
+            "scale": 10,
+            "fit": "both",
+            "unlimited": false,
+            "aspect": "",
+            "openMs": 450,
+            "closeMs": 360,
+            "radius": 0,
+            "background": 0,
+            "imageFit": "cover",
+            "tilt": true,
+            "tiltStrength": 30,
+            "shake": true,
+            "shakeMs": 700,
+            "shakeAmount": 160,
+            "shine": true,
+            "shineColour": 1,
+            "shineWidth": 70,
+            "shineMs": 700,
+            "slant": 18,
+            "flash": false,
+            "flashColour": 3,
+            "flashMs": 500,
+            "heightPct": 100
+          },
+          {
+            "clickable": false,
+            "waitFlash": false,
+            "file": "PolarProtocol/TPPButtonOverlay.PNG",
+            "scale": 2.3,
+            "fit": "both",
+            "unlimited": false,
+            "aspect": "",
+            "openMs": 1000,
+            "closeMs": 360,
+            "radius": 0,
+            "background": 0,
+            "imageFit": "cover",
+            "tilt": true,
+            "tiltStrength": 10,
+            "shake": false,
+            "shakeMs": 600,
+            "shakeAmount": 100,
+            "shine": false,
+            "shineColour": 1,
+            "shineWidth": 70,
+            "shineMs": 700,
+            "slant": 18,
+            "flash": false,
+            "flashColour": 1,
+            "flashMs": 500,
+            "heightPct": 100
+          },
+          {
+            "clickable": true,
+            "waitFlash": false,
+            "file": "PolarProtocol/TrailerThe Polar Protocol.mp4",
+            "scale": 2,
+            "fit": "x",
+            "unlimited": false,
+            "aspect": "9:6",
+            "openMs": 800,
+            "closeMs": 360,
+            "radius": 1,
+            "background": 3,
+            "imageFit": "cover",
+            "tilt": true,
+            "tiltStrength": 100,
+            "shake": true,
+            "shakeMs": 400,
+            "shakeAmount": 50,
+            "shine": false,
+            "shineColour": 3,
+            "shineWidth": 50,
+            "shineMs": 400,
+            "slant": 18,
+            "flash": false,
+            "flashColour": 3,
+            "flashMs": 500,
+            "heightPct": 0
+          },
+          {
+            "clickable": false,
+            "waitFlash": true,
+            "file": "ui/Button/ButtonCardOverlay2.PNG",
+            "scale": 2,
+            "fit": "both",
+            "unlimited": false,
+            "aspect": "",
+            "openMs": 450,
+            "closeMs": 360,
+            "radius": 0,
+            "background": 0,
+            "imageFit": "cover",
+            "tilt": true,
+            "tiltStrength": 5,
+            "shake": false,
+            "shakeMs": 600,
+            "shakeAmount": 100,
+            "shine": false,
+            "shineColour": 4,
+            "shineWidth": 70,
+            "shineMs": 700,
+            "slant": 18,
+            "flash": false,
+            "flashColour": 3,
+            "flashMs": 500,
+            "heightPct": 100
+          },
+          {
+            "clickable": false,
+            "waitFlash": true,
+            "file": "ui/Button/ButtonCardOverlay4.PNG",
+            "scale": 2.5,
+            "fit": "both",
+            "unlimited": false,
+            "aspect": "",
+            "openMs": 450,
+            "closeMs": 360,
+            "radius": 6,
+            "background": 0,
+            "imageFit": "cover",
+            "tilt": true,
+            "tiltStrength": 15,
+            "shake": false,
+            "shakeMs": 600,
+            "shakeAmount": 100,
+            "shine": false,
+            "shineColour": 3,
+            "shineWidth": 70,
+            "shineMs": 700,
+            "slant": 18,
+            "flash": false,
+            "flashColour": 3,
+            "flashMs": 500,
+            "heightPct": 100
+          }
+        ]
+      },
+      "radius": 3
+    },
+    {
+      "id": "gif-yr861",
+      "type": "gif",
+      "name": "ProtocolCharacterCard",
+      "parent": "section-ogrcp",
+      "h": {
+        "anchor": "end",
+        "offset": 50,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 400,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "end",
+        "offset": 150,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 500,
+        "sizeUnit": "auto"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "on": false,
+        "axis": "x"
+      },
+      "file": "PolarProtocol/IMG_4659.GIF",
+      "alt": "",
+      "fit": "contain",
+      "hoverOnly": false,
+      "thumbnail": "",
+      "button": false,
+      "link": {
+        "kind": "none",
+        "url": "",
+        "section": "",
+        "page": "",
+        "newTab": false
+      },
+      "fx": {
+        "shake": true,
+        "shakeMs": 600,
+        "shakeAmount": 100,
+        "flash": true,
+        "flashMs": 300,
+        "flashColour": 0,
+        "flashStrength": 95,
+        "shine": true,
+        "shineDelayMs": 0,
+        "shineMs": 700,
+        "shineWidth": 70,
+        "shineColour": 4,
+        "shineSlant": 18,
+        "clickFlash": true
+      },
+      "caption": "",
+      "captionPosition": "below",
+      "captionColour": "",
+      "captionSize": 14
+    },
+    {
+      "id": "text-svcsd",
+      "type": "text",
+      "name": "Polar Protocol Text",
+      "parent": "section-ogrcp",
+      "h": {
+        "anchor": "center",
+        "offset": 180,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 500,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 100,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 0,
+        "sizeUnit": "auto"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "on": true,
+        "axis": "x",
+        "grow": true
+      },
+      "text": "{box1-3:Team of 12} {box2-4:Unity} {box4-1: 3 weeks}\nTop-down Arcade Dungeon shooter, Inspired by Snow Bros 1990, recontextualising its mechanics. {box5-2:3rd place } in Future Games Group Project 2025.\n",
+      "font": "",
+      "level": "p",
+      "align": "left",
+      "color": 1
+    },
+    {
+      "id": "text-nse43",
+      "type": "text",
+      "name": "Polar Protocol Text",
+      "parent": "section-ogrcp",
+      "h": {
+        "anchor": "start",
+        "offset": 10,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 500,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 550,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 0,
+        "sizeUnit": "auto"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "axis": "x",
+        "mode": "both",
+        "on": true,
+        "grow": true
+      },
+      "text": "**The Polar Protocol**",
+      "font": "",
+      "level": "h1",
+      "align": "left",
+      "color": 1,
+      "size": 30,
+      "phoneOnly": true
+    },
+    {
+      "id": "image-nmfhv",
+      "type": "image",
+      "name": "",
+      "parent": "",
+      "h": {
+        "anchor": "start",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 300,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 0,
+        "sizeUnit": "auto"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "on": false,
+        "axis": "x"
+      },
+      "file": "",
+      "alt": "",
+      "fit": "contain",
+      "hoverOnly": false,
+      "thumbnail": "",
+      "button": false,
+      "link": {
+        "kind": "none",
+        "url": "",
+        "section": "",
+        "page": "",
+        "newTab": false
+      },
+      "fx": {
+        "shake": true,
+        "shakeMs": 600,
+        "shakeAmount": 100,
+        "flash": true,
+        "flashMs": 300,
+        "flashColour": 0,
+        "flashStrength": 95,
+        "shine": true,
+        "shineDelayMs": 0,
+        "shineMs": 700,
+        "shineWidth": 70,
+        "shineColour": 4,
+        "shineSlant": 18,
+        "clickFlash": true
+      },
+      "caption": "",
+      "captionPosition": "below",
+      "captionColour": "",
+      "captionSize": 14
+    },
+    {
+      "id": "button-m6bss",
+      "type": "button",
+      "name": "PolarProtocol Skip phone button",
+      "parent": "section-ogrcp",
+      "h": {
+        "anchor": "start",
+        "offset": 60,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 60,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 675,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 60,
+        "sizeUnit": "px"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "on": false,
+        "axis": "x"
+      },
+      "file": "ui/SkipProjectButton.png",
+      "alt": "",
+      "fit": "contain",
+      "link": {
+        "kind": "section",
+        "url": "",
+        "section": "section-tfih3",
+        "page": "",
+        "newTab": false
+      },
+      "fx": {
+        "shake": true,
+        "shakeMs": 600,
+        "shakeAmount": 100,
+        "flash": true,
+        "flashMs": 300,
+        "flashColour": 2,
+        "flashStrength": 95,
+        "shine": true,
+        "shineDelayMs": 0,
+        "shineMs": 700,
+        "shineWidth": 70,
+        "shineColour": 4,
+        "shineSlant": 18,
+        "clickFlash": true,
+        "cards": [
+          {
+            "clickable": false,
+            "waitFlash": true,
+            "file": "",
+            "scale": 1.5,
+            "fit": "both",
+            "unlimited": false,
+            "aspect": "",
+            "openMs": 450,
+            "closeMs": 360,
+            "radius": 6,
+            "background": 0,
+            "imageFit": "cover",
+            "tilt": true,
+            "tiltStrength": 100,
+            "shake": true,
+            "shakeMs": 600,
+            "shakeAmount": 100,
+            "shine": true,
+            "shineColour": 4,
+            "shineWidth": 70,
+            "shineMs": 700,
+            "slant": 18,
+            "flash": true,
+            "flashColour": 3,
+            "flashMs": 500
+          }
+        ]
+      },
+      "phoneOnly": true,
+      "emptyColour": 0
+    },
+    {
+      "id": "button-ldpe7",
+      "type": "button",
+      "name": "PolarProtocol Proceed phone button",
+      "parent": "section-ogrcp",
+      "h": {
+        "anchor": "end",
+        "offset": 60,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 60,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 675,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 60,
+        "sizeUnit": "px"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "on": false,
+        "axis": "x"
+      },
+      "file": "ui/LoveProjectButton.png",
+      "alt": "",
+      "fit": "contain",
+      "link": {
+        "kind": "page",
+        "url": "",
+        "section": "section-tfih3",
+        "page": "polar-protocol",
+        "newTab": false
+      },
+      "fx": {
+        "shake": true,
+        "shakeMs": 600,
+        "shakeAmount": 100,
+        "flash": true,
+        "flashMs": 300,
+        "flashColour": 1,
+        "flashStrength": 95,
+        "shine": true,
+        "shineDelayMs": 0,
+        "shineMs": 700,
+        "shineWidth": 70,
+        "shineColour": 3,
+        "shineSlant": 18,
+        "clickFlash": true,
+        "cards": [
+          {
+            "clickable": false,
+            "waitFlash": true,
+            "file": "",
+            "scale": 1.5,
+            "fit": "both",
+            "unlimited": false,
+            "aspect": "",
+            "openMs": 450,
+            "closeMs": 360,
+            "radius": 6,
+            "background": 0,
+            "imageFit": "cover",
+            "tilt": true,
+            "tiltStrength": 100,
+            "shake": true,
+            "shakeMs": 600,
+            "shakeAmount": 100,
+            "shine": true,
+            "shineColour": 3,
+            "shineWidth": 70,
+            "shineMs": 700,
+            "slant": 18,
+            "flash": true,
+            "flashColour": 1,
+            "flashMs": 500
+          }
+        ]
+      },
+      "phoneOnly": true,
+      "emptyColour": 3
+    },
+    {
+      "id": "image-1bqoj",
+      "type": "image",
+      "name": "",
+      "parent": "section-ogrcp",
+      "h": {
+        "anchor": "center",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 400,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 525,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 0,
+        "sizeUnit": "auto"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "on": false,
+        "axis": "x"
+      },
+      "file": "ui/GradientOverlayTrnasition.png",
+      "alt": "",
+      "fit": "contain",
+      "hoverOnly": false,
+      "thumbnail": "",
+      "button": false,
+      "link": {
+        "kind": "none",
+        "url": "",
+        "section": "",
+        "page": "",
+        "newTab": false
+      },
+      "fx": {
+        "shake": true,
+        "shakeMs": 600,
+        "shakeAmount": 100,
+        "flash": true,
+        "flashMs": 300,
+        "flashColour": 0,
+        "flashStrength": 95,
+        "shine": true,
+        "shineDelayMs": 0,
+        "shineMs": 700,
+        "shineWidth": 70,
+        "shineColour": 4,
+        "shineSlant": 18,
+        "clickFlash": true
+      },
+      "caption": "",
+      "captionPosition": "below",
+      "captionColour": "",
+      "captionSize": 14,
+      "phoneOnly": true
+    },
+    {
+      "id": "button-5rtev",
+      "type": "button",
+      "name": "",
+      "parent": "",
+      "h": {
+        "anchor": "start",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 300,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 0,
+        "sizeUnit": "auto"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "on": false,
+        "axis": "x"
+      },
+      "file": "",
+      "alt": "",
+      "fit": "contain",
+      "link": {
+        "kind": "none",
+        "url": "",
+        "section": "",
+        "page": "",
+        "newTab": false
+      },
+      "fx": {
+        "shake": true,
+        "shakeMs": 600,
+        "shakeAmount": 100,
+        "flash": true,
+        "flashMs": 300,
+        "flashColour": 0,
+        "flashStrength": 95,
+        "shine": true,
+        "shineDelayMs": 0,
+        "shineMs": 700,
+        "shineWidth": 70,
+        "shineColour": 4,
+        "shineSlant": 18,
+        "clickFlash": true
+      },
+      "phoneOnly": true
+    },
+    {
+      "id": "video-n3nlf",
+      "type": "video",
+      "name": "",
+      "parent": "section-ogrcp",
+      "h": {
+        "anchor": "center",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 360,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 0,
+        "sizeUnit": "auto"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "on": false,
+        "axis": "x"
+      },
+      "file": "PolarProtocol/TrailerThePolarProtocolPhone.mp4",
+      "poster": "",
+      "controls": false,
+      "loop": true,
+      "autoplay": true,
+      "caption": "",
+      "captionPosition": "below",
+      "captionColour": "",
+      "captionSize": 14,
+      "phoneOnly": true,
+      "radius": 25,
+      "mute": true,
+      "link": {
+        "kind": "page",
+        "url": "",
+        "section": "",
+        "page": "polar-protocol",
+        "newTab": false
+      }
+    },
+    {
+      "id": "image-zfawo",
+      "type": "image",
+      "name": "",
+      "parent": "section-ogrcp",
+      "h": {
+        "anchor": "center",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 35,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 800,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 0,
+        "sizeUnit": "auto"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "on": false,
+        "axis": "x"
+      },
+      "file": "ui/Group 15.png",
+      "alt": "",
+      "fit": "contain",
+      "hoverOnly": false,
+      "thumbnail": "",
+      "button": false,
+      "link": {
+        "kind": "none",
+        "url": "",
+        "section": "",
+        "page": "",
+        "newTab": false
+      },
+      "fx": {
+        "shake": true,
+        "shakeMs": 600,
+        "shakeAmount": 100,
+        "flash": true,
+        "flashMs": 300,
+        "flashColour": 0,
+        "flashStrength": 95,
+        "shine": true,
+        "shineDelayMs": 0,
+        "shineMs": 700,
+        "shineWidth": 70,
+        "shineColour": 4,
+        "shineSlant": 18,
+        "clickFlash": true
+      },
+      "caption": "",
+      "captionPosition": "below",
+      "captionColour": "",
+      "captionSize": 14,
+      "phoneOnly": true
     }
   ],
   "sections": [
     {
+      "id": "section-ky6g3",
+      "kind": "band",
+      "name": "TopSection",
+      "anchor": "top",
+      "start": 0,
+      "height": 1100,
+      "background": 4,
+      "texture": {
+        "file": "Me/PurpleBabyTrnasparentPure.png",
+        "size": 100,
+        "offsetX": 400,
+        "offsetY": -100,
+        "scrollX": true,
+        "speedX": 0.05,
+        "scrollY": true,
+        "speedY": -0.5,
+        "rotate": 15
+      },
+      "overlay": {
+        "colour": 4,
+        "opacity": 100
+      }
+    },
+    {
       "id": "section-tfih3",
       "kind": "band",
-      "name": "",
+      "name": "BottomSection",
       "anchor": "bottom",
       "start": 0,
       "height": 800,
@@ -881,27 +1804,27 @@
       "name": ""
     },
     {
-      "id": "section-ky6g3",
-      "kind": "band",
-      "name": "",
+      "id": "section-ogrcp",
+      "kind": "content",
+      "name": "PollarProtocolMain",
       "anchor": "top",
-      "start": 1000,
-      "height": 6400,
-      "background": 2,
+      "start": 0,
+      "height": 850,
+      "background": 4,
       "texture": {
-        "file": "Backgrounds/IMG_4544.png",
+        "file": "Backgrounds/Stars.PNG",
         "size": 1000,
         "offsetX": 0,
         "offsetY": 0,
         "scrollX": true,
-        "speedX": 0.05,
+        "speedX": 0.1,
         "scrollY": true,
         "speedY": 0.1,
         "rotate": 0
       },
       "overlay": {
-        "colour": 3,
-        "opacity": 90
+        "colour": 4,
+        "opacity": 10
       }
     }
   ]

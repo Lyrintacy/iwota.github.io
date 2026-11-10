@@ -18,12 +18,1102 @@
       },
       "text-k8wgd": {
         "h": {
+          "anchor": "start",
+          "offset": 28,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 400,
+          "sizeUnit": "px"
+        },
+        "v": {
+          "anchor": "start",
+          "offset": 40,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 0,
+          "sizeUnit": "auto"
+        },
+        "text": "O\nA\nK\nA\nR\n..................Wota\n",
+        "align": "left",
+        "size": 50,
+        "shrink": {
+          "axis": "x",
+          "on": false,
+          "grow": true
+        }
+      },
+      "image-cr3wj": {
+        "offsetX": -30,
+        "h": {
+          "anchor": "start",
+          "offset": -10,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 10,
+          "sizeUnit": "%"
+        },
+        "v": {
+          "anchor": "stretch",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 1000,
+          "sizeUnit": "px"
+        },
+        "shrink": {
+          "on": false,
+          "axis": "x"
+        },
+        "hidden": true
+      },
+      "image-hd3re": {
+        "offsetX": 35,
+        "offsetY": -30,
+        "shrink": {
+          "on": false,
+          "axis": "x"
+        },
+        "h": {
+          "anchor": "end",
+          "offset": -10,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 10,
+          "sizeUnit": "%"
+        },
+        "v": {
+          "anchor": "stretch",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 1000,
+          "sizeUnit": "px"
+        },
+        "fit": "contain",
+        "loopX": true,
+        "scrollX": false,
+        "hidden": true
+      },
+      "image-ie2xv": {
+        "h": {
+          "anchor": "center",
+          "offset": 2,
+          "offsetEnd": 0,
+          "unit": "%",
+          "size": 300,
+          "sizeUnit": "px"
+        },
+        "v": {
+          "anchor": "start",
+          "offset": 50,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 200,
+          "sizeUnit": "auto"
+        },
+        "radius": {
+          "tl": 4,
+          "tr": 40,
+          "br": 40,
+          "bl": 0
+        },
+        "shrink": {
+          "on": true,
+          "axis": "x"
+        },
+        "scrollY": false
+      },
+      "text-nxpvz": {
+        "h": {
+          "anchor": "center",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "%",
+          "size": 300,
+          "sizeUnit": "px"
+        },
+        "v": {
+          "anchor": "start",
+          "offset": 2000,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 100,
+          "sizeUnit": "auto"
+        }
+      },
+      "button-ddjxs": {
+        "h": {
+          "anchor": "center",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 150,
+          "sizeUnit": "px"
+        },
+        "v": {
+          "anchor": "center",
+          "offset": -25,
+          "offsetEnd": 0,
+          "unit": "%",
+          "size": 150,
+          "sizeUnit": "px"
+        }
+      },
+      "image-t5azo": {
+        "v": {
+          "anchor": "start",
+          "offset": 450,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 5,
+          "sizeUnit": "px"
+        },
+        "h": {
+          "anchor": "center",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 300,
+          "sizeUnit": "px"
+        }
+      },
+      "button-r58rq": {
+        "h": {
+          "anchor": "start",
+          "offset": 10,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 40,
+          "sizeUnit": "px"
+        },
+        "v": {
+          "anchor": "start",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 40,
+          "sizeUnit": "px"
+        }
+      },
+      "button-vblgs": {
+        "h": {
+          "anchor": "end",
+          "offset": 10,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 40,
+          "sizeUnit": "px"
+        },
+        "v": {
+          "anchor": "start",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 40,
+          "sizeUnit": "px"
+        }
+      },
+      "image-ue025": {
+        "v": {
+          "anchor": "start",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 40,
+          "sizeUnit": "px"
+        },
+        "emptyColour": 3
+      },
+      "button-pre3a": {
+        "h": {
+          "anchor": "center",
+          "offset": 10,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 200,
+          "sizeUnit": "px"
+        },
+        "v": {
+          "anchor": "start",
+          "offset": 100,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 200,
+          "sizeUnit": "px"
+        }
+      },
+      "text-91m65": {
+        "h": {
+          "anchor": "center",
+          "offset": 20,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 380,
+          "sizeUnit": "px"
+        },
+        "v": {
+          "anchor": "start",
+          "offset": 365,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 0,
+          "sizeUnit": "auto"
+        }
+      },
+      "text-tdwz7": {
+        "v": {
+          "anchor": "start",
+          "offset": 1300,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 0,
+          "sizeUnit": "auto"
+        },
+        "h": {
+          "anchor": "center",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 300,
+          "sizeUnit": "px"
+        },
+        "text": "Hands on Experience and Creative Thinking \n⬇\n",
+        "size": 20
+      },
+      "text-17y6v": {
+        "v": {
+          "anchor": "start",
+          "offset": 500,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 100,
+          "sizeUnit": "auto"
+        },
+        "h": {
+          "anchor": "center",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 300,
+          "sizeUnit": "px"
+        },
+        "color": ""
+      },
+      "text-svcsd": {
+        "h": {
+          "anchor": "start",
+          "offset": 10,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 325,
+          "sizeUnit": "px"
+        },
+        "v": {
+          "anchor": "start",
+          "offset": 600,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 0,
+          "sizeUnit": "auto"
+        },
+        "text": "{box1-3:Team of 12} {box2-4:Unity} {box4-1: 3 weeks}\n\n\n\n\n\n\n\n\n\nTop-down Arcade Dungeon shooter, Inspired by Snow Bros 1990, recontextualising its mechanics. {box5-2:3rd place } in Future Games Group Project 2025.\n",
+        "size": 21,
+        "align": "left"
+      },
+      "gif-yr861": {
+        "h": {
+          "anchor": "end",
+          "offset": -200,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 400,
+          "sizeUnit": "px"
+        },
+        "v": {
+          "anchor": "end",
+          "offset": -100,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 500,
+          "sizeUnit": "auto"
+        },
+        "emptyColour": 0
+      },
+      "button-53fgc": {
+        "h": {
+          "anchor": "start",
+          "offset": 500,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 300,
+          "sizeUnit": "px"
+        },
+        "v": {
+          "anchor": "start",
+          "offset": 50,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 295,
+          "sizeUnit": "px"
+        },
+        "fx": {
+          "shake": true,
+          "shakeMs": 300,
+          "shakeAmount": 100,
+          "flash": true,
+          "flashMs": 300,
+          "flashColour": 0,
+          "flashStrength": 95,
+          "shine": true,
+          "shineDelayMs": 0,
+          "shineMs": 700,
+          "shineWidth": 70,
+          "shineColour": 4,
+          "shineSlant": 18,
+          "clickFlash": true,
+          "cards": [
+            {
+              "clickable": false,
+              "waitFlash": false,
+              "file": "ui/Button/ButtonCardOverlay03.PNG",
+              "scale": 10,
+              "fit": "both",
+              "unlimited": true,
+              "aspect": "",
+              "openMs": 2000,
+              "closeMs": 360,
+              "radius": 6,
+              "background": 0,
+              "imageFit": "cover",
+              "tilt": false,
+              "tiltStrength": 100,
+              "shake": false,
+              "shakeMs": 600,
+              "shakeAmount": 100,
+              "shine": false,
+              "shineColour": 4,
+              "shineWidth": 70,
+              "shineMs": 700,
+              "slant": 18,
+              "flash": false,
+              "flashColour": 3,
+              "flashMs": 500,
+              "heightPct": 0
+            },
+            {
+              "clickable": false,
+              "waitFlash": true,
+              "file": "ui/Button/ButtonCardOverlay1.PNG",
+              "scale": 2.2,
+              "fit": "both",
+              "unlimited": false,
+              "aspect": "",
+              "openMs": 450,
+              "closeMs": 360,
+              "radius": 0,
+              "background": 0,
+              "imageFit": "cover",
+              "tilt": false,
+              "tiltStrength": 50,
+              "shake": true,
+              "shakeMs": 600,
+              "shakeAmount": 100,
+              "shine": false,
+              "shineColour": 3,
+              "shineWidth": 70,
+              "shineMs": 700,
+              "slant": 18,
+              "flash": false,
+              "flashColour": 3,
+              "flashMs": 500,
+              "heightPct": 100
+            },
+            {
+              "clickable": false,
+              "waitFlash": true,
+              "file": "ui/Button/ButtonCardOverlay3.PNG",
+              "scale": 1.5,
+              "fit": "both",
+              "unlimited": true,
+              "aspect": "",
+              "openMs": 450,
+              "closeMs": 360,
+              "radius": 0,
+              "background": 0,
+              "imageFit": "cover",
+              "tilt": true,
+              "tiltStrength": 30,
+              "shake": true,
+              "shakeMs": 700,
+              "shakeAmount": 160,
+              "shine": true,
+              "shineColour": 1,
+              "shineWidth": 70,
+              "shineMs": 700,
+              "slant": 18,
+              "flash": false,
+              "flashColour": 3,
+              "flashMs": 500,
+              "heightPct": 100
+            },
+            {
+              "clickable": false,
+              "waitFlash": false,
+              "file": "PolarProtocol/TPPButtonOverlay.PNG",
+              "scale": 1.7,
+              "fit": "both",
+              "unlimited": true,
+              "aspect": "",
+              "openMs": 450,
+              "closeMs": 360,
+              "radius": 0,
+              "background": 0,
+              "imageFit": "cover",
+              "tilt": true,
+              "tiltStrength": 10,
+              "shake": false,
+              "shakeMs": 600,
+              "shakeAmount": 100,
+              "shine": false,
+              "shineColour": 1,
+              "shineWidth": 70,
+              "shineMs": 700,
+              "slant": 18,
+              "flash": false,
+              "flashColour": 1,
+              "flashMs": 500,
+              "heightPct": 100
+            },
+            {
+              "clickable": false,
+              "waitFlash": true,
+              "file": "ui/Button/ButtonCardOverlay2.PNG",
+              "scale": 1.3,
+              "fit": "both",
+              "unlimited": true,
+              "aspect": "",
+              "openMs": 450,
+              "closeMs": 360,
+              "radius": 0,
+              "background": 0,
+              "imageFit": "cover",
+              "tilt": true,
+              "tiltStrength": 5,
+              "shake": false,
+              "shakeMs": 600,
+              "shakeAmount": 100,
+              "shine": false,
+              "shineColour": 4,
+              "shineWidth": 70,
+              "shineMs": 700,
+              "slant": 18,
+              "flash": false,
+              "flashColour": 3,
+              "flashMs": 500,
+              "heightPct": 100
+            },
+            {
+              "clickable": true,
+              "waitFlash": false,
+              "file": "PolarProtocol/Trailer - The Polar Protocol (online-video-cutter.com) (1).mp4",
+              "scale": 1.6,
+              "fit": "x",
+              "unlimited": false,
+              "aspect": "9:6",
+              "openMs": 200,
+              "closeMs": 360,
+              "radius": 1,
+              "background": 3,
+              "imageFit": "cover",
+              "tilt": true,
+              "tiltStrength": 100,
+              "shake": true,
+              "shakeMs": 400,
+              "shakeAmount": 50,
+              "shine": false,
+              "shineColour": 1,
+              "shineWidth": 100,
+              "shineMs": 700,
+              "slant": 18,
+              "flash": false,
+              "flashColour": 3,
+              "flashMs": 500,
+              "heightPct": 0
+            },
+            {
+              "clickable": false,
+              "waitFlash": true,
+              "file": "ui/Button/ButtonCardOverlay4.PNG",
+              "scale": 1.6,
+              "fit": "both",
+              "unlimited": true,
+              "aspect": "",
+              "openMs": 450,
+              "closeMs": 360,
+              "radius": 6,
+              "background": 0,
+              "imageFit": "cover",
+              "tilt": true,
+              "tiltStrength": 15,
+              "shake": false,
+              "shakeMs": 600,
+              "shakeAmount": 100,
+              "shine": false,
+              "shineColour": 3,
+              "shineWidth": 70,
+              "shineMs": 700,
+              "slant": 18,
+              "flash": false,
+              "flashColour": 3,
+              "flashMs": 500,
+              "heightPct": 100
+            }
+          ]
+        },
+        "hidden": true
+      },
+      "image-2cthe": {
+        "h": {
+          "anchor": "center",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 315,
+          "sizeUnit": "px"
+        },
+        "v": {
+          "anchor": "start",
+          "offset": 70,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 250,
+          "sizeUnit": "px"
+        }
+      },
+      "image-lpm0b": {
+        "v": {
           "anchor": "end",
           "offset": 0,
           "offsetEnd": 0,
           "unit": "px",
-          "size": 11,
+          "size": 100,
           "sizeUnit": "px"
+        }
+      },
+      "text-y4w9n": {
+        "h": {
+          "anchor": "center",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 325,
+          "sizeUnit": "px"
+        },
+        "v": {
+          "anchor": "start",
+          "offset": 400,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 0,
+          "sizeUnit": "auto"
+        }
+      }
+    },
+    "sections": {
+      "section-ky6g3": {
+        "start": 0,
+        "height": 1500,
+        "texture": {
+          "file": "Me/PurpleIconCut.png",
+          "size": 800,
+          "offsetX": -100,
+          "offsetY": 0,
+          "scrollX": true,
+          "speedX": -0.5,
+          "scrollY": true,
+          "speedY": -0.5,
+          "rotate": 0
+        },
+        "overlay": {
+          "colour": 4,
+          "opacity": 90
+        }
+      },
+      "section-ogrcp": {
+        "height": 1300
+      }
+    },
+    "itemOrder": [
+      "image-ue025",
+      "image-cr3wj",
+      "image-hd3re",
+      "image-lpm0b",
+      "image-ie2xv",
+      "text-k8wgd",
+      "text-91m65",
+      "text-tdwz7",
+      "text-nxpvz",
+      "image-t5azo",
+      "button-r58rq",
+      "button-vblgs",
+      "button-pre3a",
+      "text-17y6v",
+      "image-2cthe",
+      "button-53fgc",
+      "gif-yr861",
+      "video-n3nlf",
+      "image-1bqoj",
+      "text-svcsd",
+      "text-nse43",
+      "image-nmfhv",
+      "button-m6bss",
+      "button-ldpe7",
+      "image-2858h",
+      "button-5rtev"
+    ]
+  },
+  "polar-protocol": {
+    "breakpoint": 700,
+    "canvas": {},
+    "items": {
+      "button-i3dfp": {
+        "h": {
+          "anchor": "center",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 150,
+          "sizeUnit": "px"
+        },
+        "v": {
+          "anchor": "center",
+          "offset": -25,
+          "offsetEnd": 0,
+          "unit": "%",
+          "size": 150,
+          "sizeUnit": "px"
+        }
+      },
+      "image-6r01t": {
+        "offsetX": -30,
+        "h": {
+          "anchor": "start",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 10,
+          "sizeUnit": "%"
+        },
+        "v": {
+          "anchor": "stretch",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 1000,
+          "sizeUnit": "px"
+        }
+      },
+      "image-hpwlg": {
+        "offsetX": 35,
+        "offsetY": -30,
+        "shrink": {
+          "on": false,
+          "axis": "x"
+        },
+        "h": {
+          "anchor": "end",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 10,
+          "sizeUnit": "%"
+        },
+        "v": {
+          "anchor": "start",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 1000,
+          "sizeUnit": "px"
+        },
+        "fit": "contain",
+        "loopX": true,
+        "scrollX": false
+      },
+      "text-5lm68": {
+        "v": {
+          "anchor": "start",
+          "offset": 125,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 0,
+          "sizeUnit": "auto"
+        },
+        "align": "left"
+      },
+      "text-fljcw": {
+        "v": {
+          "anchor": "start",
+          "offset": 250,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 0,
+          "sizeUnit": "auto"
+        },
+        "align": "left",
+        "text": "{box1-5:3 weeks }{box2-4:Team size : 13} {box3-2:Engine Unity }\n3 artists 3 designers 3ux designers 2 programmers ",
+        "h": {
+          "anchor": "stretch",
+          "offset": 25,
+          "offsetEnd": 25,
+          "unit": "px",
+          "size": 300,
+          "sizeUnit": "px"
+        },
+        "shrink": {
+          "axis": "x",
+          "mode": "both",
+          "on": true,
+          "grow": true
+        },
+        "size": 30
+      },
+      "text-xd60r": {
+        "size": 40,
+        "v": {
+          "anchor": "start",
+          "offset": 2380,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 0,
+          "sizeUnit": "auto"
+        },
+        "shrink": {
+          "axis": "x",
+          "mode": "both",
+          "on": true,
+          "grow": true
+        },
+        "h": {
+          "anchor": "start",
+          "offset": 59,
+          "offsetEnd": 50,
+          "unit": "px",
+          "size": 1000,
+          "sizeUnit": "px"
+        },
+        "align": "left",
+        "text": "At first when designing the game, we were researching\nvarious arcade games for inspiration. \nIn terms of Green Theme (Saving the world),\nwe didn't want to make a design that bases on it. We focused on conveying Arcade feelings and simple loop. \n\nI liked the idea of the game I was shown, \nSnowbros, and thought of translating it in the top down space.\nFurther designed the gameplay that uses the fundamental mechanic. However due to different perspective the mechanic is used uniquely enough, to offer interesting gameplay. Later after having a game idea, \nI incorporated it to the green theme.\n\nAdditionaly we worked with a specified Target; audience (Ages 12+), kids and young teenagers:\n\nThe target audience did influence the general\n #idea of the game to make a simple mechanic that \neveryone can pick up and have a lot of fun with.\n\nWhen working with the concept artist I was ensuring \nthe main character will look accurately for our target-audience, cute and eye-catching, distinguishable silhouette; inspired by Mega Man and snow bros. \n"
+      },
+      "text-azosk": {
+        "size": 60,
+        "v": {
+          "anchor": "start",
+          "offset": 2300,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 0,
+          "sizeUnit": "auto"
+        }
+      },
+      "text-pfzb8": {
+        "size": 40,
+        "shrink": {
+          "axis": "x",
+          "mode": "both",
+          "on": true,
+          "grow": true
+        },
+        "v": {
+          "anchor": "start",
+          "offset": 1180,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 0,
+          "sizeUnit": "auto"
+        },
+        "h": {
+          "anchor": "start",
+          "offset": 59,
+          "offsetEnd": 5,
+          "unit": "px",
+          "size": 600,
+          "sizeUnit": "px"
+        },
+        "text": "In collaboration with other designers I \nmade the general pitch, core gameplay and game loop, which made me a product owner. \nOne of my task was general quality assurance, directing artists, through Lead Artist. \nDistributing tasks to each of the programmers, ensuring a cohesiveness for the project. \nAlso I was debriefing producers, keeping them up to date with the project."
+      }
+    },
+    "sections": {}
+  },
+  "cv": {
+    "breakpoint": 700,
+    "canvas": {},
+    "items": {
+      "image-psa0m": {
+        "offsetX": -30,
+        "h": {
+          "anchor": "start",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 10,
+          "sizeUnit": "%"
+        },
+        "v": {
+          "anchor": "stretch",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 1000,
+          "sizeUnit": "px"
+        }
+      },
+      "image-y9hp9": {
+        "offsetX": 35,
+        "offsetY": -30,
+        "shrink": {
+          "on": false,
+          "axis": "x"
+        },
+        "h": {
+          "anchor": "end",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 10,
+          "sizeUnit": "%"
+        },
+        "v": {
+          "anchor": "start",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 1000,
+          "sizeUnit": "px"
+        },
+        "fit": "contain",
+        "loopX": true,
+        "scrollX": false
+      },
+      "image-fmj1v": {
+        "v": {
+          "anchor": "start",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 40,
+          "sizeUnit": "px"
+        },
+        "emptyColour": 3
+      },
+      "image-not6a": {
+        "offsetX": -30,
+        "h": {
+          "anchor": "start",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 10,
+          "sizeUnit": "%"
+        },
+        "v": {
+          "anchor": "stretch",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 1000,
+          "sizeUnit": "px"
+        }
+      },
+      "image-7wsy1": {
+        "offsetX": 35,
+        "offsetY": -30,
+        "shrink": {
+          "on": false,
+          "axis": "x"
+        },
+        "h": {
+          "anchor": "end",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 10,
+          "sizeUnit": "%"
+        },
+        "v": {
+          "anchor": "stretch",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 1000,
+          "sizeUnit": "px"
+        },
+        "fit": "contain",
+        "loopX": true,
+        "scrollX": false
+      },
+      "button-6lp24": {
+        "h": {
+          "anchor": "start",
+          "offset": 30,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 40,
+          "sizeUnit": "px"
+        },
+        "v": {
+          "anchor": "start",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 40,
+          "sizeUnit": "px"
+        },
+        "shrink": {
+          "on": false,
+          "axis": "x"
+        }
+      },
+      "button-8ccyb": {
+        "h": {
+          "anchor": "start",
+          "offset": 85,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 40,
+          "sizeUnit": "px"
+        },
+        "v": {
+          "anchor": "start",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 40,
+          "sizeUnit": "px"
+        },
+        "shrink": {
+          "on": false,
+          "axis": "x"
+        }
+      },
+      "image-o2rni": {
+        "h": {
+          "anchor": "center",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 375,
+          "sizeUnit": "px"
+        },
+        "v": {
+          "anchor": "center",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 90,
+          "sizeUnit": "%"
+        },
+        "parent": "section-gs0zy"
+      },
+      "image-z6m5s": {
+        "v": {
+          "anchor": "start",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 40,
+          "sizeUnit": "px"
+        },
+        "emptyColour": 3
+      },
+      "image-amwpl": {
+        "offsetX": -30,
+        "h": {
+          "anchor": "start",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 10,
+          "sizeUnit": "%"
+        },
+        "v": {
+          "anchor": "stretch",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 1000,
+          "sizeUnit": "px"
+        }
+      },
+      "image-62d5b": {
+        "offsetX": 35,
+        "offsetY": -30,
+        "shrink": {
+          "on": false,
+          "axis": "x"
+        },
+        "h": {
+          "anchor": "end",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 10,
+          "sizeUnit": "%"
+        },
+        "v": {
+          "anchor": "stretch",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 1000,
+          "sizeUnit": "px"
+        },
+        "fit": "contain",
+        "loopX": true,
+        "scrollX": false
+      },
+      "button-bn964": {
+        "h": {
+          "anchor": "start",
+          "offset": 30,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 40,
+          "sizeUnit": "px"
+        },
+        "v": {
+          "anchor": "start",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 40,
+          "sizeUnit": "px"
+        },
+        "shrink": {
+          "on": false,
+          "axis": "x"
+        }
+      },
+      "button-v15yy": {
+        "h": {
+          "anchor": "start",
+          "offset": 85,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 40,
+          "sizeUnit": "px"
+        },
+        "v": {
+          "anchor": "start",
+          "offset": 0,
+          "offsetEnd": 0,
+          "unit": "px",
+          "size": 40,
+          "sizeUnit": "px"
+        },
+        "shrink": {
+          "on": false,
+          "axis": "x"
         }
       }
     },
