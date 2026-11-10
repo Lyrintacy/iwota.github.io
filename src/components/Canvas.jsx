@@ -43,18 +43,26 @@ function Text({ item }) {
   const style = styleOf(useContext(TextStylesContext), item.level);
   const Tag = style.tag || "p";
   const tokens = inlineTokens(item.text);
-  const plain = (t, i) => (
-    <span
-      key={i}
-      style={{
-        color: t.color ? `var(--c-${t.color})` : undefined,
-        fontWeight: t.bold ? 700 : undefined,
-        fontStyle: t.italic ? "italic" : undefined,
-      }}
-    >
-      {t.text}
-    </span>
-  );
+  const plain = (t, i) => {
+    const run = (
+      <span
+        style={{
+          color: t.color ? `var(--c-${t.color})` : undefined,
+          fontWeight: t.bold ? 700 : undefined,
+          fontStyle: t.italic ? "italic" : undefined,
+        }}
+      >
+        {t.text}
+      </span>
+    );
+    return t.href ? (
+      <a key={i} href={t.href} target="_blank" rel="noopener noreferrer" className="text-link">
+        {run}
+      </a>
+    ) : (
+      <span key={i}>{run}</span>
+    );
+  };
   // Consecutive tokens of one box share one BoxRun.
   const parts = [];
   const boxes = [];

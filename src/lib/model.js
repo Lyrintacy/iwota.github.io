@@ -185,16 +185,18 @@ export function uid(prefix) {
 export function inlineTokens(text = "") {
   const out = [];
   const pushStyled = (chunk, color, box) => {
-    const re = /\*\*\*(.+?)\*\*\*|\*\*(.+?)\*\*|\*(.+?)\*/g;
+    // [label](https://...) is a link; ***bold italic***, **bold**, *italic*.
+    const re = /\[([^\]\n]+)\]\((https?:\/\/[^\s)]+)\)|\*\*\*(.+?)\*\*\*|\*\*(.+?)\*\*|\*(.+?)\*/g;
     let i = 0,
       m;
     const extra = box ? { box } : {};
     while ((m = re.exec(chunk))) {
       if (m.index > i) out.push({ text: chunk.slice(i, m.index), color, ...extra });
-      if (m[1] !== undefined)
-        out.push({ text: m[1], color, bold: true, italic: true, ...extra });
-      else if (m[2] !== undefined) out.push({ text: m[2], color, bold: true, ...extra });
-      else out.push({ text: m[3], color, italic: true, ...extra });
+      if (m[1] !== undefined) out.push({ text: m[1], color, href: m[2], ...extra });
+      else if (m[3] !== undefined)
+        out.push({ text: m[3], color, bold: true, italic: true, ...extra });
+      else if (m[4] !== undefined) out.push({ text: m[4], color, bold: true, ...extra });
+      else out.push({ text: m[5], color, italic: true, ...extra });
       i = re.lastIndex;
     }
     if (i < chunk.length) out.push({ text: chunk.slice(i), color, ...extra });

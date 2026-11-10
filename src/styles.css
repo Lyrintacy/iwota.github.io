@@ -89,6 +89,9 @@ body {
 .text-body {
   margin: 0;
   white-space: pre-line;
+  /* Break a word only when it cannot fit the line (long URLs, long words). */
+  overflow-wrap: break-word;
+  word-break: normal;
   line-height: 1.5;
   font-size: calc(var(--size-body, 16) * var(--u, 1px));
   font-weight: 400;
@@ -1152,4 +1155,11 @@ details.group > .group-body {
   z-index: 2;
   display: block;
   cursor: pointer;
+}
+
+/* Links inside text: keep the text colour, underline them. */
+.text-body .text-link {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.12em;
 }
