@@ -240,6 +240,9 @@ function Animated({ item }) {
   );
 }
 
+// A pixel length from the layout, scaled with the screen (--ref, see App).
+const R = (n) => `calc(${Number(n) || 0} * var(--ref, 1px))`;
+
 // Background band: colour, then a tiled texture, then an overlay colour.
 function BandBackground({ section, top, selected }) {
   const tex = section.texture || {};
@@ -248,15 +251,15 @@ function BandBackground({ section, top, selected }) {
   const aspect = useImageAspect(texture.url);
   const size = Math.max(1, tex.size || 0);
   // Tiles: `size` wide, and as tall as the picture. Moved by transform, wrapped to one tile.
-  const tileW = `${size}px`;
-  const tileH = `${size * aspect}px`;
+  const tileW = R(size);
+  const tileH = `calc(${size * aspect} * var(--ref, 1px))`;
   return (
     <div
       id={`section-${section.id}`}
       className={`section ${selected ? "selected" : ""} ${section._hiddenOnPhone ? "phone-hidden" : ""}`}
       style={{
-        top,
-        height: section.height,
+        top: R(top),
+        height: R(section.height),
         background: `var(--color-${section.background})`,
       }}
     >
@@ -264,8 +267,8 @@ function BandBackground({ section, top, selected }) {
         <div
           className="section-texture"
           style={{
-            width: `calc(150cqmax + ${2 * size}px)`,
-            height: `calc(150cqmax + ${2 * size * aspect}px)`,
+            width: `calc(150cqmax + ${2 * size} * var(--ref, 1px))`,
+            height: `calc(150cqmax + ${2 * size * aspect} * var(--ref, 1px))`,
             backgroundImage: `url("${texture.url}")`,
             backgroundSize: `${tileW} ${tileH}`,
             backgroundPosition: "0px 0px",
@@ -436,7 +439,7 @@ export function Canvas({ page, editing, selectedId, onSelect, selectedSectionId 
   );
   return (
     <>
-      <main className={`canvas ${editing ? "editing" : ""}`} style={{ height: P }}>
+      <main className={`canvas ${editing ? "editing" : ""}`} style={{ height: R(P) }}>
         {bands.map((s) => (
           <BandBackground
             key={s.id}
@@ -449,12 +452,12 @@ export function Canvas({ page, editing, selectedId, onSelect, selectedSectionId 
           <div
             key={`${s.id}-frame`}
             className="frame band-frame"
-            style={{ top: sectionTop(s, P, layout.tops), height: s.height }}
+            style={{ top: R(sectionTop(s, P, layout.tops)), height: R(s.height) }}
           >
             {itemsIn(s.id).map(renderItem)}
           </div>
         ))}
-        <div className="frame page-frame" style={{ height: P }}>
+        <div className="frame page-frame" style={{ height: R(P) }}>
           {itemsIn("").map(renderItem)}
         </div>
       </main>

@@ -564,7 +564,13 @@ export default function App() {
       <WaitContext.Provider value={waitApi}>
       <div
         className={`site dock-${dock} ${editing ? "editing" : ""} ${previewing ? "phone-preview" : ""} ${screenW ? "screen-preview" : ""} ${ui.toggle.hidePhone ? "hide-toggle-phone" : ""}`}
-        style={{ ...vars, ...toggleVars }}
+        style={{
+          ...vars,
+          ...toggleVars,
+          // Desktop: one unit that is 1px at 1920x1080 and grows or shrinks with the screen,
+          // so pixel sizes look the same on any screen. Phones keep their own sizing.
+          "--ref": phoneViewport || previewing ? "1px" : "min(100vw / 1920, 100vh / 1080)",
+        }}
       >
         {notice && (
           <div className="notice" role="status">

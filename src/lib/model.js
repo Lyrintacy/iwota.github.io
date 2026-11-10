@@ -380,7 +380,8 @@ function axis(a = {}, lo, hi, size) {
  */
 export function unitFor(item, canvas = {}) {
   const sh = item.shrink;
-  if (!sh?.on) return "1px";
+  // Off: the desktop reference unit (1px at 1920x1080, scaled with the screen; see App).
+  if (!sh?.on) return "var(--ref, 1px)";
   const dw = Number(canvas.designWidth) || DEFAULT_DESIGN.designWidth;
   const dh = Number(canvas.designHeight) || DEFAULT_DESIGN.designHeight;
   const byW = `calc(var(--vw, 100vw) / ${dw})`;
