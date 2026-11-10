@@ -50,31 +50,31 @@
       "id": "font",
       "name": "Sans",
       "family": "Comic Sans MS",
-      "file": ""
+      "file": "Comic Sans MS.ttf"
     },
     {
       "id": "font-2",
       "name": "Kids",
       "family": "KidsplaypersonaluseBold-YzjBy",
-      "file": ""
+      "file": "KidsplaypersonaluseBold-YzjBy.otf"
     },
     {
       "id": "font-3",
       "name": "Papyrus",
       "family": "papyrus",
-      "file": ""
+      "file": "papyrus.ttf"
     },
     {
       "id": "font-4",
       "name": "Mario",
       "family": "SuperMabroz-j93xO",
-      "file": ""
+      "file": "SuperMabroz-j93xO.ttf"
     },
     {
       "id": "font-5",
       "name": "Dahlia",
       "family": "dahlia-bold",
-      "file": ""
+      "file": "dahlia-bold.otf"
     }
   ],
   "scroll": {

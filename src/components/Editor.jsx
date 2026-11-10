@@ -2223,6 +2223,7 @@ export function Editor({
                     ["controls", "Show controls"],
                     ["loop", "Loop"],
                     ["autoplay", "Autoplay (muted)"],
+                    ["mute", "Always muted (cannot be unmuted)"],
                   ].map(([key, label]) => (
                     <label className="check" key={key}>
                       <input
@@ -2233,6 +2234,13 @@ export function Editor({
                       {label}
                     </label>
                   ))}
+                  <LinkFields
+                    value={itemView.link || DEFAULT_LINK}
+                    sections={sections}
+                    pages={pagesApi.tabs.map((id) => [id, pagesApi.pages[id].title || id])}
+                    onChange={(link) => patch({ link })}
+                  />
+                  <p className="hint">A linked video has no controls: clicking it follows the link.</p>
                 </>
               )}
 

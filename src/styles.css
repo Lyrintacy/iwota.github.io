@@ -1144,3 +1144,12 @@ details.group > .group-body {
   border-radius: 3px;
   font-weight: 700;
 }
+
+/* A transparent layer over a linked video: clicks follow its link. */
+.video-link {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: block;
+  cursor: pointer;
+}

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { BUILTIN_TEXT_STYLES, bandTop, contentLayout, cornerRadius, sectionTop, inlineTokens, isBand, itemStyle, pageHeight, panPos, panShift, styleOf, unitFor } from "../lib/model.js";
 import { useMedia } from "../lib/media.js";
+import { NavContext, pageHref } from "../lib/nav.js";
 import { boxCss, hashString } from "../lib/boxes.js";
 
 // Height / width of a picture (1 until it loads). A texture needs it for its tile's height.
@@ -119,19 +120,7 @@ function Media({ item }) {
     );
   if (item.type === "image" && (item.scrollX || item.scrollY)) return <PannedImage item={item} />;
   if (item.type === "video")
-    return (
-      <video
-        className="media"
-        src={main.url || undefined}
-        poster={poster.url || undefined}
-        controls={item.controls !== false}
-        loop={!!item.loop}
-        autoPlay={!!item.autoplay}
-        muted={!!item.autoplay}
-        playsInline
-        style={{ borderRadius: cornerRadius(item.radius) }}
-      />
-    );
+    return <Video item={item} src={main.url || undefined} poster={poster.url || undefined} />;
   // Pinned to the left and right: tiled sideways at its own height, instead of stretched.
   if (item.tileX && item.h?.anchor === "stretch" && main.url && (item.type === "image" || item.type === "gif"))
     return (
@@ -306,7 +295,72 @@ function MediaBody({ item }) {
       {item.type === "video" && item.hoverOnly && <HoverVideo item={item} />}
       {(item.type === "image" || item.type === "gif" || item.type === "video") &&
         !(item.hoverOnly || item.button) && <Media item={item} />}
+      {item.type === "video" && hasVideoLink(item) && <VideoLink link={item.link} />}
     </>
+  );
+}
+
+// A video can link somewhere: clicking it follows the link (it has no controls then).
+const hasVideoLink = (item) => {
+  const l = item.link;
+  return !!l && ((l.kind === "url" && !!l.url) || (l.kind === "section" && !!l.section) || (l.kind === "page" && !!l.page));
+};
+
+// A transparent layer over the video: clicks reach the link, not the video.
+function VideoLink({ link }) {
+  const navigate = useContext(NavContext);
+  const href = link.kind === "url" ? link.url : link.kind === "page" ? pageHref(link.page) : `#section-${link.section}`;
+  const newTab = link.kind !== "section" && !!link.newTab;
+  const follow = (e) => {
+    if (link.kind === "section") {
+      e.preventDefault();
+      document.getElementById(`section-${link.section}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else if (link.kind === "page" && !newTab && !(e.metaKey || e.ctrlKey || e.shiftKey)) {
+      e.preventDefault();
+      navigate(link.page);
+    }
+  };
+  return (
+    <a
+      className="video-link"
+      href={href}
+      target={newTab ? "_blank" : undefined}
+      rel={newTab ? "noopener noreferrer" : undefined}
+      onClick={follow}
+    />
+  );
+}
+
+// A video. Muted when it autoplays or when "always muted" is set: the element itself is
+// muted before it can play, and it is put back to muted if anything unmutes it.
+function Video({ item, src, poster }) {
+  const ref = useRef(null);
+  const forced = !!item.autoplay || !!item.mute;
+  const linked = hasVideoLink(item);
+  const force = (v) => {
+    if (forced && v) {
+      v.muted = true;
+      v.defaultMuted = true;
+    }
+  };
+  useLayoutEffect(() => force(ref.current), [forced, src]);
+  return (
+    <video
+      ref={ref}
+      className="media"
+      src={src}
+      poster={poster}
+      controls={!linked && item.controls !== false}
+      loop={!!item.loop}
+      autoPlay={!!item.autoplay}
+      muted={forced}
+      playsInline
+      onPlay={(e) => force(e.currentTarget)}
+      onVolumeChange={(e) => {
+        if (forced && !e.currentTarget.muted) force(e.currentTarget);
+      }}
+      style={{ borderRadius: cornerRadius(item.radius) }}
+    />
   );
 }
 
