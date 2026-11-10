@@ -77,9 +77,9 @@
   "ui": {
     "tabs": {
       "font": "font-3",
-      "text": 3,
-      "background": 1,
-      "active": 2,
+      "text": 1,
+      "background": 4,
+      "active": 3,
       "maxTemporary": 1,
       "slide": true,
       "slidePhone": true

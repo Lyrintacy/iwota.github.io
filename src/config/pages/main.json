@@ -1079,6 +1079,34 @@
             "heightPct": 100
           },
           {
+            "clickable": true,
+            "waitFlash": false,
+            "file": "PolarProtocol/TrailerThe Polar Protocol.mp4",
+            "scale": 1.6,
+            "fit": "x",
+            "unlimited": false,
+            "aspect": "9:6",
+            "openMs": 800,
+            "closeMs": 360,
+            "radius": 1,
+            "background": 3,
+            "imageFit": "cover",
+            "tilt": true,
+            "tiltStrength": 100,
+            "shake": true,
+            "shakeMs": 400,
+            "shakeAmount": 50,
+            "shine": false,
+            "shineColour": 3,
+            "shineWidth": 50,
+            "shineMs": 400,
+            "slant": 18,
+            "flash": false,
+            "flashColour": 3,
+            "flashMs": 500,
+            "heightPct": 0
+          },
+          {
             "clickable": false,
             "waitFlash": true,
             "file": "ui/Button/ButtonCardOverlay2.PNG",
@@ -1105,34 +1133,6 @@
             "flashColour": 3,
             "flashMs": 500,
             "heightPct": 100
-          },
-          {
-            "clickable": true,
-            "waitFlash": false,
-            "file": "PolarProtocol/TrailerThe Polar Protocol.mp4",
-            "scale": 1.6,
-            "fit": "x",
-            "unlimited": false,
-            "aspect": "9:6",
-            "openMs": 800,
-            "closeMs": 360,
-            "radius": 1,
-            "background": 3,
-            "imageFit": "cover",
-            "tilt": true,
-            "tiltStrength": 100,
-            "shake": true,
-            "shakeMs": 400,
-            "shakeAmount": 50,
-            "shine": false,
-            "shineColour": 1,
-            "shineWidth": 100,
-            "shineMs": 700,
-            "slant": 18,
-            "flash": false,
-            "flashColour": 3,
-            "flashMs": 500,
-            "heightPct": 0
           },
           {
             "clickable": false,
@@ -1282,7 +1282,7 @@
       },
       "v": {
         "anchor": "start",
-        "offset": 450,
+        "offset": 550,
         "offsetEnd": 0,
         "unit": "px",
         "size": 0,
@@ -1378,18 +1378,18 @@
       "parent": "section-ogrcp",
       "h": {
         "anchor": "start",
-        "offset": 20,
+        "offset": 60,
         "offsetEnd": 0,
         "unit": "px",
-        "size": 50,
+        "size": 60,
         "sizeUnit": "px"
       },
       "v": {
         "anchor": "start",
-        "offset": 570,
+        "offset": 675,
         "offsetEnd": 0,
         "unit": "px",
-        "size": 50,
+        "size": 60,
         "sizeUnit": "px"
       },
       "pivot": [
@@ -1466,18 +1466,18 @@
       "parent": "section-ogrcp",
       "h": {
         "anchor": "end",
-        "offset": 20,
+        "offset": 60,
         "offsetEnd": 0,
         "unit": "px",
-        "size": 50,
+        "size": 60,
         "sizeUnit": "px"
       },
       "v": {
         "anchor": "start",
-        "offset": 570,
+        "offset": 675,
         "offsetEnd": 0,
         "unit": "px",
-        "size": 50,
+        "size": 60,
         "sizeUnit": "px"
       },
       "pivot": [
@@ -1562,7 +1562,7 @@
       },
       "v": {
         "anchor": "start",
-        "offset": 450,
+        "offset": 525,
         "offsetEnd": 0,
         "unit": "px",
         "size": 0,
@@ -1685,7 +1685,7 @@
       },
       "v": {
         "anchor": "start",
-        "offset": 25,
+        "offset": 0,
         "offsetEnd": 0,
         "unit": "px",
         "size": 0,
@@ -1727,7 +1727,7 @@
       },
       "v": {
         "anchor": "start",
-        "offset": 625,
+        "offset": 800,
         "offsetEnd": 0,
         "unit": "px",
         "size": 0,
