@@ -1674,7 +1674,15 @@
       "captionColour": "",
       "captionSize": 14,
       "phoneOnly": true,
-      "radius": 25
+      "radius": 25,
+      "mute": true,
+      "link": {
+        "kind": "page",
+        "url": "",
+        "section": "",
+        "page": "polar-protocol",
+        "newTab": false
+      }
     },
     {
       "id": "image-zfawo",

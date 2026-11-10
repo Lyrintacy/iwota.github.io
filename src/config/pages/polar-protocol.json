@@ -91,8 +91,8 @@
       "parent": "",
       "h": {
         "anchor": "stretch",
-        "offset": 100,
-        "offsetEnd": 50,
+        "offset": 150,
+        "offsetEnd": 5,
         "unit": "px",
         "size": 600,
         "sizeUnit": "px"
@@ -128,15 +128,15 @@
       "parent": "",
       "h": {
         "anchor": "stretch",
-        "offset": 100,
-        "offsetEnd": 50,
+        "offset": 150,
+        "offsetEnd": 0,
         "unit": "px",
         "size": 600,
         "sizeUnit": "px"
       },
       "v": {
         "anchor": "start",
-        "offset": 1000,
+        "offset": 830,
         "offsetEnd": 0,
         "unit": "px",
         "size": 0,
@@ -152,7 +152,81 @@
         "axis": "x",
         "grow": true
       },
-      "text": "I designed all the enemies in Polar Protocol:\n\nShooter: Enemy that gets in the range and shoots at the player while being stationary \n\nBouncer: Enemy that constantly chases player having a burst attack on cooldown and activating it whenever player is in range.\n\nKing: Special Enemy that looks onto target’s position and perform a dash, overshooting if possible and spawning delayed damaging explosions. \nBig enemy that requires player to look out for it and use the environment to the enemy’s disadvantage. As the enemy can start dashing into player from outside of its vision. King’s big attacks require player to fully commit into running in one direction to get out of the range in time. Or use the walls and try to be outside of possible dash trajectory.  \n\nQueen: Special Enemy that casts x number of projectiles that after delay fall onto randomly chosen places around the player with Poisson distribution. Constant pressure with its range. \nRestricting player’s space of many ever or sometimes forcing them to take a specific road, making player an easier target for other enemies. \n",
+      "text": "Shooter: Enemy that gets in the range and shoots at the player while being stationary \n\nBouncer: Enemy that constantly chases player having a burst attack on cooldown and activating it whenever player is in range.\n\nKing: Special Enemy that looks onto target’s position and perform a dash, overshooting if possible and spawning delayed damaging explosions. \nBig enemy that requires player to look out for it and use the environment to the enemy’s disadvantage. As the enemy can start dashing into player from outside of its vision. King’s big attacks require player to fully commit into running in one direction to get out of the range in time. Or use the walls and try to be outside of possible dash trajectory.  \n\nQueen: Special Enemy that casts x number of projectiles that after delay fall onto randomly chosen places around the player with Poisson distribution. Constant pressure with its range. \nRestricting player’s space of many ever or sometimes forcing them to take a specific road, making player an easier target for other enemies. \n",
+      "font": "",
+      "level": "p",
+      "align": "left",
+      "color": ""
+    },
+    {
+      "id": "text-pfzb8",
+      "type": "text",
+      "name": "",
+      "parent": "",
+      "h": {
+        "anchor": "stretch",
+        "offset": 150,
+        "offsetEnd": 5,
+        "unit": "px",
+        "size": 600,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 1180,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 0,
+        "sizeUnit": "auto"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "on": true,
+        "axis": "x",
+        "grow": true
+      },
+      "text": "In collaboration with other designers I made the general pitch, core gameplay and game loop, which made me a product owner. \nOne of my task was general quality assurance, directing artists, through Lead Artist. \nDistributing tasks to each of the programmers, ensuring a cohesiveness for the project. \nAlso I was debriefing producers, keeping them up to date with the project.",
+      "font": "",
+      "level": "p",
+      "align": "left",
+      "color": ""
+    },
+    {
+      "id": "text-xd60r",
+      "type": "text",
+      "name": "",
+      "parent": "",
+      "h": {
+        "anchor": "stretch",
+        "offset": 150,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 600,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 1380,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 0,
+        "sizeUnit": "auto"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "on": true,
+        "axis": "x",
+        "grow": true
+      },
+      "text": "At first when designing the game, we were researching various arcade games for inspiration. \nIn terms of Green Theme (Saving the world), we didn't want to make a design that bases on it. We focused on conveying Arcade feelings and simple loop. \n\nI liked the idea of the game I was shown, \nSnowbros, and thought of translating it in the top down space.\nFurther designed the gameplay that uses the fundamental mechanic. However due to different perspective the mechanic is used uniquely enough, to offer interesting gameplay. Later after having a game idea, I thought of the way to incorporate it to the green theme.\n\nAdditionaly we worked with a specified Target; audience (Ages 12+), kids and young teenagers:\n\nThe target audience did influence the general idea of the game to make a simple mechanic that everyone can pick up and have a lot of fun with.\n\nWhen working with the concept artist I was ensuring the main character will look accurately for our target-audience, cute and eye-catching, distinguishable silhouette; inspired by Mega Man and snow bros. \n",
       "font": "",
       "level": "p",
       "align": "left",
@@ -165,7 +239,7 @@
       "parent": "",
       "h": {
         "anchor": "stretch",
-        "offset": 50,
+        "offset": 100,
         "offsetEnd": 50,
         "unit": "px",
         "size": 600,
@@ -197,13 +271,13 @@
       "size": 40
     },
     {
-      "id": "text-j1g6b",
+      "id": "text-nq8ni",
       "type": "text",
       "name": "",
       "parent": "",
       "h": {
         "anchor": "stretch",
-        "offset": 50,
+        "offset": 100,
         "offsetEnd": 50,
         "unit": "px",
         "size": 600,
@@ -211,7 +285,7 @@
       },
       "v": {
         "anchor": "start",
-        "offset": 950,
+        "offset": 1100,
         "offsetEnd": 0,
         "unit": "px",
         "size": 0,
@@ -227,7 +301,83 @@
         "axis": "x",
         "grow": true
       },
-      "text": "Enemies: ",
+      "text": "My Role in the Project:\n",
+      "font": "font-5",
+      "level": "h1",
+      "align": "left",
+      "color": "",
+      "size": 40
+    },
+    {
+      "id": "text-azosk",
+      "type": "text",
+      "name": "",
+      "parent": "",
+      "h": {
+        "anchor": "stretch",
+        "offset": 100,
+        "offsetEnd": 50,
+        "unit": "px",
+        "size": 600,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 1300,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 0,
+        "sizeUnit": "auto"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "on": true,
+        "axis": "x",
+        "grow": true
+      },
+      "text": "Approaching the Theme:",
+      "font": "font-5",
+      "level": "h1",
+      "align": "left",
+      "color": "",
+      "size": 40
+    },
+    {
+      "id": "text-j1g6b",
+      "type": "text",
+      "name": "",
+      "parent": "",
+      "h": {
+        "anchor": "stretch",
+        "offset": 100,
+        "offsetEnd": 50,
+        "unit": "px",
+        "size": 600,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 750,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 0,
+        "sizeUnit": "auto"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "on": true,
+        "axis": "x",
+        "grow": true
+      },
+      "text": "Designing Enemies: ",
       "font": "font-5",
       "level": "h1",
       "align": "left",
@@ -328,7 +478,7 @@
       "body": {
         "name": "Body text",
         "tag": "p",
-        "size": 16,
+        "size": 12,
         "colour": 1,
         "font": "font"
       }
