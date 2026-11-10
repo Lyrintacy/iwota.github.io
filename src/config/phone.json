@@ -263,7 +263,7 @@
       "text-tdwz7": {
         "v": {
           "anchor": "start",
-          "offset": 1070,
+          "offset": 1300,
           "offsetEnd": 0,
           "unit": "px",
           "size": 0,
@@ -278,7 +278,7 @@
           "sizeUnit": "px"
         },
         "text": "Hands on Experience and Creative Thinking \n⬇\n",
-        "size": 40
+        "size": 20
       },
       "text-17y6v": {
         "v": {
@@ -622,7 +622,7 @@
     "sections": {
       "section-ky6g3": {
         "start": 0,
-        "height": 1300,
+        "height": 1500,
         "texture": {
           "file": "Me/PurpleIconCut.png",
           "size": 800,
