@@ -692,7 +692,7 @@
       "parent": "",
       "h": {
         "anchor": "center",
-        "offset": -350,
+        "offset": -440,
         "offsetEnd": 0,
         "unit": "px",
         "size": 200,
@@ -700,7 +700,7 @@
       },
       "v": {
         "anchor": "start",
-        "offset": 125,
+        "offset": 225,
         "offsetEnd": 0,
         "unit": "px",
         "size": 200,
