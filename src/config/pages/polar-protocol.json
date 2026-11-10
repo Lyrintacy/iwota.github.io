@@ -5,31 +5,31 @@
   "showInBar": true,
   "keepWhenOpened": false,
   "canvas": {
-    "height": 1200,
+    "height": 9999,
     "designWidth": 1200,
     "designHeight": 800
   },
   "items": [
     {
-      "id": "image-6r01t",
-      "type": "image",
-      "name": "LeftOverlayBorder",
-      "parent": "section-714dw",
+      "id": "text-5lm68",
+      "type": "text",
+      "name": "",
+      "parent": "",
       "h": {
-        "anchor": "start",
-        "offset": 0,
-        "offsetEnd": 0,
-        "unit": "px",
-        "size": 12,
-        "sizeUnit": "%"
-      },
-      "v": {
         "anchor": "stretch",
         "offset": 0,
         "offsetEnd": 0,
         "unit": "px",
-        "size": 1000,
+        "size": 100,
         "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 0,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 0,
+        "sizeUnit": "auto"
       },
       "pivot": [
         50,
@@ -37,64 +37,36 @@
       ],
       "rotate": 0,
       "shrink": {
-        "on": false,
-        "axis": "x"
+        "on": true,
+        "axis": "x",
+        "grow": true
       },
-      "file": "ui/BDL.png",
-      "alt": "",
-      "fit": "fill",
-      "hoverOnly": false,
-      "thumbnail": "",
-      "button": false,
-      "link": {
-        "kind": "none",
-        "url": "",
-        "section": "",
-        "page": "",
-        "newTab": false
-      },
-      "fx": {
-        "shake": true,
-        "shakeMs": 600,
-        "shakeAmount": 100,
-        "flash": true,
-        "flashMs": 300,
-        "flashColour": 0,
-        "flashStrength": 95,
-        "shine": true,
-        "shineDelayMs": 0,
-        "shineMs": 700,
-        "shineWidth": 70,
-        "shineColour": 4,
-        "shineSlant": 18,
-        "clickFlash": true
-      },
-      "scrollY": true,
-      "scrollX": false,
-      "room": 0,
-      "speedY": 0.3,
-      "loopY": true
+      "text": "The Polar Protocol",
+      "font": "",
+      "level": "h3",
+      "align": "left",
+      "color": ""
     },
     {
-      "id": "image-hpwlg",
-      "type": "image",
-      "name": "RightOverlayBorder",
-      "parent": "section-714dw",
+      "id": "text-fljcw",
+      "type": "text",
+      "name": "",
+      "parent": "",
       "h": {
         "anchor": "end",
         "offset": 0,
         "offsetEnd": 0,
         "unit": "px",
-        "size": 12,
-        "sizeUnit": "%"
+        "size": 300,
+        "sizeUnit": "px"
       },
       "v": {
-        "anchor": "stretch",
-        "offset": 0,
+        "anchor": "start",
+        "offset": 50,
         "offsetEnd": 0,
         "unit": "px",
-        "size": 1000,
-        "sizeUnit": "px"
+        "size": 0,
+        "sizeUnit": "auto"
       },
       "pivot": [
         50,
@@ -102,54 +74,168 @@
       ],
       "rotate": 0,
       "shrink": {
-        "on": false,
-        "axis": "x"
+        "on": true,
+        "axis": "x",
+        "grow": true
       },
-      "file": "ui/BDR.png",
-      "alt": "",
-      "fit": "fill",
-      "hoverOnly": false,
-      "thumbnail": "",
-      "button": false,
-      "link": {
-        "kind": "none",
-        "url": "",
-        "section": "",
-        "page": "",
-        "newTab": false
-      },
-      "fx": {
-        "shake": true,
-        "shakeMs": 600,
-        "shakeAmount": 100,
-        "flash": true,
-        "flashMs": 300,
-        "flashColour": 0,
-        "flashStrength": 95,
-        "shine": true,
-        "shineDelayMs": 0,
-        "shineMs": 700,
-        "shineWidth": 70,
-        "shineColour": 4,
-        "shineSlant": 18,
-        "clickFlash": true
-      },
-      "scrollX": false,
-      "loopX": false,
-      "room": 0,
-      "scrollY": true,
-      "loopY": true,
-      "speedX": 0.5,
-      "speedY": 0.3
-    }
-  ],
-  "sections": [
+      "text": "{box1-5:3 weeks }\n{box2-4:Team size : 13} \n{box3-2:Engine Unity }\n3 artists 3 designers 3ux designers 2 programmers ",
+      "font": "",
+      "level": "p",
+      "align": "left",
+      "color": ""
+    },
     {
-      "id": "section-714dw",
-      "kind": "fixed",
-      "name": ""
+      "id": "text-kmb3y",
+      "type": "text",
+      "name": "",
+      "parent": "",
+      "h": {
+        "anchor": "stretch",
+        "offset": 100,
+        "offsetEnd": 50,
+        "unit": "px",
+        "size": 600,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 380,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 0,
+        "sizeUnit": "auto"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "on": true,
+        "axis": "x",
+        "grow": true
+      },
+      "text": "It’s a top down dungeon shooter where player goes through 7 handmade levels, gathering score. \nInspired by Snow Bros's core mechanic. \nShooting enemy multiple times to fully transform them into a snow ball, whihc immobilise tehem and allows Player to interact with, in order to roll it into another enemies. On contact with enmies the snowball absorbs, instnatly killing the enemies and multiplying the score.   \n\nI took this mechanic, and converted it into a top down environment. Now Player, instead of two options; to push a snowball, left or right. Can roll it into all directions offering way more flexibility and control in how to bounce it, to kill as much enemies with it as possible. Rewarding player with more points, for maximising the potential of a big snowball, exponentially increasing the reward for each enemy hit by the same snowball. \n\nDue to the top down perspective, the amount of possible angles increase, however the dependency on where enemy is standing and where it gets turned into a Snowball, also has way bigger impact on what player can do. \nTo compensate and avoid a frustrating experience of enemy being in a spot with low potential. We added option to reposition the snowball before shooting it out. \nNow that player is not being restricted by enemy’s positioning, to throw a big Snowball in a specific direction. \nIt fits the arcade theming and audience more.\n\nI introduced a new type of enemies. Special Enemies that are immune to a re if lat shooting and can be damaged only through contact with a Big Snowball. \nThis forces players to intentionally utilise the Snowballs and how they bounce to progress the game.",
+      "font": "",
+      "level": "p",
+      "align": "left",
+      "color": ""
+    },
+    {
+      "id": "text-dma6a",
+      "type": "text",
+      "name": "",
+      "parent": "",
+      "h": {
+        "anchor": "stretch",
+        "offset": 100,
+        "offsetEnd": 50,
+        "unit": "px",
+        "size": 600,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 1000,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 0,
+        "sizeUnit": "auto"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "on": true,
+        "axis": "x",
+        "grow": true
+      },
+      "text": "I designed all the enemies in Polar Protocol:\n\nShooter: Enemy that gets in the range and shoots at the player while being stationary \n\nBouncer: Enemy that constantly chases player having a burst attack on cooldown and activating it whenever player is in range.\n\nKing: Special Enemy that looks onto target’s position and perform a dash, overshooting if possible and spawning delayed damaging explosions. \nBig enemy that requires player to look out for it and use the environment to the enemy’s disadvantage. As the enemy can start dashing into player from outside of its vision. King’s big attacks require player to fully commit into running in one direction to get out of the range in time. Or use the walls and try to be outside of possible dash trajectory.  \n\nQueen: Special Enemy that casts x number of projectiles that after delay fall onto randomly chosen places around the player with Poisson distribution. Constant pressure with its range. \nRestricting player’s space of many ever or sometimes forcing them to take a specific road, making player an easier target for other enemies. \n",
+      "font": "",
+      "level": "p",
+      "align": "left",
+      "color": ""
+    },
+    {
+      "id": "text-k8qtj",
+      "type": "text",
+      "name": "",
+      "parent": "",
+      "h": {
+        "anchor": "stretch",
+        "offset": 50,
+        "offsetEnd": 50,
+        "unit": "px",
+        "size": 600,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 300,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 0,
+        "sizeUnit": "auto"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "on": true,
+        "axis": "x",
+        "grow": true
+      },
+      "text": "Recontextualization:",
+      "font": "font-5",
+      "level": "h1",
+      "align": "left",
+      "color": "",
+      "size": 40
+    },
+    {
+      "id": "text-j1g6b",
+      "type": "text",
+      "name": "",
+      "parent": "",
+      "h": {
+        "anchor": "stretch",
+        "offset": 50,
+        "offsetEnd": 50,
+        "unit": "px",
+        "size": 600,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 950,
+        "offsetEnd": 0,
+        "unit": "px",
+        "size": 0,
+        "sizeUnit": "auto"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "on": true,
+        "axis": "x",
+        "grow": true
+      },
+      "text": "Enemies: ",
+      "font": "font-5",
+      "level": "h1",
+      "align": "left",
+      "color": "",
+      "size": 40
     }
   ],
+  "sections": [],
   "settings": {
     "palette": [
       "#edede8",
@@ -216,6 +302,12 @@
         "name": "Mario",
         "family": "SuperMabroz-j93xO",
         "file": ""
+      },
+      {
+        "id": "font-5",
+        "name": "Dahlia",
+        "family": "dahlia-bold",
+        "file": "dahlia-bold.otf"
       }
     ],
     "textStyles": [
@@ -224,6 +316,22 @@
         "name": "Secondary Text",
         "tag": "p"
       }
-    ]
+    ],
+    "textFamilies": {
+      "h3": {
+        "name": "Heading 3",
+        "tag": "h3",
+        "size": 100,
+        "colour": 1,
+        "font": "font-5"
+      },
+      "body": {
+        "name": "Body text",
+        "tag": "p",
+        "size": 16,
+        "colour": 1,
+        "font": "font"
+      }
+    }
   }
 }
