@@ -278,7 +278,7 @@
       "parent": "",
       "h": {
         "anchor": "center",
-        "offset": -350,
+        "offset": -450,
         "offsetEnd": 0,
         "unit": "px",
         "size": 300,
@@ -286,7 +286,7 @@
       },
       "v": {
         "anchor": "start",
-        "offset": 60,
+        "offset": 150,
         "offsetEnd": 0,
         "unit": "px",
         "size": 0,
@@ -347,7 +347,7 @@
       "parent": "",
       "h": {
         "anchor": "center",
-        "offset": -480,
+        "offset": -560,
         "offsetEnd": 0,
         "unit": "px",
         "size": 300,
@@ -355,7 +355,7 @@
       },
       "v": {
         "anchor": "start",
-        "offset": 50,
+        "offset": 115,
         "offsetEnd": 0,
         "unit": "px",
         "size": 0,
@@ -365,7 +365,7 @@
         50,
         50
       ],
-      "rotate": 0,
+      "rotate": 2,
       "text": "Oskar Wota\n",
       "level": "h1",
       "align": "left",
@@ -385,7 +385,7 @@
       "parent": "",
       "h": {
         "anchor": "center",
-        "offset": -460,
+        "offset": -400,
         "offsetEnd": 0,
         "unit": "px",
         "size": 380,
@@ -393,7 +393,7 @@
       },
       "v": {
         "anchor": "start",
-        "offset": 300,
+        "offset": 400,
         "offsetEnd": 0,
         "unit": "px",
         "size": 0,
@@ -403,7 +403,7 @@
         50,
         50
       ],
-      "rotate": 0,
+      "rotate": -5,
       "text": "Game Designer\n",
       "level": "h2",
       "align": "left",
@@ -430,7 +430,7 @@
       },
       "v": {
         "anchor": "start",
-        "offset": 600,
+        "offset": 800,
         "offsetEnd": 0,
         "unit": "px",
         "size": 0,
@@ -460,7 +460,7 @@
       "parent": "",
       "h": {
         "anchor": "center",
-        "offset": 0,
+        "offset": 25,
         "offsetEnd": 0,
         "unit": "px",
         "size": 300,
@@ -468,7 +468,7 @@
       },
       "v": {
         "anchor": "start",
-        "offset": 600,
+        "offset": 750,
         "offsetEnd": 0,
         "unit": "px",
         "size": 5,
@@ -521,7 +521,7 @@
       "name": "Overlay Linkedin",
       "parent": "section-mzin5",
       "h": {
-        "anchor": "start",
+        "anchor": "end",
         "offset": 200,
         "offsetEnd": 0,
         "unit": "px",
@@ -606,7 +606,7 @@
       "name": "Overlay Itch.io",
       "parent": "section-mzin5",
       "h": {
-        "anchor": "start",
+        "anchor": "end",
         "offset": 275,
         "offsetEnd": 0,
         "unit": "px",
@@ -784,7 +784,7 @@
       },
       "v": {
         "anchor": "start",
-        "offset": 75,
+        "offset": 125,
         "offsetEnd": 0,
         "unit": "px",
         "size": 100,
@@ -805,7 +805,8 @@
       "font": "",
       "level": "p",
       "align": "left",
-      "color": ""
+      "color": "",
+      "size": 20
     },
     {
       "id": "image-2cthe",
@@ -1748,7 +1749,7 @@
       "name": "TopSection",
       "anchor": "top",
       "start": 0,
-      "height": 900,
+      "height": 1100,
       "background": 4,
       "texture": {
         "file": "Me/PurpleBabyTrnasparentPure.png",
