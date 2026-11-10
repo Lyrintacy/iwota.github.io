@@ -2,21 +2,24 @@
   "version": 1,
   "tabs": [
     "main",
-    "polar-protocol"
+    "polar-protocol",
+    "cv"
   ],
   "palette": [
-    "#1B0E1F",
-    "#5F2C49",
-    "#AE0B31",
-    "#5c00be",
-    "#FFB300",
-    "#ffffff"
+    "#ebf7cc",
+    "#f6b0d8",
+    "#6257df",
+    "#67186b",
+    "#03300a",
+    "#ffffff",
+    "#b1ff3d",
+    "#ff47a0"
   ],
   "roles": {
-    "background": 1,
-    "text": 2,
-    "secondary": 6,
-    "highlight": 3
+    "background": 4,
+    "text": 1,
+    "secondary": 5,
+    "highlight": 2
   },
   "text": {
     "body": 16,
@@ -42,9 +45,106 @@
       "name": "Monospace",
       "family": "ui-monospace, Menlo, Consolas, monospace",
       "file": ""
+    },
+    {
+      "id": "font",
+      "name": "Sans",
+      "family": "Comic Sans MS",
+      "file": "Comic Sans MS.ttf"
+    },
+    {
+      "id": "font-2",
+      "name": "Kids",
+      "family": "KidsplaypersonaluseBold-YzjBy",
+      "file": "KidsplaypersonaluseBold-YzjBy.otf"
+    },
+    {
+      "id": "font-3",
+      "name": "Papyrus",
+      "family": "papyrus",
+      "file": "papyrus.ttf"
+    },
+    {
+      "id": "font-4",
+      "name": "Mario",
+      "family": "SuperMabroz-j93xO",
+      "file": "SuperMabroz-j93xO.ttf"
+    },
+    {
+      "id": "font-5",
+      "name": "Dahlia",
+      "family": "dahlia-bold",
+      "file": "dahlia-bold.otf"
     }
   ],
   "scroll": {
     "panSmoothMs": 240
-  }
+  },
+  "ui": {
+    "tabs": {
+      "font": "font-5",
+      "text": 1,
+      "background": 4,
+      "active": 3,
+      "maxTemporary": 1,
+      "slide": true,
+      "slidePhone": true
+    },
+    "workshop": {
+      "font": "",
+      "text": 0,
+      "background": 0
+    },
+    "toggle": {
+      "text": 2,
+      "background": 5,
+      "hidePhone": true,
+      "font": "font-5"
+    },
+    "buttons": {
+      "touch": false,
+      "pc": false,
+      "phone": false
+    },
+    "hint": {
+      "on": false,
+      "side": "right",
+      "image": "",
+      "message": "",
+      "distance": 40,
+      "background": 1,
+      "text": 3,
+      "font": "font-4"
+    }
+  },
+  "textFamilies": {
+    "body": {
+      "name": "Body text",
+      "tag": "p",
+      "size": 18,
+      "colour": 1,
+      "font": "font"
+    },
+    "h1": {
+      "name": "Heading 1",
+      "tag": "h1",
+      "size": 56,
+      "colour": 3,
+      "font": "font-5"
+    },
+    "secondary-text": {
+      "name": "Secondary Text",
+      "tag": "p",
+      "size": 15,
+      "colour": 6,
+      "font": ""
+    }
+  },
+  "textStyles": [
+    {
+      "id": "secondary-text",
+      "name": "Secondary Text",
+      "tag": "p"
+    }
+  ]
 }
