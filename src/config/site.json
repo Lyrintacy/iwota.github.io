@@ -69,6 +69,12 @@
       "name": "Mario",
       "family": "SuperMabroz-j93xO",
       "file": ""
+    },
+    {
+      "id": "font-5",
+      "name": "Dahlia",
+      "family": "dahlia-bold",
+      "file": ""
     }
   ],
   "scroll": {
@@ -76,7 +82,7 @@
   },
   "ui": {
     "tabs": {
-      "font": "font-3",
+      "font": "font-5",
       "text": 1,
       "background": 4,
       "active": 3,
@@ -93,7 +99,7 @@
       "text": 2,
       "background": 5,
       "hidePhone": true,
-      "font": "font-3"
+      "font": "font-5"
     },
     "buttons": {
       "touch": false,
@@ -124,7 +130,7 @@
       "tag": "h1",
       "size": 56,
       "colour": 3,
-      "font": "font-3"
+      "font": "font-5"
     },
     "secondary-text": {
       "name": "Secondary Text",

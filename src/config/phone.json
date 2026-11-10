@@ -263,7 +263,7 @@
       "text-tdwz7": {
         "v": {
           "anchor": "start",
-          "offset": 1100,
+          "offset": 1070,
           "offsetEnd": 0,
           "unit": "px",
           "size": 0,
@@ -277,7 +277,8 @@
           "size": 300,
           "sizeUnit": "px"
         },
-        "text": "Hands on Experience and Creative Thinking \n⬇\n"
+        "text": "Hands on Experience and Creative Thinking \n⬇\n",
+        "size": 40
       },
       "text-17y6v": {
         "v": {
@@ -623,15 +624,19 @@
         "start": 0,
         "height": 1300,
         "texture": {
-          "file": "ui/Button/ButtonCardOverlay4.PNG",
-          "size": 300,
-          "offsetX": 0,
+          "file": "Me/PurpleIconCut.png",
+          "size": 800,
+          "offsetX": -100,
           "offsetY": 0,
-          "scrollX": false,
-          "speedX": 0.05,
+          "scrollX": true,
+          "speedX": -0.5,
           "scrollY": true,
           "speedY": -0.5,
           "rotate": 0
+        },
+        "overlay": {
+          "colour": 4,
+          "opacity": 90
         }
       },
       "section-ogrcp": {
