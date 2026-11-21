@@ -419,7 +419,7 @@
       "id": "text-tdwz7",
       "type": "text",
       "name": "Exp",
-      "parent": "",
+      "parent": "section-ky6g3",
       "h": {
         "anchor": "center",
         "offset": 0,
@@ -430,7 +430,7 @@
       },
       "v": {
         "anchor": "start",
-        "offset": 800,
+        "offset": 700,
         "offsetEnd": 0,
         "unit": "px",
         "size": 0,
@@ -457,7 +457,7 @@
       "id": "image-t5azo",
       "type": "image",
       "name": "",
-      "parent": "",
+      "parent": "section-ky6g3",
       "h": {
         "anchor": "center",
         "offset": 25,
@@ -467,8 +467,8 @@
         "sizeUnit": "px"
       },
       "v": {
-        "anchor": "start",
-        "offset": 750,
+        "anchor": "end",
+        "offset": 300,
         "offsetEnd": 0,
         "unit": "px",
         "size": 5,
