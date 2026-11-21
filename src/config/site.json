@@ -78,7 +78,7 @@
     }
   ],
   "scroll": {
-    "panSmoothMs": 240
+    "panSmoothMs": 50
   },
   "ui": {
     "tabs": {
