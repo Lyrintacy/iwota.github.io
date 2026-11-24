@@ -347,17 +347,17 @@
       "parent": "",
       "h": {
         "anchor": "center",
-        "offset": -560,
+        "offset": -30,
         "offsetEnd": 0,
-        "unit": "px",
+        "unit": "%",
         "size": 300,
         "sizeUnit": "px"
       },
       "v": {
         "anchor": "start",
-        "offset": 115,
+        "offset": 1.25,
         "offsetEnd": 0,
-        "unit": "px",
+        "unit": "%",
         "size": 0,
         "sizeUnit": "auto"
       },
@@ -372,11 +372,11 @@
       "color": 1,
       "shrink": {
         "axis": "x",
-        "mode": "down",
+        "mode": "both",
         "on": true,
         "grow": true
       },
-      "size": 100
+      "size": 70
     },
     {
       "id": "text-91m65",
@@ -385,17 +385,17 @@
       "parent": "",
       "h": {
         "anchor": "center",
-        "offset": -500,
+        "offset": -25,
         "offsetEnd": 0,
-        "unit": "px",
+        "unit": "%",
         "size": 380,
         "sizeUnit": "px"
       },
       "v": {
         "anchor": "start",
-        "offset": 375,
+        "offset": 5.4,
         "offsetEnd": 0,
-        "unit": "px",
+        "unit": "%",
         "size": 0,
         "sizeUnit": "auto"
       },
@@ -410,10 +410,11 @@
       "color": 1,
       "shrink": {
         "axis": "x",
-        "mode": "down",
+        "mode": "both",
         "on": true,
         "grow": true
-      }
+      },
+      "size": 30
     },
     {
       "id": "text-tdwz7",
@@ -430,9 +431,9 @@
       },
       "v": {
         "anchor": "start",
-        "offset": 700,
+        "offset": 80,
         "offsetEnd": 0,
-        "unit": "px",
+        "unit": "%",
         "size": 0,
         "sizeUnit": "auto"
       },
@@ -776,15 +777,15 @@
       "parent": "",
       "h": {
         "anchor": "center",
-        "offset": 250,
+        "offset": 150,
         "offsetEnd": 0,
         "unit": "px",
-        "size": 800,
+        "size": 600,
         "sizeUnit": "px"
       },
       "v": {
         "anchor": "start",
-        "offset": 125,
+        "offset": 100,
         "offsetEnd": 0,
         "unit": "px",
         "size": 100,
@@ -797,7 +798,7 @@
       "rotate": 0,
       "shrink": {
         "axis": "x",
-        "mode": "down",
+        "mode": "both",
         "on": true,
         "grow": true
       },
@@ -806,7 +807,7 @@
       "level": "p",
       "align": "left",
       "color": "",
-      "size": 20
+      "size": 13
     },
     {
       "id": "image-2cthe",
@@ -1748,6 +1749,77 @@
       "captionColour": "",
       "captionSize": 14,
       "phoneOnly": true
+    },
+    {
+      "id": "image-gt5sf",
+      "type": "image",
+      "name": "",
+      "parent": "section-ogrcp",
+      "h": {
+        "anchor": "center",
+        "offset": -17.75,
+        "offsetEnd": 0,
+        "unit": "%",
+        "size": 200,
+        "sizeUnit": "px"
+      },
+      "v": {
+        "anchor": "start",
+        "offset": 41,
+        "offsetEnd": 0,
+        "unit": "%",
+        "size": 60,
+        "sizeUnit": "px"
+      },
+      "pivot": [
+        50,
+        50
+      ],
+      "rotate": 0,
+      "shrink": {
+        "on": false,
+        "axis": "x"
+      },
+      "file": "",
+      "alt": "",
+      "fit": "contain",
+      "hoverOnly": false,
+      "thumbnail": "",
+      "button": false,
+      "link": {
+        "kind": "none",
+        "url": "",
+        "section": "",
+        "page": "",
+        "newTab": false
+      },
+      "fx": {
+        "shake": true,
+        "shakeMs": 600,
+        "shakeAmount": 100,
+        "flash": true,
+        "flashMs": 300,
+        "flashColour": 0,
+        "flashStrength": 95,
+        "shine": true,
+        "shineDelayMs": 0,
+        "shineMs": 700,
+        "shineWidth": 70,
+        "shineColour": 4,
+        "shineSlant": 18,
+        "clickFlash": true
+      },
+      "caption": "",
+      "captionPosition": "below",
+      "captionColour": "",
+      "captionSize": 14,
+      "emptyColour": 2,
+      "radius": {
+        "tl": 44,
+        "tr": 10,
+        "br": 44,
+        "bl": 10
+      }
     }
   ],
   "sections": [
