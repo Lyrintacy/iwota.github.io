@@ -523,9 +523,9 @@
       "parent": "section-mzin5",
       "h": {
         "anchor": "end",
-        "offset": 200,
+        "offset": 9,
         "offsetEnd": 0,
-        "unit": "px",
+        "unit": "%",
         "size": 60,
         "sizeUnit": "px"
       },
@@ -543,7 +543,7 @@
       ],
       "rotate": 0,
       "shrink": {
-        "on": true,
+        "on": false,
         "axis": "x"
       },
       "file": "Me/linkedinicon.png",
@@ -608,9 +608,9 @@
       "parent": "section-mzin5",
       "h": {
         "anchor": "end",
-        "offset": 275,
+        "offset": 13,
         "offsetEnd": 0,
-        "unit": "px",
+        "unit": "%",
         "size": 60,
         "sizeUnit": "px"
       },
@@ -628,7 +628,7 @@
       ],
       "rotate": 0,
       "shrink": {
-        "on": true,
+        "on": false,
         "axis": "x"
       },
       "file": "Me/itchicon.png",
